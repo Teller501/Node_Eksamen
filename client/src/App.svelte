@@ -15,8 +15,15 @@
     import { Router, Route } from "svelte-routing";
     import Auth from "./pages/Auth/Auth.svelte";
     import Activation from "./components/Activation.svelte";
+    import ResetPassword from "./pages/ResetPassword/ResetPassword.svelte";
     import { SearchOutline, ChevronDownOutline } from "flowbite-svelte-icons";
     import { userStore } from "./stores/authStore";
+    import { logoutUser } from "./util/auth.js";
+
+    function handleLogout(event) {
+        event.preventDefault();
+        logoutUser();
+    }
 </script>
 
 <Router>
@@ -53,7 +60,7 @@
         </div>
         {#if !$userStore}
             <div class="flex md:order-2">
-                <Button size="sm">Login</Button>
+                <Button size="sm" href="/">Login</Button>
                 <NavHamburger />
             </div>
         {/if}
@@ -62,30 +69,33 @@
             <NavLi href="/movies">Movies</NavLi>
             <NavLi href="/recommender" class="text-blue">Recommender (AI)</NavLi
             >
-            <!-- {#if $userStore} -->
-            <NavLi class="cursor-pointer">
-                Profile<ChevronDownOutline
-                    class="w-6 h-6 ms-2 text-primary-800 dark:text-white inline"
-                />
-            </NavLi>
-            <Dropdown class="w-44 z-20 bg-slate-50 rounded">
-                <DropdownItem href="/">Home</DropdownItem>
-                <DropdownItem href="/">Profile</DropdownItem>
-                <DropdownItem href="/">Movies</DropdownItem>
-                <DropdownItem href="/">Reviews</DropdownItem>
-                <DropdownItem href="/docs/components/navbar"
-                    >Settings</DropdownItem
-                >
-                <DropdownDivider />
-                <DropdownItem href="/">Sign out</DropdownItem>
-            </Dropdown>
-            <!-- {/if} -->
+            {#if $userStore}
+                <NavLi class="cursor-pointer">
+                    Profile<ChevronDownOutline
+                        class="w-6 h-6 ms-2 text-primary-800 dark:text-white inline"
+                    />
+                </NavLi>
+                <Dropdown class="w-44 z-20 bg-slate-50 rounded">
+                    <DropdownItem href="/">Home</DropdownItem>
+                    <DropdownItem href="/">Profile</DropdownItem>
+                    <DropdownItem href="/">Movies</DropdownItem>
+                    <DropdownItem href="/">Reviews</DropdownItem>
+                    <DropdownItem href="/docs/components/navbar"
+                        >Settings</DropdownItem
+                    >
+                    <DropdownDivider />
+                    <DropdownItem href="/" on:click={handleLogout}>Sign out</DropdownItem>
+                </Dropdown>
+            {/if}
         </NavUl>
     </Navbar>
 
     <Route path="/activate/:token" let:params>
-      <Activation {params} />
-  </Route>
+        <Activation {params} />
+    </Route>
+    <Route path="/reset-password/:token" let:params>
+        <ResetPassword {params} />
+    </Route>
     <Route path="/"><Auth /></Route>
     <Route path="*"><Auth /></Route>
 </Router>
