@@ -14,6 +14,7 @@
     import CineMatch from "./assets/CineMatch.png";
     import { Router, Route } from "svelte-routing";
     import Auth from "./pages/Auth/Auth.svelte";
+    import Activation from "./components/Activation.svelte";
     import { SearchOutline, ChevronDownOutline } from "flowbite-svelte-icons";
     import { userStore } from "./stores/authStore";
 </script>
@@ -82,6 +83,9 @@
         </NavUl>
     </Navbar>
 
+    <Route path="/activate/:token" let:params>
+      <Activation {params} />
+  </Route>
     <Route path="/"><Auth /></Route>
     <Route path="*"><Auth /></Route>
 </Router>
