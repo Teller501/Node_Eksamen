@@ -21,7 +21,7 @@ function generateAccessToken(user) {
 async function sendActivationEmail(email, activationToken) {
     const activationLink = `http://localhost:5173/activate/${activationToken}`;
     const message = {
-        from: "Admin <noreply@andersteller.dk>",
+        from: `Admin <noreply@${process.env.MAIL_DOMAIN}>`,
         to: email,
         subject: "Please activate your account",
         html: `<p>Thank you for signing up at Mandatory II! Please click the link below to activate your account:</p>
@@ -39,7 +39,7 @@ async function sendActivationEmail(email, activationToken) {
 async function sendResetEmail(email, resetToken) {
     const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
     const message = {
-        from: "Admin <noreply@andersteller.dk>",
+        from: `Admin <noreply@${process.env.MAIL_DOMAIN}>`,
         to: email,
         subject: "Reset your password",
         html: `<p>You've requrested to resest your password, please click the link below to reset:</p>
