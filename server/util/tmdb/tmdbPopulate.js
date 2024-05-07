@@ -94,7 +94,7 @@ async function insertMovieToMySQL(movieData) {
 
 async function insertMovieToMongoDB(movieData, cast) {
     try {
-        const filter = { id: movieData.id };  // Ensure this ID is unique and indexed
+        const filter = { id: movieData.id }; 
         const update = {
             $set: {
                 title: movieData.title,
@@ -107,7 +107,6 @@ async function insertMovieToMongoDB(movieData, cast) {
         const options = { upsert: true };
 
         const result = await mongoClient.movies.updateOne(filter, update, options);
-        console.log(result);  // Log the result to see what happened (matchedCount, modifiedCount, upsertedId)
     } catch (error) {
         console.error("Failed to upsert movie in MongoDB:", error);
     }
