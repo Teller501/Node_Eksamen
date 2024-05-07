@@ -5,6 +5,9 @@ const app = express();
 
 app.use(express.json());
 
+import scheduleTMDBPopulation from "./util/tmdb/cronScheduler.js";
+scheduleTMDBPopulation();
+
 import cors from "cors";
 app.use(
     cors({
@@ -36,14 +39,6 @@ import authRouter from './routers/authRouter.js';
 app.use(authRouter);
 
 import authenticateToken from "./util/authenticateToken.js";
-
-
-app.get("/api/quote", authenticateToken, async (req, res) => {
-	const response = await fetch("https://api.kanye.rest");
-	const data = await response.json();
-	res.send({ data: data.quote });
-});
-
 
 
 const PORT = process.env.PORT ?? 8080;
