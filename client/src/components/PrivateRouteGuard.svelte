@@ -1,10 +1,12 @@
 <script>
-    import { useNavigate, useLocation } from "svelte-navigator";
+    import { navigate } from "svelte-routing";
     import { userStore, tokenStore, refreshTokenStore } from "../stores/authStore.js";
     import { isTokenExpired, refreshToken, logoutUser } from "../util/auth.js";
+    import { onMount } from 'svelte';
 
-    const navigate = useNavigate();
-    const location = useLocation();
+    let currentURL = ``;
+
+    onMount(() => currentURL = window.location.href);
 
     $: if ($userStore && isTokenExpired($tokenStore)) {
         refreshToken($refreshTokenStore).then((newToken) => {
@@ -16,14 +18,14 @@
             } else {
                 logoutUser();
                 navigate("/", {
-                    state: { from: $location.pathname },
+                    state: { from: currentURL },
                     replace: true,
                 });
             }
         });
     } else if (!$userStore) {
         navigate("/", {
-            state: { from: $location.pathname },
+            state: { from: currentURL },
             replace: true,
         });
     }

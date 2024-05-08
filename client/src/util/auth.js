@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import { navigate } from "svelte-navigator";
+import { navigate } from "svelte-routing";
 import { refreshTokenStore, tokenStore, userStore } from "../stores/authStore";
 
 export function isTokenExpired(token) {
