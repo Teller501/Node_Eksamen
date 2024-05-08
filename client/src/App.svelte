@@ -19,6 +19,7 @@
     import { SearchOutline, ChevronDownOutline } from "flowbite-svelte-icons";
     import { userStore } from "./stores/authStore";
     import { logoutUser } from "./util/auth.js";
+  import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
 
     function handleLogout(event) {
         event.preventDefault();
@@ -61,7 +62,6 @@
         {#if !$userStore}
             <div class="flex md:order-2">
                 <Button size="sm" href="/">Login</Button>
-                <NavHamburger />
             </div>
         {/if}
         <NavUl>
@@ -98,4 +98,7 @@
     </Route>
     <Route path="/"><Auth /></Route>
     <Route path="*"><Auth /></Route>
+    <Route path="/moviedetails">
+        <MovieDetails />
+    </Route>
 </Router>
