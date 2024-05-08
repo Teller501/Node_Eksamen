@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import redisClient from "../database/redisConnection.js";
-import db from "../database/pgConnection.js";
+import pgClient from "../database/pgConnection.js";
 import {
     validateUserSignup,
     validateUserLogin,
@@ -66,12 +66,12 @@ router.get("/api/activate/:token", validateToken, async (req, res) => {
         return res.status(400).send({ error: "Invalid activation token" });
     }
 
-    const user = db.get(`SELECT * FROM users WHERE username = ?`, [username]);
+    const user = pgClient.query(`SELECT * FROM users WHERE username = $1`, [username]);
     if (!user) {
         return res.status(400).send({ error: "User not found" });
     }
 
-    await db.run(`UPDATE users SET is_active = TRUE WHERE username = ?`, [
+    await pgClient.query(`UPDATE users SET is_active = TRUE WHERE username = $1`, [
         username,
     ]);
     await redisClient.del(token);
@@ -80,16 +80,21 @@ router.get("/api/activate/:token", validateToken, async (req, res) => {
 });
 
 router.post("/api/login", validateUserLogin, async (req, res) => {
-    const user = await db.get(`SELECT * FROM users WHERE username = ?`, [
-        req.body.username,
+    const result = await pgClient.query(`SELECT * FROM users WHERE username = $1`, [
+        req.body.username
     ]);
-    if (!user) {
+    
+    if (result.rowCount === 0) {
         return res.status(400).send({ error: "User not found" });
     }
+    
+    const user = result.rows[0];
 
+    
     if (!user.is_active) {
         return res.status(400).send({ error: "User not activated" });
     }
+    
 
     try {
         if (await bcrypt.compare(req.body.password, user.password)) {
@@ -117,8 +122,8 @@ router.post("/api/signup", validateUserSignup, async (req, res) => {
         };
         const activationToken = crypto.randomBytes(32).toString("hex");
 
-        const result = await db.run(
-            `INSERT INTO users (username, email, password, is_active) VALUES (?, ?, ?, ?) `,
+        const result = await pgClient.query(
+            `INSERT INTO users (username, email, password, is_active) VALUES ($1, $2, $3, $4) `,
             [user.username, user.email, user.password, user.isActive]
         );
         await redisClient.set(activationToken, user.username, { EX: 3600 });
@@ -151,9 +156,11 @@ router.post(
     validateForgotPassword,
     async (req, res) => {
         const { email } = req.body;
-        const user = await db.get(`SELECT * FROM users WHERE email = ?`, [
+        const result = await pgClient.query(`SELECT * FROM users WHERE email = $1`, [
             email,
         ]);
+
+        const user = result.rows[0];
 
         if (!user) {
             return res.status(400).send({ error: "User not found" });
@@ -181,15 +188,18 @@ router.post(
             return res.status(400).send({ error: "Invalid or expired token" });
         }
 
-        const user = await db.get(`SELECT * FROM users WHERE username = ?`, [
+        const result = await pgClient.query(`SELECT * FROM users WHERE username = $1`, [
             username,
         ]);
+
+        const user = result.rows[0];
+
         if (!user) {
             return res.status(400).send({ error: "User not found" });
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-        await db.run(`UPDATE users SET password = ? WHERE username = ?`, [
+        await pgClient.query(`UPDATE users SET password = $1 WHERE username = $2`, [
             hashedPassword,
             username,
         ]);
