@@ -45,13 +45,12 @@ async function insertMovieToMySQL(movieData) {
 
         // Upsert the movie details
         await pgClient.query(
-            `INSERT INTO movies (id, title, original_title, overview, poster_path, backdrop_path, release_date, original_language, runtime, budget, revenue, status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            `INSERT INTO movies (id, title, original_title, overview, backdrop_path, release_date, original_language, runtime, budget, revenue, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             ON CONFLICT (id) DO UPDATE SET
             title = EXCLUDED.title,
             original_title = EXCLUDED.original_title,
             overview = EXCLUDED.overview,
-            poster_path = EXCLUDED.poster_path,
             backdrop_path = EXCLUDED.backdrop_path,
             release_date = EXCLUDED.release_date,
             original_language = EXCLUDED.original_language,
@@ -64,7 +63,6 @@ async function insertMovieToMySQL(movieData) {
                 movie.title,
                 movie.original_title,
                 movie.overview,
-                movie.poster_path,
                 movie.backdrop_path,
                 movie.release_date,
                 movie.original_language,
@@ -106,6 +104,7 @@ async function insertMovieToMongoDB(movieData, cast) {
                 popularity: movieData.popularity,
                 voteAverage: movieData.vote_average,
                 voteCount: movieData.vote_count,
+                posterPath: movieData.poster_path,
             },
         };
         const options = { upsert: true };

@@ -29,6 +29,7 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false) {
                 vote_average: mongoMovie.voteAverage ?? 0,
                 vote_count: mongoMovie.voteCount ?? 0,
                 cast: mongoMovie.cast ?? [],
+                poster_path: mongoMovie.posterPath ?? "",
             };
         });
 
@@ -110,6 +111,25 @@ router.get("/api/movies", async (req, res) => {
     }
 });
 
+router.get("/api/movies/search", async (req, res) => {
+    try {
+        const searchQuery = req.query.q;
+
+        if (!searchQuery) {
+            return res.status(400).send("Search query is required");
+        }
+
+        const searchResults = await mongoClient.movies.find({
+            title: { $regex: searchQuery, $options: 'i' } 
+        }).toArray();
+
+        res.json({ data: searchResults });
+    } catch (error) {
+        console.error("Error searching movies:", error);
+        res.status(500).send("Failed to search movies");
+    }
+});
+
 router.get("/api/movies/:id", async (req, res) => {
     try {
         const pgMovieResult = await pgClient.query(
@@ -140,5 +160,6 @@ router.get("/api/movies/:id", async (req, res) => {
         res.status(500).send("Failed to fetch movie");
     }
 });
+
 
 export default router;
