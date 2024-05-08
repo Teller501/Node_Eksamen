@@ -38,6 +38,9 @@ app.use(["/api/login", "/api/signup", "/api/token"], authRateLimiter);
 import authRouter from './routers/authRouter.js';
 app.use(authRouter);
 
+import moivesRouter from './routers/moviesRouter.js';
+app.use(moivesRouter);
+
 import authenticateToken from "./util/authenticateToken.js";
 
 
