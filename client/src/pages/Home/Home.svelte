@@ -36,7 +36,7 @@
 
 <h1 class="text-slate-900 absolute inset-x-0 top-32">Home</h1>
 
-<h2 class="text-slate-900 text-left ml-10 mb-4">Popular Movies</h2>
+<h2 class="text-slate-900 text-left ml-10 mb-4 font-bold">Popular Movies</h2>
 <div id="popular-movies" class="w-full flex items-center justify-between">
     <Button
         class="bg-transparent border-none p-0 inline-flex justify-center items-center hover:bg-transparent focus:outline-none focus-within:ring-0"

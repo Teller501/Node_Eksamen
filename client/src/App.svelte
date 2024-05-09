@@ -22,6 +22,7 @@
   import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
     import PrivateRoute from "./components/PrivateRoute.svelte";
     import Home from "./pages/Home/Home.svelte";
+    import Movies from "./pages/Movies/Movies.svelte";
 
     function handleLogout(event) {
         event.preventDefault();
@@ -103,6 +104,7 @@
         <Route path="*"><Auth /></Route>
     {/if}
     <PrivateRoute path="/home"><Home /></PrivateRoute>
+    <PrivateRoute path="/movies"><Movies /></PrivateRoute>
     <Route path="/moviedetails">
         <MovieDetails />
     </Route>

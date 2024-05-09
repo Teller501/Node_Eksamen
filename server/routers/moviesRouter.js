@@ -62,12 +62,12 @@ router.get("/api/movies/popular", async (req, res) => {
         const response = {
             data: movieResults,
             pagination: {
-                currentPage: page,
-                totalPages: totalPages,
-                hasNextPage: hasNextPage,
-                hasPreviousPage: hasPreviousPage,
-                nextPage: hasNextPage ? page + 1 : null,
-                previousPage: hasPreviousPage ? page - 1 : null,
+                current_page: page,
+                total_pages: totalPages,
+                has_next_page: hasNextPage,
+                has_previous_page: hasPreviousPage,
+                next_page: hasNextPage ? page + 1 : null,
+                previous_page: hasPreviousPage ? page - 1 : null,
             },
         };
 
@@ -95,12 +95,12 @@ router.get("/api/movies", async (req, res) => {
         const response = {
             data: movieResults,
             pagination: {
-                currentPage: page,
-                totalPages: totalPages,
-                hasNextPage: hasNextPage,
-                hasPreviousPage: hasPreviousPage,
-                nextPage: hasNextPage ? page + 1 : null,
-                previousPage: hasPreviousPage ? page - 1 : null,
+                current_page: page,
+                total_pages: totalPages,
+                has_next_page: hasNextPage,
+                has_previous_page: hasPreviousPage,
+                next_page: hasNextPage ? page + 1 : null,
+                previous_page: hasPreviousPage ? page - 1 : null,
             },
         };
 

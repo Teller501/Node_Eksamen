@@ -1,5 +1,6 @@
 export async function fetchGet(url, token) {
     let data;
+    let pagination;
     let status;
 
     try {
@@ -15,11 +16,12 @@ export async function fetchGet(url, token) {
 
         const result = await response.json();
         data = result.data;
+        pagination = result.pagination;
     } catch (error) {
         console.error(error);
     }
 
-    return { data, status };
+    return { data, status, pagination };
 }
 
 export async function fetchPost(url, body) {
