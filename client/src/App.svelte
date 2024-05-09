@@ -20,6 +20,8 @@
     import { userStore } from "./stores/authStore";
     import { logoutUser } from "./util/auth.js";
   import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
+    import PrivateRoute from "./components/PrivateRoute.svelte";
+    import Home from "./pages/Home/Home.svelte";
 
     function handleLogout(event) {
         event.preventDefault();
@@ -97,7 +99,10 @@
         <ResetPassword {params} />
     </Route>
     <Route path="/"><Auth /></Route>
-    <Route path="*"><Auth /></Route>
+    {#if !$userStore}
+        <Route path="*"><Auth /></Route>
+    {/if}
+    <PrivateRoute path="/home"><Home /></PrivateRoute>
     <Route path="/moviedetails">
         <MovieDetails />
     </Route>
