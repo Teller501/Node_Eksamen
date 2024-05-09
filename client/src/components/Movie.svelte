@@ -1,14 +1,14 @@
 <script>
     import { Img } from "flowbite-svelte";
 
-    export let poster_path;
+    export let posterPath;
     export let alt;
     export let width;
     export let movieId;
 </script>
 
 <Img
-    src={`https://image.tmdb.org/t/p/original/${poster_path}`}
+    src={`https://image.tmdb.org/t/p/original/${posterPath}`}
     {alt}
     {width}
     data-movie-id={movieId}

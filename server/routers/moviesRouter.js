@@ -4,9 +4,35 @@ import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
-async function getAllMovies(page = 1, limit = 10, sortByPopularity = false) {
+async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, yearFilter = null, genreFilter = null) {
     try {
-        const pgMovies = await pgClient.query("SELECT * FROM movies");
+        let query = `
+            SELECT movies.*, array_agg(genres.name) AS genres
+            FROM movies
+            LEFT JOIN movie_genres ON movies.id = movie_genres.movie_id
+            LEFT JOIN genres ON movie_genres.genre_id = genres.id
+        `;
+        let params = [];
+        let conditions = [];
+
+        if (yearFilter) {
+            const startYear = parseInt(yearFilter);
+            const endYear = startYear + 9;
+            conditions.push(`movies.release_date >= '${startYear}-01-01' AND movies.release_date <= '${endYear}-12-31'`);
+        }
+
+        if (genreFilter) {
+            conditions.push(`genres.name = $1`);
+            params.push(genreFilter);
+        }
+
+        if (conditions.length > 0) {
+            query += ` WHERE ${conditions.join(' AND ')}`;
+        }
+
+        query += ` GROUP BY movies.id`;
+
+        const pgMovies = await pgClient.query(query, params);
         const pgMoviesData = pgMovies.rows;
 
         const mongoMovies = await mongoClient.movies.find().toArray();
@@ -51,7 +77,9 @@ router.get("/api/movies/popular", async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const movieResults = await getAllMovies(page, limit, true);
+        const yearFilter = req.query.year;
+        const genreFilter = req.query.genre;
+        const movieResults = await getAllMovies(page, limit, true, yearFilter, genreFilter);
 
         const totalMovies = await pgClient.query("SELECT COUNT(*) FROM movies");
         const totalPages = Math.ceil(totalMovies.rows[0].count / limit);
@@ -84,7 +112,9 @@ router.get("/api/movies", async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        const movieResults = await getAllMovies(page, limit);
+        const yearFilter = req.query.year;
+        const genreFilter = req.query.genre;
+        const movieResults = await getAllMovies(page, limit, false, yearFilter, genreFilter);
 
         const totalMovies = await pgClient.query("SELECT COUNT(*) FROM movies");
         const totalPages = Math.ceil(totalMovies.rows[0].count / limit);

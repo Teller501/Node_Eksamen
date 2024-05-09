@@ -17,7 +17,12 @@
     let totalPages = null;
     const maxVisiblePages = 5;
     let pages = [];
-
+    let selectedYear = "";
+    let selectedGenre = "";
+    let genreDropdownOpen = false;
+    let yearDropdownOpen = false;
+    let ratingDropdownOpen = false;
+    
     const genres = [
         "Adventure",
         "Fantasy",
@@ -38,7 +43,7 @@
         "Family",
         "War",
         "TV Movie",
-    ]
+    ];
 
     const years = [
         "2020s",
@@ -54,8 +59,7 @@
         "1920s",
         "1910s",
         "1900s",
-    ]
-
+    ];
     function updatePagination() {
         let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -67,9 +71,21 @@
         }));
     }
 
-    async function fetchMovies() {
+    async function fetchMovies(
+        yearFilter = selectedYear,
+        genreFilter = selectedGenre,
+        ratingFilter = ""
+    ) {
+        const queryParams = new URLSearchParams([
+            ["limit", 20],
+            ["page", page],
+            ["year", yearFilter],
+            ["genre", genreFilter],
+            ["rating", ratingFilter],
+        ]);
+
         const { data, pagination } = await fetchGet(
-            `${$BASE_URL}/api/movies/popular?limit=20&page=${page}`
+            `${$BASE_URL}/api/movies/popular?${queryParams.toString()}`
         );
         movies = data;
 
@@ -105,6 +121,20 @@
             fetchMovies();
         }
     }
+
+    function filterYear(year) {
+        selectedYear = year.slice(0, 4);
+        movies = null;
+        fetchMovies(year);
+        yearDropdownOpen = false;
+    }
+
+    function filterGenre(genre) {
+        selectedGenre = genre;
+        movies = null;
+        fetchMovies("", genre);
+        genreDropdownOpen = false;
+    }
 </script>
 
 <div class="flex flex-row justify-between items-center">
@@ -115,9 +145,12 @@
                 class="w-4 h-4 ms-2 text-white dark:text-white"
             /></Button
         >
-        <Dropdown class="w-44 z-20 bg-slate-50 rounded">
+        <Dropdown bind:open={yearDropdownOpen} class="w-44 z-20 bg-slate-50 rounded">
             {#each years as year}
-                <DropdownItem class="bg-slate-50">{year}</DropdownItem>
+                <DropdownItem
+                    on:click={() => filterYear(year)}
+                    class="bg-slate-50">{year}</DropdownItem
+                >
             {/each}
         </Dropdown>
 
@@ -126,9 +159,12 @@
                 class="w-4 h-4 ms-2 text-white dark:text-white"
             /></Button
         >
-        <Dropdown class="w-44 z-20 bg-slate-50 rounded">
+        <Dropdown bind:open={genreDropdownOpen}  class="w-44 z-20 bg-slate-50 rounded">
             {#each genres as genre}
-                <DropdownItem class="bg-slate-50">{genre}</DropdownItem>
+                <DropdownItem
+                    on:click={() => filterGenre(genre)}
+                    class="bg-slate-50">{genre}</DropdownItem
+                >
             {/each}
         </Dropdown>
 
@@ -137,7 +173,7 @@
                 class="w-4 h-4 ms-2 text-white dark:text-white"
             /></Button
         >
-        <Dropdown class="w-44 z-20 bg-slate-50 rounded">
+        <Dropdown bind:open={ratingDropdownOpen}  class="w-44 z-20 bg-slate-50 rounded">
             <DropdownItem class="bg-slate-50">1</DropdownItem>
             <DropdownItem class="bg-slate-50">2</DropdownItem>
             <DropdownItem class="bg-slate-50">3</DropdownItem>
@@ -152,7 +188,7 @@
         {#if movies}
             {#each movies as movie}
                 <Movie
-                    poster_path={movie.poster_path}
+                    posterPath={movie.poster_path}
                     alt={movie.title}
                     width={128}
                     movieId={movie.id}
