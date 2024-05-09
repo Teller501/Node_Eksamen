@@ -50,7 +50,7 @@
         {#if popularMovies}
             {#each popularMovies as movie}
                 <Movie
-                    poster_path={movie.poster_path}
+                    posterPath={movie.poster_path}
                     alt={movie.title}
                     width={128}
                     movieId={movie.id}

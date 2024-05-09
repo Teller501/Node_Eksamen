@@ -89,6 +89,8 @@
         );
         movies = data;
 
+        console.log(data);
+
         totalPages = pagination.total_pages;
         updatePagination();
     }
