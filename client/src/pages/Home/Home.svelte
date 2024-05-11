@@ -10,7 +10,7 @@
     let page = 1;
 
     async function fetchMovies() {
-        const { data, status } = await fetchGet(
+        const { data } = await fetchGet(
             `${$BASE_URL}/api/movies/popular?limit=5&page=${page}`
         );
         popularMovies = data;

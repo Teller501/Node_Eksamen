@@ -153,7 +153,18 @@ router.get("/api/movies/search", async (req, res) => {
             title: { $regex: searchQuery, $options: 'i' } 
         }).toArray();
 
-        res.json({ data: searchResults });
+        const response = searchResults.map((movie) => {
+            return {
+                id: movie.id,
+                title: movie.title,
+                poster_path: movie.posterPath,
+                vote_average: movie.voteAverage,
+                vote_count: movie.voteCount,
+                cast: movie.cast,
+            }
+        })
+
+        res.json({ data: response });
     } catch (error) {
         console.error("Error searching movies:", error);
         res.status(500).send("Failed to search movies");

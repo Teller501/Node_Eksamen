@@ -5,8 +5,8 @@
 	export let path;
 </script>
 
-<Route {path} let:params let:location let:navigate>
+<Route {path} let:params let:location>
 	<PrivateRouteGuard>
-		<slot {params} {location} {navigate} />
+		<slot {params} {location} />
 	</PrivateRouteGuard>
 </Route>

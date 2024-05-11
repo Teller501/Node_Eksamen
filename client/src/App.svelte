@@ -19,15 +19,25 @@
     import { SearchOutline, ChevronDownOutline } from "flowbite-svelte-icons";
     import { userStore } from "./stores/authStore";
     import { logoutUser } from "./util/auth.js";
-  import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
+    import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
     import PrivateRoute from "./components/PrivateRoute.svelte";
     import Home from "./pages/Home/Home.svelte";
     import Movies from "./pages/Movies/Movies.svelte";
+    import Search from "./pages/Search/Search.svelte";
+
+    let searchQuery = "";
 
     function handleLogout(event) {
         event.preventDefault();
         logoutUser();
     }
+
+    function handleSearch() {
+    // navigate from svelte-routing removes token and refreshToken from localStorage
+    if (searchQuery.trim()) {
+        window.location.href = `/search/${encodeURIComponent(searchQuery.trim())}`;
+    }
+}
 </script>
 
 <Router>
@@ -48,7 +58,17 @@
             >
                 <SearchOutline class="w-4 h-4" />
             </div>
-            <Input id="search-navbar" class="ps-10" placeholder="Search..." />
+            <Input
+                bind:value={searchQuery}
+                on:keydown={(event) => {
+                    if (event.key === "Enter") {
+                        handleSearch();
+                    }
+                }}
+                id="search-navbar"
+                class="ps-10"
+                placeholder="Search..."
+            />
         </div>
         <div class="flex md:order-2">
             <Button
@@ -68,7 +88,7 @@
             </div>
         {/if}
         <NavUl>
-            <NavLi href="/" active={true}>Home</NavLi>
+            <NavLi href="/home" active={true}>Home</NavLi>
             <NavLi href="/movies">Movies</NavLi>
             <NavLi href="/recommender" class="text-blue">Recommender (AI)</NavLi
             >
@@ -81,13 +101,15 @@
                 <Dropdown class="w-44 z-20 bg-slate-50 rounded">
                     <DropdownItem href="/">Home</DropdownItem>
                     <DropdownItem href="/">Profile</DropdownItem>
-                    <DropdownItem href="/">Movies</DropdownItem>
+                    <DropdownItem href="/movies">Movies</DropdownItem>
                     <DropdownItem href="/">Reviews</DropdownItem>
                     <DropdownItem href="/docs/components/navbar"
                         >Settings</DropdownItem
                     >
                     <DropdownDivider />
-                    <DropdownItem href="/" on:click={handleLogout}>Sign out</DropdownItem>
+                    <DropdownItem href="/" on:click={handleLogout}
+                        >Sign out</DropdownItem
+                    >
                 </Dropdown>
             {/if}
         </NavUl>
@@ -100,11 +122,15 @@
         <ResetPassword {params} />
     </Route>
     <Route path="/"><Auth /></Route>
-    {#if !$userStore}
-        <Route path="*"><Auth /></Route>
+    {#if $userStore}
+        <PrivateRoute path="/*"><Home /></PrivateRoute>
     {/if}
+    <Route path="*"><Auth /></Route>
     <PrivateRoute path="/home"><Home /></PrivateRoute>
     <PrivateRoute path="/movies"><Movies /></PrivateRoute>
+    <PrivateRoute path="/search/:query" let:params
+        ><Search {params} /></PrivateRoute
+    >
     <Route path="/moviedetails">
         <MovieDetails />
     </Route>
