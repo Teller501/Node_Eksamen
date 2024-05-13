@@ -139,7 +139,7 @@
     }
 </script>
 
-<div class="flex flex-row justify-between items-center">
+<div class="flex flex-row justify-between items-center mt-20">
     <h1 class="text-slate-900 mb-4 font-bold">Popular Movies</h1>
     <div>
         <Button class="h-8 focus-within:ring-0"

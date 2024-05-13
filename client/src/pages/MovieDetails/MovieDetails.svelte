@@ -1,21 +1,57 @@
 <script>
+    import { onMount } from 'svelte';
+    import { BASE_URL } from "../../stores/generalStore";
+    import { fetchGet } from "../../util/api";
+
     import { Rating, Card, Button, AccordionItem, Accordion } from 'flowbite-svelte';
     import { EditSolid, ClockOutline, EyeOutline } from 'flowbite-svelte-icons';
+
+    let movieId = window.location.pathname.split("/").pop();
+    let movieDetails;
+
+    async function fetchMovies() {
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/movies/${movieId}`
+        );
+        movieDetails = data;
+
+        const showOnlyYear = movieDetails.release_date
+        movieDetails.release_date = showOnlyYear.slice(0, 4);
+
+        
+    }
+
+    onMount(() => {
+        fetchMovies();
+    });
+
 </script>
 
-<img src="https://picsum.photos/1600/600" alt="Movie poster" class="absolute z-[-1] inset-0 blur-sm" />
+
+
+<img src={`https://image.tmdb.org/t/p/original/${movieDetails?.backdrop_path}`} alt="Movie poster" class="w-full absolute z-[-1] inset-0" />
 <div class="container mx-auto mt-20 text-left">
-    <Card img="https://picsum.photos/1800/500" size="lg">
-        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Movie title</h5>
-        <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">1994 - 2h 22min</p>
+    <Card size="md">
+                <img src={`https://image.tmdb.org/t/p/original/${movieDetails?.posterPath}`} alt="Movie picture"
+            class="rounded-sm mx-2 w-2/5" aria-hidden="true"
+        />
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            {movieDetails?.title}
+        </h5>
+        <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">{movieDetails?.release_date} - {movieDetails?.runtime} minutes</p>
         <hr class="my-4 border-gray-200 dark:border-gray-700" />
-        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <Rating total={5} rating={4}>
-            <p slot="text" class="ms-2 text-sm text-gray-700">stars out of 565k reviews</p>
-        </Rating>
+        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{movieDetails?.overview}</p>
+        <Rating count rating={movieDetails?.voteAverage}> <span class="font-normal text-black">/10</span>
+            <span class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400" />
+            <a href="/" class="text-sm font-medium text-gray-900 underline hover:no-underline dark:text-white"> 
+                out of {movieDetails?.voteCount} reviews
+            </a>
+          </Rating>
+        
         <p class="text-gray-700 inline-flex items-center">
             175k <EyeOutline />
         </p>
+        
         <p class="text-gray-700 inline-flex items-center">
             15k <ClockOutline />
         </p>

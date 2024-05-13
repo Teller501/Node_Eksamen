@@ -1,16 +1,23 @@
 <script>
-    import { Img } from "flowbite-svelte";
+  import { Img } from "flowbite-svelte";
 
-    export let posterPath;
-    export let alt;
-    export let width;
-    export let movieId;
+  export let posterPath;
+  export let alt;
+  export let width;
+  export let movieId;
 </script>
 
-<Img
-    src={`https://image.tmdb.org/t/p/original/${posterPath}`}
+<div class="flex flex-col items-center mb-3">
+  <a href={`/moviedetails/${movieId}`}>
+    <Img
+      src={`https://image.tmdb.org/t/p/original/${posterPath}`}
+      {alt}
+      {width}
+      data-movie-id={movieId}
+      class="rounded-sm mx-2 drop-shadow-md hover:scale-105"
+    />
+  </a>
+  <p class="text-gray-700 dark:text-gray-400 text-sm text-center">
     {alt}
-    {width}
-    data-movie-id={movieId}
-    class="rounded-sm mx-2 drop-shadow-md hover:scale-105 mb-2"
-/>
+  </p>
+</div>
