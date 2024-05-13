@@ -131,7 +131,7 @@
     <PrivateRoute path="/search/:query" let:params
         ><Search {params} /></PrivateRoute
     >
-    <Route path="/moviedetails/:id">
+    <PrivateRoute path="/moviedetails/:id">
         <MovieDetails />
-    </Route>
+    </PrivateRoute>
 </Router>
