@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { BASE_URL } from "../../stores/generalStore";
   import { fetchGet } from "../../util/api";
+  import Review from "../../components/Review.svelte";
 
   import {
     Rating,
@@ -57,7 +58,7 @@
       <span class="font-normal text-black">/10</span>
       <span class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400" />
       <a
-        href="/"
+        href="#review-section"
         class="text-sm font-medium text-gray-900 underline hover:no-underline dark:text-white"
       >
         out of {movieDetails?.voteCount} reviews
@@ -89,10 +90,9 @@
     <Accordion flush class="mt-8">
       <AccordionItem>
         <span slot="header">Reviews</span>
-        <p class="mb-2 text-gray-500 dark:text-gray-400">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo ab
-          necessitatibus sint explicabo ...
-        </p>
+        <div id="review-section">
+            <Review />
+        </div>
       </AccordionItem>
       <AccordionItem>
         <span slot="header">Cast</span>
