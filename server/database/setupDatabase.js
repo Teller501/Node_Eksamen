@@ -10,6 +10,7 @@ const isDeleteMode = process.argv.includes("delete");
             await pgClient.query(`DROP TABLE IF EXISTS users;`);
             await pgClient.query(`DROP TABLE IF EXISTS genres;`);
             await pgClient.query(`DROP TABLE IF EXISTS movies;`);
+            await pgClient.query(`DROP TABLE IF EXISTS watch_logs;`);
             await mongoClient.movies.deleteMany({});
         }
 
@@ -27,7 +28,6 @@ const isDeleteMode = process.argv.includes("delete");
                 title VARCHAR(255),
                 original_title VARCHAR(255),
                 overview TEXT,
-                poster_path VARCHAR(255),
                 backdrop_path VARCHAR(255),
                 release_date DATE,
                 original_language VARCHAR(10),
@@ -54,6 +54,16 @@ const isDeleteMode = process.argv.includes("delete");
                 FOREIGN KEY (genre_id) REFERENCES genres(id)
             );
         `);
+
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS watch_logs (
+            id SERIAL PRIMARY KEY,
+            movie_id INT,
+            user_id INT,
+            watched_on DATE,
+            rating INT,
+            FOREIGN KEY (movie_id) REFERENCES movies(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )`);
 
         if (isDeleteMode) {
             await pgClient.query(`INSERT INTO users (username, password, email, is_active)

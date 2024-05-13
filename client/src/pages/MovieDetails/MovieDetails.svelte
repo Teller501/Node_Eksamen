@@ -15,7 +15,7 @@
   let movieId = window.location.pathname.split("/").pop();
   let movieDetails;
 
-  async function fetchMovies() {
+  async function fetchMovie() {
     const { data } = await fetchGet(`${$BASE_URL}/api/movies/${movieId}`);
     movieDetails = data;
 
@@ -24,7 +24,7 @@
   }
 
   onMount(() => {
-    fetchMovies();
+    fetchMovie();
   });
 </script>
 
@@ -76,7 +76,7 @@
 
     <div class="justify-between flex items-center">
       <Button>
-        Create review <EditSolid />
+        Log Movie <EditSolid />
       </Button>
       <Button>
         Add to watchlist <ClockOutline />
@@ -87,14 +87,14 @@
     </div>
 
     <Accordion flush class="mt-8">
-      <AccordionItem>
+      <AccordionItem class="bg-slate-200 mb-2">
         <span slot="header">Reviews</span>
         <p class="mb-2 text-gray-500 dark:text-gray-400">
           Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo ab
           necessitatibus sint explicabo ...
         </p>
       </AccordionItem>
-      <AccordionItem>
+      <AccordionItem class="bg-slate-200 mb-2">
         <span slot="header">Cast</span>
         <p class="mb-2 text-gray-500 dark:text-gray-400">
           {#if movieDetails?.cast && Array.isArray(movieDetails?.cast)}
@@ -105,7 +105,7 @@
           {/if}
         </p>
       </AccordionItem>
-      <AccordionItem>
+      <AccordionItem class="bg-slate-200 mb-2">
         <span slot="header">Similar movies</span>
         <p class="mb-2 text-gray-500 dark:text-gray-400">
           Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo ab

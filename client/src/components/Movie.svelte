@@ -17,7 +17,4 @@
       class="rounded-sm mx-2 drop-shadow-md hover:scale-105"
     />
   </a>
-  <p class="text-gray-700 dark:text-gray-400 text-sm text-center">
-    {alt}
-  </p>
 </div>
