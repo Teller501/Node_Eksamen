@@ -11,5 +11,6 @@ await client.connect();
 const db = client.db(dbName);
 
   export default {
-    movies: db.collection("movies")
+    movies: db.collection("movies"),
+    activity: db.collection("activity")
   };

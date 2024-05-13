@@ -41,6 +41,9 @@ app.use(authRouter);
 import moivesRouter from './routers/moviesRouter.js';
 app.use(moivesRouter);
 
+import logRouter from './routers/logRouter.js';
+app.use(logRouter);
+
 import authenticateToken from "./util/authenticateToken.js";
 
 

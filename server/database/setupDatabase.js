@@ -7,10 +7,10 @@ const isDeleteMode = process.argv.includes("delete");
     try {
         if (isDeleteMode) {
             await pgClient.query(`DROP TABLE IF EXISTS movie_genres;`);
-            await pgClient.query(`DROP TABLE IF EXISTS users;`);
             await pgClient.query(`DROP TABLE IF EXISTS genres;`);
-            await pgClient.query(`DROP TABLE IF EXISTS movies;`);
             await pgClient.query(`DROP TABLE IF EXISTS watch_logs;`);
+            await pgClient.query(`DROP TABLE IF EXISTS movies;`);
+            await pgClient.query(`DROP TABLE IF EXISTS users;`);
             await mongoClient.movies.deleteMany({});
         }
 
@@ -59,8 +59,9 @@ const isDeleteMode = process.argv.includes("delete");
             id SERIAL PRIMARY KEY,
             movie_id INT,
             user_id INT,
-            watched_on DATE,
-            rating INT,
+            watched_on DATE NOT NULL DEFAULT CURRENT_DATE,
+            rating DECIMAL(2, 1),
+            review TEXT,
             FOREIGN KEY (movie_id) REFERENCES movies(id),
             FOREIGN KEY (user_id) REFERENCES users(id)
         )`);

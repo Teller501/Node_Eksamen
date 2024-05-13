@@ -33,6 +33,7 @@ export default async function fetchTMDBData() {
         if (response.data.total_pages === global.currentPage) {
             global.currentPage = 1;
         }
+
     } catch (error) {
         console.error("Failed to fetch or store movies:", error);
     }
