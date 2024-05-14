@@ -2,7 +2,9 @@
   import { onMount } from "svelte";
   import { BASE_URL } from "../../stores/generalStore";
   import { fetchGet } from "../../util/api";
+  import tmdbLogo from "../../assets/tmdb-logo.png";
   import Review from "../../components/Review.svelte";
+  import LogMovie from "../../components/LogMovie.svelte"
 
   import {
     Rating,
@@ -10,6 +12,7 @@
     Button,
     AccordionItem,
     Accordion,
+    Img,
   } from "flowbite-svelte";
   import { EditSolid, ClockOutline, EyeOutline } from "flowbite-svelte-icons";
 
@@ -29,14 +32,14 @@
   });
 </script>
 
-<img
+<Img
   src={`https://image.tmdb.org/t/p/original/${movieDetails?.backdrop_path}`}
   alt="Movie poster"
   class="w-full absolute z-[-1] inset-0"
 />
 <div class="container mx-auto mt-20 text-left">
   <Card size="md">
-    <img
+    <Img
       src={`https://image.tmdb.org/t/p/original/${movieDetails?.posterPath}`}
       alt="Movie picture"
       class="rounded-sm mx-2 w-2/5"
@@ -59,10 +62,11 @@
       <span class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400" />
       <a
         href="#review-section"
-        class="text-sm font-medium text-gray-900 underline hover:no-underline dark:text-white"
+        class="text-sm font-medium text-gray-900 underline hover:no-underline dark:text-white mr-2"
       >
         out of {movieDetails?.voteCount} reviews
       </a>
+      <Img src={tmdbLogo} alt="TMDB logo" class="w-6 h-6" />
     </Rating>
 
     <p class="text-gray-700 inline-flex items-center">
@@ -76,9 +80,7 @@
     <hr class="my-4 border-gray-200 dark:border-gray-700" />
 
     <div class="justify-between flex items-center">
-      <Button>
-        Log Movie <EditSolid />
-      </Button>
+      <LogMovie posterPath={movieDetails?.posterPath} title={movieDetails?.title} movieId={movieDetails?.id}/>
       <Button>
         Add to watchlist <ClockOutline />
       </Button>
