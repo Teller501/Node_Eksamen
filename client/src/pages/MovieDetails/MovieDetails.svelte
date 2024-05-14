@@ -18,6 +18,7 @@
 
   let movieId = window.location.pathname.split("/").pop();
   let movieDetails;
+  let reviews;
 
   async function fetchMovie() {
     const { data } = await fetchGet(`${$BASE_URL}/api/movies/${movieId}`);
@@ -27,8 +28,15 @@
     movieDetails.release_date = showOnlyYear.slice(0, 4);
   }
 
+  async function fetchReview(movieId) {
+    const { data } = await fetchGet(`${$BASE_URL}/api/logs/movie/${movieId}`);
+    reviews = data;
+    console.log(reviews);
+  }
+
   onMount(() => {
     fetchMovie();
+    fetchReview(movieId);
   });
 </script>
 
@@ -93,7 +101,11 @@
       <AccordionItem class="bg-slate-200 mb-2">
         <span slot="header">Reviews</span>
         <div id="review-section">
-            <Review />
+          {#if reviews && Array.isArray(reviews)}
+            {#each reviews as review}
+              <Review review={{name: review.username, reviewDate: review.watched_on.split("T")[0], rating: review.rating, reviewText: review.review}}/>
+            {/each}
+          {/if}
         </div>
       </AccordionItem>
       <AccordionItem class="bg-slate-200 mb-2">

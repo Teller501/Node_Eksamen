@@ -13,20 +13,39 @@ async function getAllLogs(page = 1, limit = 10) {
         `;
         const params = [limit, (page - 1) * limit];
         const logs = await pgClient.query(query, params);
-        return logs.rows;
+        
+        const totalLogsQuery = "SELECT COUNT(*) FROM watch_logs";
+        const totalLogsResult = await pgClient.query(totalLogsQuery);
+        const totalLogs = totalLogsResult.rows[0].count;
+
+        const totalPages = Math.ceil(totalLogs / limit);
+
+        return {
+            data: logs.rows,
+            pagination: {
+                current_page: page,
+                total_pages: totalPages,
+                has_next_page: page < totalPages,
+                has_previous_page: page > 1,
+                next_page: page < totalPages? page + 1 : null,
+                previous_page: page > 1? page - 1 : null,
+            },
+        };
     } catch (error) {
         console.error("Failed to get logs:", error);
-        return [];
+        return { data: [], pagination: {} };
     }
 }
+
 
 router.get("/api/logs", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const logs = await getAllLogs(page, limit);
 
-    res.send({ data: logs });
+    res.send(logs);
 });
+
 
 router.get("/api/logs/:id", async (req, res) => {
     const id = req.params.id;
@@ -42,6 +61,54 @@ router.get("/api/logs/:id", async (req, res) => {
 });
 
 router.get("/api/logs/movie/:movieId", async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const offset = (page - 1) * limit;
+
+    const movieId = req.params.movieId;
+    const result = await pgClient.query(
+        `SELECT watch_logs.*, users.username 
+         FROM watch_logs
+         INNER JOIN users ON watch_logs.user_id = users.id
+         WHERE movie_id = $1
+         ORDER BY watch_logs.id DESC
+         LIMIT $2 OFFSET $3`,
+        [movieId, limit, offset]
+    );
+
+    if (result.rows.length === 0) {
+        res.send({
+            message: "No reviews found for this movie."
+        });
+    } else {
+        const totalLogs = await pgClient.query(
+            "SELECT COUNT(*) FROM watch_logs WHERE movie_id = $1",
+            [movieId]
+        );
+
+        const totalPages = Math.ceil(totalLogs.rows[0].count / limit);
+        const hasNextPage = page < totalPages;
+        const hasPreviousPage = page > 1;
+
+        const response = {
+            data: result.rows,
+            pagination: {
+                current_page: page,
+                total_pages: totalPages,
+                has_next_page: hasNextPage,
+                has_previous_page: hasPreviousPage,
+                next_page: hasNextPage? page + 1 : null,
+                previous_page: hasPreviousPage? page - 1 : null,
+            },
+        };
+
+        res.send(response);
+    }
+});
+
+
+
+router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
     const movieId = req.params.movieId;
     const result = await pgClient.query(
         "SELECT movie_id, COUNT(*) AS watch_count, AVG(rating) AS average_rating FROM watch_logs WHERE movie_id = $1 GROUP BY movie_id",

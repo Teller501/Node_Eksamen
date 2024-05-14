@@ -6,14 +6,16 @@
     EditSolid,
     UsersOutline,
   } from "flowbite-svelte-icons";
+  import {BASE_URL} from "../stores/generalStore";
+  import {fetchGet} from "../util/api";
+  import {onMount} from "svelte";
 
-  let review = {
+  export let review = {
     name: "Jesper Hansen",
     imgSrc: "https://picsum.photos/500/500",
     imgAlt: "profile picture",
     address: "Denmark",
     reviewDate: "20/10, 2023",
-    title: "Best movie ever!",
     rating: 8.5,
     item1: "20 followers",
     item2: "34 reviews",
@@ -21,9 +23,10 @@
     reviewText:
       "This movie is the best movie I have ever seen. I would recommend it to everyone. If you haven't seen it yet, you should definitely watch it. It's a must-watch movie.",
   };
+
 </script>
 
-<div class="border border-gray-300 rounded-md p-10">
+<!-- <div class="border border-gray-300 rounded-md p-10">
     <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
       Write a review to the movie <EditSolid class="inline-block" />
     </h3>
@@ -49,7 +52,7 @@
     maxlength="500"
   />
   <button class="w-full mt-4 py-2 bg-primary-600 text-white rounded-md">Submit review</button>
-</div>
+</div> -->
 
 <div class="border border-gray-200 p-4 mt-4 rounded-md">
   <Review {review}>
