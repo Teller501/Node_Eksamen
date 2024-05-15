@@ -39,17 +39,16 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
         const pgMovies = await pgClient.query(query, params);
         const pgMoviesData = pgMovies.rows;
 
-        // Fetch MongoDB details only for the required movies
-        const movieIds = pgMoviesData.map((movie) => movie.id);
-        const mongoMovies = await mongoClient.movies.find({ id: { $in: movieIds } }).toArray();
+        // Fetch MongoDB details for all movies
+        const mongoMovies = await mongoClient.movies.find({}).toArray();
 
         const mongoMap = mongoMovies.reduce((acc, movie) => {
-            acc[movie.id] = movie;
+            acc[movie.id.toString()] = movie;
             return acc;
         }, {});
 
-        let mergedMovies = pgMoviesData.map((pgMovie) => {
-            const mongoMovie = mongoMap[pgMovie.id];
+        const mergedMovies = pgMoviesData.map((pgMovie) => {
+            const mongoMovie = mongoMap[pgMovie.id.toString()];
             return {
                 ...pgMovie,
                 popularity: mongoMovie?.popularity ?? 0,
