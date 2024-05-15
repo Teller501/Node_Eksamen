@@ -19,7 +19,12 @@ const isDeleteMode = process.argv.includes("delete");
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
-            is_active BOOLEAN
+            is_active BOOLEAN,
+            full_name TEXT,
+            birth_date DATE,
+            location TEXT,
+            bio TEXT,
+            profile_picture TEXT
         )`);
 
         await pgClient.query(`
