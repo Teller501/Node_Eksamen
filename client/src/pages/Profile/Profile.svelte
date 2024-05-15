@@ -1,27 +1,20 @@
 <script>
   import {
     Input,
-    Label,
     InputAddon,
     ButtonGroup,
-    Modal,
-    Button,
   } from "flowbite-svelte";
-
-  import { EditSolid } from "flowbite-svelte-icons";
 
   import EditProfile from "../../components/EditProfile.svelte";
   import { userStore } from "../../stores/authStore";
-
-  let editProfileModal = false;
 </script>
 
 <div class="mt-20 border border-gray-200 p-6 rounded-lg shadow-md relative">
   <div class="flex items-center justify-center mb-6">
 
-    <Button on:click={() => (editProfileModal = true)} class="absolute top-5 start-5">
-        Edit your profile<EditSolid />
-      </Button>
+    <div class="absolute top-5 start-5">
+      <EditProfile />
+    </div>
 
     <h1 class="text-2xl font-semibold">Welcome, {$userStore.username}</h1>
     <img
@@ -40,64 +33,52 @@
   <div class="justify-start mt-5">
     <ButtonGroup class="w-1/2 mb-5">
       <InputAddon>
-        <p class="w-20 h-4 text-gray-500">First name</p>
+        <p class="w-20">Full name</p>
       </InputAddon>
-      <Input id="firstname" type="text" value={$userStore.firstname} readonly />
+      <Input id="full_name" type="text" value={$userStore.full_name} readonly />
     </ButtonGroup>
 
     <ButtonGroup class="w-1/2 mb-5">
       <InputAddon>
-        <p class="w-20 h-4 text-gray-500">Last name</p>
-      </InputAddon>
-      <Input id="lastname" type="text" value={$userStore.lastname} readonly />
-    </ButtonGroup>
-
-    <ButtonGroup class="w-1/2 mb-5">
-      <InputAddon>
-        <p class="w-20 h-4 text-gray-500">Username</p>
+        <p class="w-20">Username</p>
       </InputAddon>
       <Input id="username" type="text" value={$userStore.username} readonly />
     </ButtonGroup>
 
     <ButtonGroup class="w-1/2 mb-5">
       <InputAddon>
-        <p class="w-20 h-4 text-gray-500">Birthday</p>
+        <p class="w-20">Birthday</p>
       </InputAddon>
-      {#if !$userStore.birthday}
-      <Input id="username" type="text" value="" readonly />
+      {#if !$userStore.birth_date}
+      <Input id="birth_date" type="text" value="" readonly />
       {:else}
-      <Input id="username" type="date" value={$userStore.birthday} readonly />
+      <Input id="birth_date" type="date" value={$userStore.birth_date} readonly />
       {/if}
     </ButtonGroup>
 
     <ButtonGroup class="w-1/2 mb-5">
       <InputAddon>
-        <p class="w-20 h-4 text-gray-500">Location</p>
+        <p class="w-20">Location</p>
       </InputAddon>
       <Input id="location" type="text" value={$userStore.location} readonly />
     </ButtonGroup>
 
     <ButtonGroup class="w-1/2 mb-5">
       <InputAddon>
-        <p class="w-20 h-4 text-gray-500 dark:text-gray-400">Email</p>
+        <span class="w-20">Email</span>
       </InputAddon>
       <Input id="email" type="email" value={$userStore.email} readonly></Input>
     </ButtonGroup>
 
     <ButtonGroup class="w-1/2 mb-5">
       <InputAddon>
-        <p class="w-20 h-4 text-gray-500">Password</p>
+        <p class="w-20">Password</p>
       </InputAddon>
       <Input id="password" type="password" value="•••••••••" readonly />
     </ButtonGroup>
   </div>
 
-  <Button on:click={() => (editProfileModal = true)}>
-    Edit your profile<EditSolid />
-  </Button>
+  <EditProfile />
 
 </div>
 
-<Modal title="Update your profile" bind:open={editProfileModal} autoclose>
-  <EditProfile />
-</Modal>

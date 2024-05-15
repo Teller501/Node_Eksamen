@@ -50,3 +50,30 @@ export async function fetchPost(url, body) {
         return { status, error: error.toString() };
     }
 }
+
+export async function fetchPatch(url, body) {
+    let status = 0;
+    try {
+        const response = await fetch(url, {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body),
+        });
+
+        status = response.status;
+
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${status}`);
+            return { status };
+        }
+
+        const data = await response.json();
+        return { status, data };
+    } catch (error) {
+        console.error("Fetch error:", error);
+        return { status, error: error.toString() };
+    }
+}

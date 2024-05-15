@@ -1,5 +1,10 @@
 <script>
   import { onMount } from "svelte";
+  import { BASE_URL } from "../stores/generalStore.js";
+  import { userStore } from "../stores/authStore";
+  import { fetchPatch } from "../util/api";
+  import toast, { Toaster } from "svelte-french-toast";
+
   import {
     Input,
     Label,
@@ -9,17 +14,16 @@
     Fileupload,
     Helper,
     Select,
+    Modal,
+    Button
   } from "flowbite-svelte";
 
-  import {
-    EnvelopeSolid,
-    EyeOutline,
-    EyeSlashOutline,
-  } from "flowbite-svelte-icons";
+  import { EditSolid } from "flowbite-svelte-icons";
 
-  let selected = "";
+
+  let selected;
   let countries = [];
-  let show = false;
+  let editProfileModal = false;
 
   onMount(async () => {
     try {
@@ -32,9 +36,37 @@
       console.error("Error fetching countries data:", error.message);
     }
   });
-</script>
 
-<form>
+  async function handleEditProfile(event) {
+    event.preventDefault();
+    const body = {
+        full_name: $userStore.full_name,
+        birth_date: $userStore.birthday,
+        location: selected,
+        bio: $userStore.bio,
+    };
+
+    const { data, status } = await fetchPatch(`http://localhost:8080/api/users/${$userStore.id}`, body);
+
+    if(status === 200){
+            toast.success("User updated successfully.");
+        } else {
+            toast.error(data.error || "Failed to update user.");
+        }
+        editProfileModal = false;
+}
+
+
+</script>
+<Toaster />
+
+<Button on:click={() => (editProfileModal = true)}>
+    Edit Profile <EditSolid />
+</Button>
+
+<Modal title="Update your profile" bind:open={editProfileModal} autoclose={false} class="w-full" outsideclose>
+
+<form on:submit={handleEditProfile}>
   <h3 class="text-lg font-semibold">Profile picture</h3>
   <div class="items-center justify-center flex mb-6">
     <img
@@ -42,67 +74,35 @@
       alt="profile-pic"
       class="rounded-full me-4"
     />
-
     <Fileupload id="with_helper" class="mb-2" />
     <Helper>SVG, PNG, JPG or GIF (MAX. 800x400px).</Helper>
   </div>
+
+<div class="mt-5">
+    <p>{$userStore.username}</p>
+    <p>{$userStore.email}</p>
+</div>
+
   <hr class="mb-6" />
-  <div class="grid gap-6 mb-6 md:grid-cols-2">
-    <div>
-      <Label for="first_name" class="mb-2">First name</Label>
-      <Input type="text" id="first_name" placeholder="First name" />
+    <div class="mb-6">
+      <Label for="full_name" class="mb-2">Full name</Label>
+      <Input type="text" id="full_name" bind:value={$userStore.full_name} />
     </div>
-    <div>
-      <Label for="last_name" class="mb-2">Last name</Label>
-      <Input type="text" id="last_name" placeholder="Last name" />
+    <div class="mb-6">
+      <Label for="birth_date" class="mb-2">Birthday</Label>
+      <Input type="date" id="birth_date" bind:value={$userStore.birthday} />
     </div>
-    <div>
-      <Label for="username" class="mb-2">Username*</Label>
-      <Input type="text" id="username" placeholder="Username" required />
-    </div>
-    <div>
-      <Label for="date" class="mb-2">Birthday</Label>
-      <Input type="date" id="date" placeholder="Birthday" />
-    </div>
-  </div>
   <div class="mb-6">
     <Label for="location" class="mb-2">Location</Label>
     <Select id="location" bind:value={selected}>
       {#each countries as country}
-        <option value={country.alpha2Code}>{country.name}</option>
+        <option value={country.name}>{country.name}</option>
       {/each}
     </Select>
   </div>
   <div class="mb-6">
     <Label for="bio" class="mb-2">Bio</Label>
-    <Textarea id="bio" placeholder="Bio" />
-  </div>
-  <div class="mb-6">
-    <Label for="email" class="mb-2">Email address*</Label>
-    <Input type="email" id="email" placeholder="someone@mail.com" required>
-      <EnvelopeSolid slot="right" class="w-5 h-5" />
-    </Input>
-  </div>
-
-  <div class="mb-6">
-    <Label for="password" class="mb-2">Your password*</Label>
-    <ButtonGroup class="w-full">
-      <InputAddon>
-        <button on:click={() => (show = !show)}>
-          {#if show}
-            <EyeOutline class="w-6 h-5" />
-          {:else}
-            <EyeSlashOutline class="w-6 h-5" />
-          {/if}
-        </button>
-      </InputAddon>
-      <Input
-        id="password"
-        type={show ? "text" : "password"}
-        placeholder="•••••••••"
-        required
-      />
-    </ButtonGroup>
+    <Textarea id="bio" rows="3" bind:value={$userStore.bio} />
   </div>
   <hr class="mb-6" />
   <button class="text-red-500 hover:text-red-600 hover:bg-primary-100"
@@ -112,3 +112,5 @@
     Update profile</button
   >
 </form>
+
+</Modal>

@@ -44,6 +44,9 @@ app.use(moivesRouter);
 import logRouter from './routers/logRouter.js';
 app.use(logRouter);
 
+import userRouter from './routers/userRouter.js';
+app.use(userRouter);
+
 import authenticateToken from "./util/authenticateToken.js";
 
 
