@@ -32,15 +32,15 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
 
         query += ` GROUP BY movies.id`;
 
-        // Add limit and offset to the query for pagination
         const offset = (page - 1) * limit;
         query += ` ORDER BY movies.id LIMIT ${limit} OFFSET ${offset}`;
 
-        const pgMovies = await pgClient.query(query, params);
-        const pgMoviesData = pgMovies.rows;
+        const [pgMovies, mongoMovies] = await Promise.all([
+            pgClient.query(query, params),
+            mongoClient.movies.find({}).toArray(),
+        ]);
 
-        // Fetch MongoDB details for all movies
-        const mongoMovies = await mongoClient.movies.find({}).toArray();
+        const pgMoviesData = pgMovies.rows;
 
         const mongoMap = mongoMovies.reduce((acc, movie) => {
             acc[movie.id.toString()] = movie;
