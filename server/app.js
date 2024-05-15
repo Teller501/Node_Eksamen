@@ -47,6 +47,9 @@ app.use(logRouter);
 import recommendationsRouter from './routers/recommendationsRouter.js';
 app.use(recommendationsRouter);
 
+import userRouter from './routers/userRouter.js';
+app.use(userRouter);
+
 import authenticateToken from "./util/authenticateToken.js";
 
 

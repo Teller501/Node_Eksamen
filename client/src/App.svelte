@@ -24,6 +24,7 @@
     import Home from "./pages/Home/Home.svelte";
     import Movies from "./pages/Movies/Movies.svelte";
     import Search from "./pages/Search/Search.svelte";
+    import Profile from "./pages/Profile/Profile.svelte";
     import Recommender from "./pages/Recommender/Recommender.svelte";
     import Recommendations from "./pages/Recommendations/Recommendations.svelte";
 
@@ -102,7 +103,7 @@
                 </NavLi>
                 <Dropdown class="w-44 z-20 bg-slate-50 rounded">
                     <DropdownItem href="/">Home</DropdownItem>
-                    <DropdownItem href="/">Profile</DropdownItem>
+                    <DropdownItem href="/profile">Profile</DropdownItem>
                     <DropdownItem href="/movies">Movies</DropdownItem>
                     <DropdownItem href="/">Reviews</DropdownItem>
                     <DropdownItem href="/docs/components/navbar"
@@ -141,5 +142,8 @@
     </PrivateRoute>
     <PrivateRoute path="/recommendations">
         <Recommendations />
+    </PrivateRoute>
+    <PrivateRoute path="/profile">
+        <Profile />
     </PrivateRoute>
 </Router>
