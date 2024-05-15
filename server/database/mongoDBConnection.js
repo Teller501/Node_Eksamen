@@ -12,5 +12,6 @@ const db = client.db(dbName);
 
   export default {
     movies: db.collection("movies"),
-    activity: db.collection("activity")
+    activity: db.collection("activity"),
+    recommendations: db.collection("recommendations"),
   };

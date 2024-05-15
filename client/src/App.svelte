@@ -24,6 +24,8 @@
     import Home from "./pages/Home/Home.svelte";
     import Movies from "./pages/Movies/Movies.svelte";
     import Search from "./pages/Search/Search.svelte";
+    import Recommender from "./pages/Recommender/Recommender.svelte";
+    import Recommendations from "./pages/Recommendations/Recommendations.svelte";
 
     let searchQuery = "";
 
@@ -43,7 +45,7 @@
 <Router>
     <Navbar
         fluid={true}
-        class="min-w-full absolute inset-x-0 top-0 bg-slate-200 drop-shadow-sm"
+        class="min-w-full absolute inset-x-0 top-0 bg-slate-200 drop-shadow-sm mb-8"
     >
         <NavBrand href="/">
             <img src={CineMatch} class="me-1 h-14 sm:h-18" alt="Logo" />
@@ -133,5 +135,11 @@
     >
     <PrivateRoute path="/moviedetails/:id">
         <MovieDetails />
+    </PrivateRoute>
+    <PrivateRoute path="/recommender">
+        <Recommender />
+    </PrivateRoute>
+    <PrivateRoute path="/recommendations">
+        <Recommendations />
     </PrivateRoute>
 </Router>

@@ -5,13 +5,34 @@ import mongoClient from "../../database/mongoDBConnection.js";
 const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.TMDB_API_KEY;
 
-global.currentPage = 1;
+let currentPage = 1;
+let minDate = "1915-01-01";
+let maxDate = "1917-12-31";
+let initialMinDate = "1915-01-01";
+let initialMaxDate = "1917-12-31";
 
 export default async function fetchTMDBData() {
     try {
         const response = await axios.get(
-            `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${global.currentPage}`
+            `${BASE_URL}/discover/movie?include_adult=false&include_video=false&language=en-US&page=${currentPage}&sort_by=popularity.desc&api_key=${API_KEY}&primary_release_date.gte=${minDate}&primary_release_date.lte=${maxDate}`
         );
+
+        console.log(minDate, maxDate, currentPage, response.data.total_pages)
+
+        const totalPages = response.data.total_pages;
+
+        if (currentPage >= totalPages) {
+            currentPage = 1;
+            [minDate, maxDate] = getNextDateRange(minDate, maxDate, 2);
+
+            if (new Date(maxDate) >= new Date()) {
+                minDate = initialMinDate;
+                maxDate = initialMaxDate;
+            }
+        } else {
+            currentPage++;
+        }
+
         const movies = response.data.results;
         for (const movie of movies) {
             const detailedMovieResponse = await axios.get(
@@ -27,16 +48,22 @@ export default async function fetchTMDBData() {
             );
         }
 
-        global.currentPage =
-            (global.currentPage % response.data.total_pages) + 1;
-
-        if (response.data.total_pages === global.currentPage) {
-            global.currentPage = 1;
-        }
-
     } catch (error) {
         console.error("Failed to fetch or store movies:", error);
     }
+}
+
+function getNextDateRange(currentMinDate, currentMaxDate, yearGap) {
+    const minDateObj = new Date(currentMinDate);
+    const maxDateObj = new Date(currentMaxDate);
+
+    minDateObj.setFullYear(minDateObj.getFullYear() + yearGap);
+    maxDateObj.setFullYear(maxDateObj.getFullYear() + yearGap);
+
+    const newMinDate = minDateObj.toISOString().split("T")[0];
+    const newMaxDate = maxDateObj.toISOString().split("T")[0];
+
+    return [newMinDate, newMaxDate];
 }
 
 async function insertMovieToMySQL(movieData) {
@@ -115,6 +142,3 @@ async function insertMovieToMongoDB(movieData, cast) {
         console.error("Failed to upsert movie in MongoDB:", error);
     }
 }
-
-
-fetchTMDBData();

@@ -26,6 +26,7 @@ export async function fetchGet(url, token) {
 
 export async function fetchPost(url, body) {
     let status = 0;
+    let data;
     try {
         const response = await fetch(url, {
             method: "POST",
@@ -43,7 +44,7 @@ export async function fetchPost(url, body) {
             return { status };
         }
 
-        const data = await response.json();
+        data = await response.json();
         return { status, data };
     } catch (error) {
         console.error("Fetch error:", error);

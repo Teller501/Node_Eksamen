@@ -32,10 +32,16 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
 
         query += ` GROUP BY movies.id`;
 
+        // Add limit and offset to the query for pagination
+        const offset = (page - 1) * limit;
+        query += ` ORDER BY movies.id LIMIT ${limit} OFFSET ${offset}`;
+
         const pgMovies = await pgClient.query(query, params);
         const pgMoviesData = pgMovies.rows;
 
-        const mongoMovies = await mongoClient.movies.find().toArray();
+        // Fetch MongoDB details only for the required movies
+        const movieIds = pgMoviesData.map((movie) => movie.id);
+        const mongoMovies = await mongoClient.movies.find({ id: { $in: movieIds } }).toArray();
 
         const mongoMap = mongoMovies.reduce((acc, movie) => {
             acc[movie.id] = movie;
@@ -44,18 +50,13 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
 
         let mergedMovies = pgMoviesData.map((pgMovie) => {
             const mongoMovie = mongoMap[pgMovie.id];
-            if (!mongoMovie) {
-                console.log(
-                    `No MongoDB match for PostgreSQL movie ID: ${pgMovie.id}`
-                );
-            }
             return {
                 ...pgMovie,
-                popularity: mongoMovie.popularity ?? 0,
-                vote_average: mongoMovie.voteAverage ?? 0,
-                vote_count: mongoMovie.voteCount ?? 0,
-                cast: mongoMovie.cast ?? [],
-                poster_path: mongoMovie.posterPath ?? "",
+                popularity: mongoMovie?.popularity ?? 0,
+                vote_average: mongoMovie?.voteAverage ?? 0,
+                vote_count: mongoMovie?.voteCount ?? 0,
+                cast: mongoMovie?.cast ?? [],
+                poster_path: mongoMovie?.posterPath ?? "",
             };
         });
 
@@ -63,11 +64,7 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
             mergedMovies.sort((a, b) => b.popularity - a.popularity);
         }
 
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
-        const paginatedMovies = mergedMovies.slice(startIndex, endIndex);
-
-        return paginatedMovies;
+        return mergedMovies;
     } catch (error) {
         return error;
     }
@@ -105,8 +102,6 @@ router.get("/api/movies/popular", async (req, res) => {
         res.status(500).send("Failed to fetch popular movies");
     }
 });
-
-
 
 router.get("/api/movies", async (req, res) => {
     try {
@@ -179,21 +174,21 @@ router.get("/api/movies/:id", async (req, res) => {
         );
         const pgMovieData = pgMovieResult.rows[0];
 
-        const mongoMovie = await mongoClient.movies.findOne({
-            id: parseInt(req.params.id),
-        });
-
         if (!pgMovieData) {
             return res.status(404).send("Movie not found");
         }
 
-        if (!mongoMovie) {
-            return res.status(404).send("Movie not found");
-        }
+        const mongoMovie = await mongoClient.movies.findOne({
+            id: parseInt(req.params.id),
+        });
 
         const mergedMovie = {
             ...pgMovieData,
-            ...mongoMovie,
+            popularity: mongoMovie?.popularity ?? 0,
+            vote_average: mongoMovie?.voteAverage ?? 0,
+            vote_count: mongoMovie?.voteCount ?? 0,
+            cast: mongoMovie?.cast ?? [],
+            poster_path: mongoMovie?.posterPath ?? "",
         };
 
         res.json({ data: mergedMovie });
@@ -201,6 +196,5 @@ router.get("/api/movies/:id", async (req, res) => {
         res.status(500).send("Failed to fetch movie");
     }
 });
-
 
 export default router;
