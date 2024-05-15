@@ -32,16 +32,12 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
 
         query += ` GROUP BY movies.id`;
 
-        const offset = (page - 1) * limit;
-        query += ` ORDER BY movies.id LIMIT ${limit} OFFSET ${offset}`;
-
         const [pgMovies, mongoMovies] = await Promise.all([
             pgClient.query(query, params),
             mongoClient.movies.find({}).toArray(),
         ]);
 
         const pgMoviesData = pgMovies.rows;
-
         const mongoMap = mongoMovies.reduce((acc, movie) => {
             acc[movie.id.toString()] = movie;
             return acc;
@@ -50,12 +46,12 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
         const mergedMovies = pgMoviesData.map((pgMovie) => {
             const mongoMovie = mongoMap[pgMovie.id.toString()];
             return {
-                ...pgMovie,
-                popularity: mongoMovie?.popularity ?? 0,
-                vote_average: mongoMovie?.voteAverage ?? 0,
-                vote_count: mongoMovie?.voteCount ?? 0,
-                cast: mongoMovie?.cast ?? [],
-                poster_path: mongoMovie?.posterPath ?? "",
+               ...pgMovie,
+                popularity: mongoMovie?.popularity?? 0,
+                vote_average: mongoMovie?.voteAverage?? 0,
+                vote_count: mongoMovie?.voteCount?? 0,
+                cast: mongoMovie?.cast?? [],
+                poster_path: mongoMovie?.posterPath?? "",
             };
         });
 
@@ -63,11 +59,15 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
             mergedMovies.sort((a, b) => b.popularity - a.popularity);
         }
 
-        return mergedMovies;
+        const offset = (page - 1) * limit;
+        const paginatedMovies = mergedMovies.slice(offset, offset + limit);
+
+        return paginatedMovies;
     } catch (error) {
         return error;
     }
 }
+
 
 router.get("/api/movies/popular", async (req, res) => {
     try {
