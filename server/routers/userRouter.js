@@ -1,7 +1,11 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
+import multer from "multer";
 
 const router = Router();
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 router.get("/api/users", async (req, res) => {
     try {
@@ -26,7 +30,7 @@ router.get("/api/users/:id", async (req, res) => {
     }
 });
 
-router.patch("/api/users/:id", async (req, res) => {
+router.patch("/api/users/:id", upload.single("profile_picture"), async (req, res) => {
     try {
         const { full_name, birth_date, location, bio, profile_picture } = req.body;
         const query = 'UPDATE users SET full_name = $1, birth_date = $2, location = $3, bio = $4, profile_picture = $5 WHERE id = $6';

@@ -18,7 +18,7 @@
 
     <h1 class="text-2xl font-semibold">Welcome, {$userStore.username}</h1>
     <img
-      src="https://picsum.photos/200"
+      src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
       alt="profile-pic"
       class="rounded-full w-20 ms-4"
     />
