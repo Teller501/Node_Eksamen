@@ -8,8 +8,6 @@
   import {
     Input,
     Label,
-    ButtonGroup,
-    InputAddon,
     Textarea,
     Fileupload,
     Helper,
@@ -41,12 +39,11 @@
     event.preventDefault();
     const body = {
         full_name: $userStore.full_name,
-        birth_date: $userStore.birthday,
+        birth_date: $userStore.birthday.split("T")[0],
         location: selected,
         bio: $userStore.bio,
     };
-
-    const { data, status } = await fetchPatch(`http://localhost:8080/api/users/${$userStore.id}`, body);
+    const { data, status } = await fetchPatch(`${$BASE_URL}/api/users/${$userStore.id}`, body);
 
     if(status === 200){
             toast.success("User updated successfully.");
@@ -66,23 +63,27 @@
 
 <Modal title="Update your profile" bind:open={editProfileModal} autoclose={false} class="w-full" outsideclose>
 
+<form>
+    <h3 class="text-lg font-semibold">Profile picture</h3>
+    <div class="items-center justify-center flex mb-6">
+        <img
+        src="https://picsum.photos/200"
+        alt="profile-pic"
+        class="rounded-full me-4"
+        />
+        <Fileupload id="with_helper" class="mb-2" name="uploaded_file" type="file"/>
+        <Helper>SVG, PNG, JPG or GIF (MAX. 800x400px).</Helper>
+        <button 
+         class="hover:bg-primary-800 bg-primary-600 text-white">Upload photo</button>
+    </div>
+</form>
+    
+    <div class="mt-5">
+        <p>{$userStore.username}</p>
+        <p>{$userStore.email}</p>
+    </div>
+    
 <form on:submit={handleEditProfile}>
-  <h3 class="text-lg font-semibold">Profile picture</h3>
-  <div class="items-center justify-center flex mb-6">
-    <img
-      src="https://picsum.photos/200"
-      alt="profile-pic"
-      class="rounded-full me-4"
-    />
-    <Fileupload id="with_helper" class="mb-2" />
-    <Helper>SVG, PNG, JPG or GIF (MAX. 800x400px).</Helper>
-  </div>
-
-<div class="mt-5">
-    <p>{$userStore.username}</p>
-    <p>{$userStore.email}</p>
-</div>
-
   <hr class="mb-6" />
     <div class="mb-6">
       <Label for="full_name" class="mb-2">Full name</Label>
