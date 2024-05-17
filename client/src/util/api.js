@@ -55,19 +55,19 @@ export async function fetchPost(url, body) {
 export async function fetchPatch(url, body) {
     let status = 0;
     try {
+        const isFormData = body instanceof FormData;
+
         const response = await fetch(url, {
             method: "PATCH",
             credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(body),
+            body: isFormData ? body : JSON.stringify(body),
+            headers: !isFormData ? { "Content-Type": "application/json" } : {},
         });
 
         status = response.status;
 
         if (!response.ok) {
-            console.error(`HTTP error! Status: ${status}`);
+            console.error(`HTTP error Status: ${status}`);
             return { status };
         }
 

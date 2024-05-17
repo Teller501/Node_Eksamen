@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default function scheduleTMDBPopulation() {
     cron.schedule('* * * * * *', () => {
-        console.log(`Fetching data at ${new Date().toISOString()}`);
-        fetchTMDBData();
+        // console.log(`Fetching data at ${new Date().toISOString()}`);
+        // fetchTMDBData();
     });
 }

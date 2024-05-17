@@ -24,7 +24,7 @@ const isDeleteMode = process.argv.includes("delete");
             birth_date DATE,
             location TEXT,
             bio TEXT,
-            profile_picture BYTEA
+            profile_picture TEXT
         )`);
 
         await pgClient.query(`

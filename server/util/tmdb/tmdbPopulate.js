@@ -6,8 +6,8 @@ const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.TMDB_API_KEY;
 
 let currentPage = 1;
-let minDate = "1929-01-01";
-let maxDate = "1931-12-31";
+let minDate = "1935-01-01";
+let maxDate = "1937-12-31";
 let initialMinDate = "1229-01-01";
 let initialMaxDate = "1931-12-31";
 
