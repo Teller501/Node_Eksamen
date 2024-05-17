@@ -35,7 +35,7 @@
     <img
       src={profilePicturePath ?? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
       alt="profile-pic"
-      class="rounded-full w-20 ms-4"
+      class="rounded-full w-20 h-20 object-cover ms-4"
     />
   </div>
   {#if user.bio}
