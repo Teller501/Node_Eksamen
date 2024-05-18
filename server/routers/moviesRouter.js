@@ -17,10 +17,10 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
         }
 
         let query = `
-            SELECT movies.*, array_agg(genres.name) AS genres
+            SELECT movies.id, movies.title, array_agg(genres.name) AS genres
             FROM movies
-            LEFT JOIN movie_genres ON movies.id = movie_genres.movie_id
-            LEFT JOIN genres ON movie_genres.genre_id = genres.id
+            INNER JOIN movie_genres ON movies.id = movie_genres.movie_id
+            INNER JOIN genres ON movie_genres.genre_id = genres.id
         `;
         let params = [];
         let conditions = [];
@@ -32,8 +32,8 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
         }
 
         if (genreFilter) {
-            conditions.push(`genres.name = $1`);
-            params.push(genreFilter);
+            query += ` WHERE genres.name = $1`;
+            params.unshift(genreFilter);
         }
 
         if (conditions.length > 0) {
@@ -44,7 +44,7 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
 
         const [pgMovies, mongoMovies] = await Promise.all([
             pgClient.query(query, params),
-            mongoClient.movies.find({}).toArray(),
+            mongoClient.movies.find({}, { projection: { cast: 0 } }).toArray(),
         ]);
 
         const pgMoviesData = pgMovies.rows;
