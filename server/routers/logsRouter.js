@@ -146,6 +146,64 @@ router.get("/api/logs/reviews/:movieId", async (req, res) => {
 });
 
 
+router.get("/api/logs/user/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    const result = await pgClient.query(
+        `WITH last_four_movies AS (
+            SELECT movies.title, watch_logs.movie_id, watch_logs.rating, watch_logs.watched_on
+            FROM watch_logs
+            INNER JOIN movies ON watch_logs.movie_id = movies.id
+            WHERE watch_logs.user_id = $1
+            ORDER BY watch_logs.watched_on DESC
+            LIMIT 4
+        ), unique_movies_count AS (
+            SELECT COUNT(DISTINCT watch_logs.movie_id) AS unique_movies_watched
+            FROM watch_logs
+            WHERE watch_logs.user_id = $1
+        )
+        SELECT last_four_movies.title, last_four_movies.movie_id, last_four_movies.rating, last_four_movies.watched_on, unique_movies_count.unique_movies_watched
+        FROM last_four_movies
+        CROSS JOIN unique_movies_count;`,
+        [userId]
+    );
+
+    if (result.rows.length === 0) {
+        res.status(404).send({
+            message: "No logs found for this user."
+        });
+    } else {
+        const movieDetailsPromises = result.rows.map(async (row) => {
+            const movieId = Number(row.movie_id);
+            console.log(movieId);
+            const movieDoc = await mongoClient.movies.findOne({ id: movieId });
+            console.log(movieDoc);
+            return {
+                movie_id: movieId,
+                title: row.title,
+                rating: row.rating,
+                watched_on: row.watched_on,
+                poster_path: movieDoc.posterPath
+            };
+        });
+
+        const movieDetails = await Promise.all(movieDetailsPromises);
+
+        const formattedResponse = {
+            data: {
+                unique_movies_watched: result.rows[0].unique_movies_watched,
+                last_four: movieDetails.map(detail => detail)
+            }
+        };
+
+        res.send(formattedResponse);
+    }
+});
+
+
+
+
+
+
 
 router.post("/api/logs", async (req, res) => {
     const { movie_id, user_id, watched_on, rating, review } = req.body;

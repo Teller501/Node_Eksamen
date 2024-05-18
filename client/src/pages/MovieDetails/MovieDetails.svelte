@@ -86,7 +86,7 @@
       <Img src={tmdbLogo} alt="TMDB logo" class="w-6 h-6" />
     </Rating>
 
-    <Rating count rating={movieStats?.average_rating}>
+    <Rating count rating={movieStats?.average_rating ?? 0}>
       <span class="font-normal text-black">/5</span>
       <span class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400" />
       <p
