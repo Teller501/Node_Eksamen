@@ -46,7 +46,7 @@
 <Router>
     <Navbar
         fluid={true}
-        class="min-w-full absolute inset-x-0 top-0 bg-slate-200 drop-shadow-sm mb-8"
+        class="min-w-full fixed inset-x-0 top-0 bg-slate-200 drop-shadow-sm z-50"
     >
         <NavBrand href="/">
             <img src={CineMatch} class="me-1 h-14 sm:h-18" alt="Logo" />
@@ -118,32 +118,34 @@
         </NavUl>
     </Navbar>
 
-    <Route path="/activate/:token" let:params>
-        <Activation {params} />
-    </Route>
-    <Route path="/reset-password/:token" let:params>
-        <ResetPassword {params} />
-    </Route>
-    <Route path="/"><Auth /></Route>
-    {#if $userStore}
-        <PrivateRoute path="/*"><Home /></PrivateRoute>
-    {/if}
-    <Route path="*"><Auth /></Route>
-    <PrivateRoute path="/home"><Home /></PrivateRoute>
-    <PrivateRoute path="/movies"><Movies /></PrivateRoute>
-    <PrivateRoute path="/search/:query" let:params
-        ><Search {params} /></PrivateRoute
-    >
-    <PrivateRoute path="/moviedetails/:id">
-        <MovieDetails />
-    </PrivateRoute>
-    <PrivateRoute path="/recommender">
-        <Recommender />
-    </PrivateRoute>
-    <PrivateRoute path="/recommendations">
-        <Recommendations />
-    </PrivateRoute>
-    <PrivateRoute path="/profile">
-        <Profile />
-    </PrivateRoute>
+    <div class="pt-20">
+        <Route path="/activate/:token" let:params>
+            <Activation {params} />
+        </Route>
+        <Route path="/reset-password/:token" let:params>
+            <ResetPassword {params} />
+        </Route>
+        <Route path="/"><Auth /></Route>
+        {#if $userStore}
+            <PrivateRoute path="/*"><Home /></PrivateRoute>
+        {/if}
+        <Route path="*"><Auth /></Route>
+        <PrivateRoute path="/home"><Home /></PrivateRoute>
+        <PrivateRoute path="/movies"><Movies /></PrivateRoute>
+        <PrivateRoute path="/search/:query" let:params
+            ><Search {params} /></PrivateRoute
+        >
+        <PrivateRoute path="/moviedetails/:id">
+            <MovieDetails />
+        </PrivateRoute>
+        <PrivateRoute path="/recommender">
+            <Recommender />
+        </PrivateRoute>
+        <PrivateRoute path="/recommendations">
+            <Recommendations />
+        </PrivateRoute>
+        <PrivateRoute path="/profile">
+            <Profile />
+        </PrivateRoute>
+    </div>
 </Router>
