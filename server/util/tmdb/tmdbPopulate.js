@@ -16,9 +16,7 @@ export default async function fetchTMDBData() {
         const response = await axios.get(
             `${BASE_URL}/discover/movie?include_adult=false&include_video=false&language=en-US&page=${currentPage}&sort_by=popularity.desc&api_key=${API_KEY}&primary_release_date.gte=${minDate}&primary_release_date.lte=${maxDate}`
         );
-
-        console.log(minDate, maxDate, currentPage, response.data.total_pages)
-
+        
         const totalPages = response.data.total_pages;
 
         if (currentPage >= totalPages) {
@@ -71,7 +69,6 @@ async function insertMovieToMySQL(movieData) {
         const genres = movieData.genres;
         const movie = movieData;
 
-        // Upsert the movie details
         await pgClient.query(
             `INSERT INTO movies (id, title, original_title, overview, backdrop_path, release_date, original_language, runtime, budget, revenue, status)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)

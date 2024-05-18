@@ -45,14 +45,14 @@ app.use(authRouter);
 import moivesRouter from "./routers/moviesRouter.js";
 app.use(moivesRouter);
 
-import logRouter from "./routers/logRouter.js";
-app.use(logRouter);
+import logsRouter from "./routers/logsRouter.js";
+app.use(logsRouter);
 
 import recommendationsRouter from "./routers/recommendationsRouter.js";
 app.use(recommendationsRouter);
 
-import userRouter from "./routers/userRouter.js";
-app.use(userRouter);
+import usersRouter from "./routers/usersRouter.js";
+app.use(usersRouter);
 
 import authenticateToken from "./util/authenticateToken.js";
 

@@ -1,11 +1,21 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import mongoClient from "../database/mongoDBConnection.js";
+import NodeCache from "node-cache";
 
 const router = Router();
+const cache = new NodeCache({ stdTTL: 600 });
+
 
 async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, yearFilter = null, genreFilter = null) {
     try {
+        const cacheKey = `movies_${page}_${limit}_${sortByPopularity}_${yearFilter}_${genreFilter}`;
+        
+        const cachedData = cache.get(cacheKey);
+        if (cachedData) {
+            return cachedData;
+        }
+
         let query = `
             SELECT movies.*, array_agg(genres.name) AS genres
             FROM movies
@@ -46,12 +56,12 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
         const mergedMovies = pgMoviesData.map((pgMovie) => {
             const mongoMovie = mongoMap[pgMovie.id.toString()];
             return {
-               ...pgMovie,
-                popularity: mongoMovie?.popularity?? 0,
-                vote_average: mongoMovie?.voteAverage?? 0,
-                vote_count: mongoMovie?.voteCount?? 0,
-                cast: mongoMovie?.cast?? [],
-                poster_path: mongoMovie?.posterPath?? "",
+                ...pgMovie,
+                popularity: mongoMovie?.popularity ?? 0,
+                vote_average: mongoMovie?.voteAverage ?? 0,
+                vote_count: mongoMovie?.voteCount ?? 0,
+                cast: mongoMovie?.cast ?? [],
+                poster_path: mongoMovie?.posterPath ?? "",
             };
         });
 
@@ -61,6 +71,8 @@ async function getAllMovies(page = 1, limit = 10, sortByPopularity = false, year
 
         const offset = (page - 1) * limit;
         const paginatedMovies = mergedMovies.slice(offset, offset + limit);
+
+        cache.set(cacheKey, paginatedMovies);
 
         return paginatedMovies;
     } catch (error) {
