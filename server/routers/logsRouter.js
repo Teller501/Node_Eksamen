@@ -111,26 +111,50 @@ router.get("/api/logs/movie/:movieId", async (req, res) => {
 router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
     const movieId = req.params.movieId;
     const result = await pgClient.query(
-        "SELECT movie_id, COUNT(*) AS watch_count, AVG(rating) AS average_rating FROM watch_logs WHERE movie_id = $1 GROUP BY movie_id",
+        "SELECT movie_id, COUNT(*) AS total_logs, SUM(CASE WHEN review IS NOT NULL AND review <> '' THEN 1 ELSE 0 END) AS total_reviews, SUM(CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) AS total_ratings, AVG(CASE WHEN rating IS NOT NULL THEN rating ELSE NULL END) AS average_rating FROM watch_logs WHERE movie_id = $1 GROUP BY movie_id",
         [movieId]
     );
 
     if (result.rows.length === 0) {
         res.send({
-            data: { movie_id: movieId, watch_count: 0, average_rating: null },
+            data: { movie_id: movieId, total_logs: 0, total_reviews: 0, total_ratings: 0, average_rating: null },
         });
     } else {
         res.send({ data: result.rows[0] });
     }
 });
 
+
+
+router.get("/api/logs/reviews/:movieId", async (req, res) => {
+    const movieId = req.params.movieId;
+    const result = await pgClient.query(
+        `SELECT watch_logs.id, users.username, users.profile_picture, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at 
+         FROM watch_logs 
+         INNER JOIN users ON watch_logs.user_id = users.id 
+         WHERE watch_logs.movie_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''`,
+        [movieId]
+    );
+
+    if (result.rows.length === 0) {
+        res.status(404).send({
+            message: "No reviews found for this movie."
+        });
+    } else {
+        res.send({ data: result.rows });
+    }
+});
+
+
+
 router.post("/api/logs", async (req, res) => {
     const { movie_id, user_id, watched_on, rating, review } = req.body;
+    const currentDate = new Date().toISOString();
 
     try {
         const log = await pgClient.query(
-            "INSERT INTO watch_logs (movie_id, user_id, watched_on, rating, review) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [movie_id, user_id, watched_on, rating, review]
+            "INSERT INTO watch_logs (movie_id, user_id, watched_on, rating, review, created_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [movie_id, user_id, watched_on, rating, review, currentDate]
         );
 
         await mongoClient.activity.updateOne(

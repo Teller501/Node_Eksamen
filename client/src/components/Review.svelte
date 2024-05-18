@@ -16,6 +16,7 @@
     imgAlt: "profile picture",
     address: "Denmark",
     reviewDate: "20/10, 2023",
+    title: "The Best Movie Ever",
     rating: 8.5,
     item1: "20 followers",
     item2: "34 reviews",
@@ -25,34 +26,6 @@
   };
 
 </script>
-
-<!-- <div class="border border-gray-300 rounded-md p-10">
-    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-      Write a review to the movie <EditSolid class="inline-block" />
-    </h3>
-  <div class="flex items-center space-x-4 my-4">
-    <input
-      type="text"
-      class="w-full border border-gray-300 rounded-md"
-      placeholder="Title"
-    />
-    <input
-      type="number"
-      class="w-full border border-gray-300 rounded-md"
-      placeholder="Rating (0-10 ★)"
-      min="0"
-      max="10"
-      step="0.5"
-    />
-  </div>
-
-  <textarea
-    class="w-full border border-gray-300 rounded-md"
-    placeholder="Write your review... (max 500 characters)"
-    maxlength="500"
-  />
-  <button class="w-full mt-4 py-2 bg-primary-600 text-white rounded-md">Submit review</button>
-</div> -->
 
 <div class="border border-gray-200 p-4 mt-4 rounded-md">
   <Review {review}>

@@ -35,7 +35,7 @@
     let formModal = false;
     let currentDate = new Date().toISOString().split("T")[0];
     let watchedOn = currentDate;
-    let rating = 0;
+    let rating = null;
     let review = "";
 
     function changeRating(){
