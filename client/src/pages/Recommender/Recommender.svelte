@@ -11,7 +11,7 @@
     let page = 1;
 
     async function getRecommendationMovie() {
-        const { data, pagination } = await fetchGet(`${$BASE_URL}/api/movies/popular?page=${page}&limit=1&year=1990`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/movies/recommender?page=${page}`);
         movie = data[0];
     }
 
