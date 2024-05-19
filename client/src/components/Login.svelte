@@ -14,23 +14,31 @@
 
     let username = "";
     let password = "";
+    let rememberMe = false;
 
     async function handleLogin(event) {
         event.preventDefault();
-
-        const user = {
-            username,
-            password,
-        };
-
+        const user = { username, password };
         const { status, data } = await fetchPost(
             `${$BASE_URL}/api/login`,
             user
         );
+
         if (status === 200) {
             userStore.set(data.user);
             tokenStore.set(data.token);
             refreshTokenStore.set(data.refreshToken);
+
+            if (rememberMe) {
+                localStorage.setItem("rememberMe", "true");
+            } else {
+                localStorage.removeItem("rememberMe");
+            }
+
+            await fetchPost(`${$BASE_URL}/api/remember-me`, {
+                refreshToken: data.refreshToken,
+                rememberMe,
+            });
 
             navigate("/home");
         } else {
@@ -69,8 +77,8 @@
                 />
             </Label>
             <div class="flex items-start">
-                <Checkbox>Remember me</Checkbox>
-                <ForgotPassword  />
+                <Checkbox bind:checked={rememberMe}>Remember me</Checkbox>
+                <ForgotPassword />
                 <!-- <a
                     href="/"
                     class="ms-auto text-sm ml-8 text-primary-700 hover:underline dark:text-primary-500"

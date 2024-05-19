@@ -44,7 +44,11 @@ export async function refreshToken(refreshToken) {
 }
 
 export function logoutUser() {
-    tokenStore.set(null);
-    refreshTokenStore.set(null);
-    userStore.set(null);
+    const rememberMe = localStorage.getItem("rememberMe") === "true";
+
+    if (!rememberMe) {
+        tokenStore.set(null);
+        refreshTokenStore.set(null);
+        userStore.set(null);
+    }
 }

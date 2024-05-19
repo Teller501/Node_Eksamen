@@ -17,7 +17,6 @@ const client = new Client(process.env.COCKROACH_DB_URL);
     await client.connect();
     try {
       const results = await client.query("SELECT NOW()");
-      console.log(results);
     } catch (err) {
       console.error("error executing query:", err);
     }

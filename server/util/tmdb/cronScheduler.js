@@ -3,8 +3,128 @@ import fetchTMDBData from './tmdbPopulate.js';
 import axios from 'axios';
 
 export default function scheduleTMDBPopulation() {
-    cron.schedule('* * * * * *', () => {
-        // console.log(`Fetching data at ${new Date().toISOString()}`);
-        // fetchTMDBData();
-    });
+    // cron.schedule('* * * * * *', () => {
+    //     console.log(`Fetching data at ${new Date().toISOString()}`);
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
+    // cron.schedule('* * * * * *', () => {
+    //     fetchTMDBData();
+    // });
 }

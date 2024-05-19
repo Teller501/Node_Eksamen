@@ -66,35 +66,37 @@ router.get("/api/activate/:token", validateToken, async (req, res) => {
         return res.status(400).send({ error: "Invalid activation token" });
     }
 
-    const user = pgClient.query(`SELECT * FROM users WHERE username = $1`, [username]);
+    const user = pgClient.query(`SELECT * FROM users WHERE username = $1`, [
+        username,
+    ]);
     if (!user) {
         return res.status(400).send({ error: "User not found" });
     }
 
-    await pgClient.query(`UPDATE users SET is_active = TRUE WHERE username = $1`, [
-        username,
-    ]);
+    await pgClient.query(
+        `UPDATE users SET is_active = TRUE WHERE username = $1`,
+        [username]
+    );
     await redisClient.del(token);
 
     res.send({ data: "User activated" });
 });
 
 router.post("/api/login", validateUserLogin, async (req, res) => {
-    const result = await pgClient.query(`SELECT * FROM users WHERE username = $1`, [
-        req.body.username
-    ]);
-    
+    const result = await pgClient.query(
+        `SELECT * FROM users WHERE username = $1`,
+        [req.body.username]
+    );
+
     if (result.rowCount === 0) {
         return res.status(400).send({ error: "User not found" });
     }
-    
+
     const user = result.rows[0];
 
-    
     if (!user.is_active) {
         return res.status(400).send({ error: "User not activated" });
     }
-    
 
     try {
         if (await bcrypt.compare(req.body.password, user.password)) {
@@ -140,25 +142,45 @@ router.post("/api/signup", validateUserSignup, async (req, res) => {
 router.post("/api/token", validateToken, async (req, res) => {
     const refreshToken = req.body.token;
     if (!refreshToken) return res.sendStatus(401);
-
+  
     const foundToken = await redisClient.get(refreshToken);
     if (!foundToken) return res.sendStatus(403);
-
+  
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        const newToken = generateAccessToken({ username: user.username });
-        res.json({ token: newToken });
+      if (err) return res.sendStatus(403);
+  
+      pgClient.query(`SELECT is_active FROM users WHERE username = $1`, [user.username])
+        .then(async (result) => {
+          const isActive = result.rows[0].is_active;
+          const rememberMeFlag = await redisClient.get(`${refreshToken}:rememberMe`);
+  
+          if (!isActive) {
+            return res.status(403).send({ error: "User not activated" });
+          }
+  
+          const newToken = generateAccessToken({ username: user.username });
+  
+          const expirationTime = rememberMeFlag === "true" ? 604800 : 1800; 
+          await redisClient.set(refreshToken, user.username, { EX: expirationTime });
+  
+          res.json({ token: newToken });
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(500).send({ error: "An error occurred" });
+        });
     });
-});
+  });
 
 router.post(
     "/api/forgot-password",
     validateForgotPassword,
     async (req, res) => {
         const { email } = req.body;
-        const result = await pgClient.query(`SELECT * FROM users WHERE email = $1`, [
-            email,
-        ]);
+        const result = await pgClient.query(
+            `SELECT * FROM users WHERE email = $1`,
+            [email]
+        );
 
         const user = result.rows[0];
 
@@ -188,9 +210,10 @@ router.post(
             return res.status(400).send({ error: "Invalid or expired token" });
         }
 
-        const result = await pgClient.query(`SELECT * FROM users WHERE username = $1`, [
-            username,
-        ]);
+        const result = await pgClient.query(
+            `SELECT * FROM users WHERE username = $1`,
+            [username]
+        );
 
         const user = result.rows[0];
 
@@ -199,10 +222,10 @@ router.post(
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-        await pgClient.query(`UPDATE users SET password = $1 WHERE username = $2`, [
-            hashedPassword,
-            username,
-        ]);
+        await pgClient.query(
+            `UPDATE users SET password = $1 WHERE username = $2`,
+            [hashedPassword, username]
+        );
 
         await redisClient.del(token);
 
@@ -220,6 +243,21 @@ router.post("/api/validate-token", async (req, res) => {
     }
 
     res.send({ data: "Token is valid" });
+});
+
+router.post("/api/remember-me", async (req, res) => {
+    const { refreshToken, rememberMe } = req.body;
+
+    try {
+        await redisClient.set(
+            `${refreshToken}:rememberMe`,
+            rememberMe.toString()
+        );
+        res.status(200).send({ data: "Remember me set" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: "An error occurred" });
+    }
 });
 
 router.delete("/api/logout", (req, res) => {

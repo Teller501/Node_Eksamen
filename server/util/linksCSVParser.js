@@ -15,9 +15,6 @@ function loadTmdbIds() {
         .on('data', (row) => {
             tmdbIds.add(row.tmdbId);
         })
-        .on('end', () => {
-            console.log('TMDB IDs loaded:', tmdbIds.size);
-        });
 }
 
 loadTmdbIds();

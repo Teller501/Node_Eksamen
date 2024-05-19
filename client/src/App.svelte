@@ -32,6 +32,7 @@
 
     function handleLogout(event) {
         event.preventDefault();
+        localStorage.removeItem("rememberMe");
         logoutUser();
     }
 

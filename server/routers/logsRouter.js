@@ -174,9 +174,7 @@ router.get("/api/logs/user/:userId", async (req, res) => {
     } else {
         const movieDetailsPromises = result.rows.map(async (row) => {
             const movieId = Number(row.movie_id);
-            console.log(movieId);
             const movieDoc = await mongoClient.movies.findOne({ id: movieId });
-            console.log(movieDoc);
             return {
                 movie_id: movieId,
                 title: row.title,

@@ -6,26 +6,27 @@ const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.TMDB_API_KEY;
 
 let currentPage = 1;
-let minDate = "1935-01-01";
-let maxDate = "1937-12-31";
-let initialMinDate = "1229-01-01";
-let initialMaxDate = "1931-12-31";
+let maxDate = new Date("2000-01-01").toISOString().split('T')[0];
+let minDate = getMinDate(maxDate, 1);
+let maxYear = 1950;
 
 export default async function fetchTMDBData() {
     try {
         const response = await axios.get(
             `${BASE_URL}/discover/movie?include_adult=false&include_video=false&language=en-US&page=${currentPage}&sort_by=popularity.desc&api_key=${API_KEY}&primary_release_date.gte=${minDate}&primary_release_date.lte=${maxDate}`
         );
-        
+
+        console.log(minDate, maxDate);
+
         const totalPages = response.data.total_pages;
 
         if (currentPage >= totalPages) {
             currentPage = 1;
-            [minDate, maxDate] = getNextDateRange(minDate, maxDate, 2);
+            maxDate = minDate;
+            minDate = getMinDate(maxDate, 1);
 
-            if (new Date(maxDate) >= new Date()) {
-                minDate = initialMinDate;
-                maxDate = initialMaxDate;
+            if (new Date(minDate).getFullYear() < maxYear) {
+                minDate = `${maxYear}-01-01`;
             }
         } else {
             currentPage++;
@@ -51,17 +52,10 @@ export default async function fetchTMDBData() {
     }
 }
 
-function getNextDateRange(currentMinDate, currentMaxDate, yearGap) {
-    const minDateObj = new Date(currentMinDate);
-    const maxDateObj = new Date(currentMaxDate);
-
-    minDateObj.setFullYear(minDateObj.getFullYear() + yearGap);
-    maxDateObj.setFullYear(maxDateObj.getFullYear() + yearGap);
-
-    const newMinDate = minDateObj.toISOString().split("T")[0];
-    const newMaxDate = maxDateObj.toISOString().split("T")[0];
-
-    return [newMinDate, newMaxDate];
+function getMinDate(maxDate, monthsToSubtract) {
+    const maxDateObj = new Date(maxDate);
+    maxDateObj.setMonth(maxDateObj.getMonth() - monthsToSubtract);
+    return maxDateObj.toISOString().split('T')[0];
 }
 
 async function insertMovieToMySQL(movieData) {

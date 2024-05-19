@@ -1,5 +1,6 @@
 <script>
     import { Img, Tabs, TabItem, Rating } from "flowbite-svelte";
+    import { ClockOutline } from "flowbite-svelte-icons";
     import { onMount } from "svelte";
     import EditProfile from "../../components/EditProfile.svelte";
     import { userStore } from "../../stores/authStore";
@@ -74,13 +75,13 @@
                                     <div class="mt-2 d-flex align-items-center">
                                         <span class="text-red-500 me-2">
                                             <Rating
-                                                id="example-1"
                                                 total={5}
-                                                size={50}
+                                                size={20}
                                                 rating={movie.rating}
                                             />
                                         </span>
-                                        <span class="text-gray-500">
+                                        <span class="text-gray-500 text-xs flex items-center">
+                                            <ClockOutline size="xs" class="mr-1"/>
                                             {movie.watched_on.split("T")[0]}
                                         </span>
                                     </div>
