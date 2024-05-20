@@ -1,22 +1,27 @@
 <script>
-    import { Img, Tabs, TabItem, Rating, Hr, Button } from "flowbite-svelte";
-    import { ClockOutline, MapPinOutline, CirclePlusSolid } from "flowbite-svelte-icons";
+    import { Img, Tabs, TabItem, Rating, Hr, Button, Avatar } from "flowbite-svelte";
+    import { ClockOutline, MapPinSolid, CirclePlusSolid } from "flowbite-svelte-icons";
     import Movie from "../../components/Movie.svelte";
-    import { onMount } from "svelte";
     import EditProfile from "../../components/EditProfile.svelte";
+    import Favorites from "../../components/Favorites.svelte";
+    import { onMount } from "svelte";
     import { userStore } from "../../stores/authStore";
     import { BASE_URL } from "../../stores/generalStore.js";
     import { fetchGet } from "../../util/api.js";
+    import posterPlaceholder from "../../assets/poster-placeholder.png";
+    import { favoritesStore } from "../../stores/favoritesStore.js";
 
     let user = $userStore;
     let userData;
     let lastFourMovies = [];
     let reviews = [];
+    let favorites = [];
     const profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
 
     onMount(async () => {
         await fetchUserData();
         await fetchUserReviews();
+        await fetchUserFavorites();
     });
 
     async function fetchUserData() {
@@ -39,24 +44,39 @@
         }
         reviews = data;
     }
+
+    async function fetchUserFavorites() {
+        const { data, status } = await fetchGet(
+            `${$BASE_URL}/api/favorites/${user.id}`
+        );
+        if (status === 404) {
+            return;
+        }
+        favoritesStore.set(data);
+    }
+
+    favoritesStore.subscribe(value => {
+        favorites = value;
+    });
 </script>
 
 <div class="container mx-auto p-4">
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-            <Img
+            <Avatar
                 src={profilePicturePath ??
                     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                 alt="Profile Picture"
-                class="w-20 h-20 rounded-full"
+                class="w-20 h-20"
+                border
             />
             <div>
                 <h1 class="text-3xl font-bold text-slate-900 text-left">
                     {user.username}
                 </h1>
                 <span class="text-slate-900 text-left text-xs flex items-center">
-                    <MapPinOutline size="xs" class="mr-1" color="red"/>{user.location}
-                  </span>
+                    <MapPinSolid size="xs" class="mr-1 fill-primary-600"/>{user.location}
+                </span>
                 <div class="text-gray-600">
                     <span>3 followers</span> • <span>8 following</span> •
                     <span>{userData?.unique_movies_watched} movies watched</span>
@@ -143,18 +163,20 @@
                             <h3 class="text-lg font-bold text-slate-900 mx-auto">
                                 Favorites
                             </h3>
-                            <Button class="absolute right-0 bg-transparent hover:bg-transparent active:ring-0 focus:ring-0">
-                                <CirclePlusSolid size="md" class="fill-primary-600 hover:fill-primary-800"/>
-                            </Button>
+                            <Favorites favorites={favorites}/>
                         </div>
-                        <div class="flex space-x-2 mt-2">
-                            {#each Array(4) as _, i}
-                                <img
-                                    src="shrek_poster.jpg"
-                                    alt="Favorite"
-                                    class="w-12 h-16"
-                                />
-                            {/each}
+                        <div class="flex space-x-1 mt-2">
+                            {#each favorites as favorite, i (favorite.movie_id)}
+                            <Movie posterPath={favorite.poster_path} width={64} alt={`Favorite ${i + 1}, (${favorite.title})`} movieId={favorite.movie_id}/>
+                          {/each}
+                        
+                          {#each Array(4 - favorites.length) as _}
+                            <Img
+                              src={posterPlaceholder}
+                              alt="Placeholder"
+                              class="w-10 h-16"
+                            />
+                          {/each}
                         </div>
                     </div>
                     <div class="bg-white p-4 rounded-md shadow-md mt-4">

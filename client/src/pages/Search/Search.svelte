@@ -39,7 +39,9 @@
                 />
                 <h3 class="text-slate-900">{movie.title}</h3>
             </div>
-            <Hr classHr="mb-10" />
+            {#if searchResults.length > 1}
+                <Hr classHr="mb-10" />
+            {/if}
         {/each}
     </div>
 {:else}

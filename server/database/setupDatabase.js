@@ -71,6 +71,14 @@ const isDeleteMode = process.argv.includes("delete");
             FOREIGN KEY (user_id) REFERENCES users(id)
         )`);
 
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS favorite_movies (
+            user_id INT,
+            movie_id INT,
+            PRIMARY KEY (user_id, movie_id),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (movie_id) REFERENCES movies(id)
+        )`)
+
         if (isDeleteMode) {
             await pgClient.query(`INSERT INTO users (username, password, email, is_active)
             VALUES
