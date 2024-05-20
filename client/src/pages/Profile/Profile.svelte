@@ -1,6 +1,6 @@
 <script>
     import { Img, Tabs, TabItem, Rating, Hr, Button } from "flowbite-svelte";
-    import { ClockOutline, MapPinOutline } from "flowbite-svelte-icons";
+    import { ClockOutline, MapPinOutline, CirclePlusSolid } from "flowbite-svelte-icons";
     import Movie from "../../components/Movie.svelte";
     import { onMount } from "svelte";
     import EditProfile from "../../components/EditProfile.svelte";
@@ -104,33 +104,30 @@
                     </div>
                     <div class="mt-8">
                         <h2 class="text-2xl font-bold text-slate-900">
-                            Recent Reviews
+                           Recent Reviews
                         </h2>
                         <div class="mt-4 space-y-4 mb-2">
-                            {#each reviews as review}
-                                <div class="flex space-x-4">
-                                    <Movie posterPath={review.poster_path} alt={review.title} movieId={review.movie_id} width={128} />
-                                    <div>
-                                        <h3
-                                            class="text-lg font-bold text-slate-900"
-                                        >
-                                            {review.title} <span class="text-gray-500 text-sm"
-                                                >({review.release_date.split("T")[0]})</span
-                                            >
-                                        </h3>
-                                        <div class="text-gray-600 text-sm">
-                                            Watched on {review.watched_on.split("T")[0]}
-                                        </div>
-                                        <Hr hrClass="h-px my-2 bg-primary-300 border-0 dark:bg-primary-700"/>
-                                        <p class="mt-2 text-sm text-left text-gray-700">{review.review}</p>
-                                    </div>
-                                </div>
-                            {/each}
-                            <Button class="mt-4">
-                                View more
-                            </Button>
+                           {#each reviews as review}
+                           <div class="flex space-x-4">
+                              <Movie posterPath={review.poster_path} alt={review.title} movieId={review.movie_id} width={128} />
+                              <div class="w-full">
+                                 <h3 class={`text-lg font-bold text-slate-900 ${review.title.length>20 ? 'text-sm' : 'text-lg'}`}>
+                                 <span>{review.title}</span>
+                                 <span class="text-gray-500 text-xs font-light">({review.release_date.split("T")[0]})</span>
+                                 </h3>
+                                 <div class="text-gray-600 text-sm">
+                                    Watched on {review.watched_on.split("T")[0]}
+                                 </div>
+                                 <Hr hrClass="h-px my-2 bg-primary-300 border-0 dark:bg-primary-700"/>
+                                 <p class="mt-2 text-sm text-left text-gray-700">{review.review}</p>
+                              </div>
+                           </div>
+                           {/each}
+                           <Button class="mt-4">
+                           View more
+                           </Button>
                         </div>
-                    </div>
+                     </div>
                 </div>
                 <div class="col-span-1 space-y-4">
                     <div class="bg-white p-4 rounded-md shadow-md">
@@ -142,9 +139,14 @@
                         </p>
                     </div>
                     <div class="bg-white p-4 rounded-md shadow-md mt-4">
-                        <h3 class="text-lg font-bold text-slate-900">
-                            Favorites
-                        </h3>
+                        <div class="relative flex items-center">
+                            <h3 class="text-lg font-bold text-slate-900 mx-auto">
+                                Favorites
+                            </h3>
+                            <Button class="absolute right-0 bg-transparent hover:bg-transparent active:ring-0 focus:ring-0">
+                                <CirclePlusSolid size="md" class="fill-primary-600 hover:fill-primary-800"/>
+                            </Button>
+                        </div>
                         <div class="flex space-x-2 mt-2">
                             {#each Array(4) as _, i}
                                 <img
