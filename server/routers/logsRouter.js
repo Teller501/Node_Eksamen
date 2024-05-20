@@ -198,6 +198,69 @@ router.get("/api/logs/user/:userId", async (req, res) => {
 });
 
 
+router.get("/api/logs/user/:userId/reviews", async (req, res) => {
+    const userId = req.params.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+  
+    const reviewsQuery = `
+      SELECT watch_logs.id, movies.title, movies.id AS movie_id, movies.release_date, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at, watch_logs.movie_id
+      FROM watch_logs
+      INNER JOIN movies ON watch_logs.movie_id = movies.id
+      WHERE watch_logs.user_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''
+      ORDER BY watch_logs.created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
+  
+    const reviewsResult = await pgClient.query(reviewsQuery, [userId, limit, offset]);
+  
+    const countQuery = `
+      SELECT COUNT(*)
+      FROM watch_logs
+      WHERE watch_logs.user_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''
+    `;
+  
+    const countResult = await pgClient.query(countQuery, [userId]);
+    const totalReviews = countResult.rows[0].count;
+    const totalPages = Math.ceil(totalReviews / limit);
+  
+    if (reviewsResult.rows.length === 0) {
+      res.status(404).send({
+        message: "No reviews found for this user."
+      });
+    } else {
+      const reviewDetailsPromises = reviewsResult.rows.map(async (row) => {
+        const movieId = Number(row.movie_id);
+        const movieDoc = await mongoClient.movies.findOne({ id: movieId });
+        return {
+          id: row.id,
+          movie_id: movieId,
+          title: row.title,
+          release_date: row.release_date,
+          watched_on: row.watched_on,
+          rating: row.rating,
+          review: row.review,
+          created_at: row.created_at,
+          poster_path: movieDoc ? movieDoc.posterPath : null
+        };
+      });
+  
+      const reviewDetails = await Promise.all(reviewDetailsPromises);
+  
+      res.send({
+        data: reviewDetails,
+        pagination: {
+          current_page: page,
+          total_pages: totalPages,
+          has_next_page: page < totalPages,
+          has_previous_page: page > 1,
+          next_page: page < totalPages ? page + 1 : null,
+          previous_page: page > 1 ? page - 1 : null,
+        }
+      });
+    }
+  });
 
 
 

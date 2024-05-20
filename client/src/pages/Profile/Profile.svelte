@@ -1,6 +1,7 @@
 <script>
-    import { Img, Tabs, TabItem, Rating } from "flowbite-svelte";
-    import { ClockOutline } from "flowbite-svelte-icons";
+    import { Img, Tabs, TabItem, Rating, Hr, Button } from "flowbite-svelte";
+    import { ClockOutline, MapPinOutline } from "flowbite-svelte-icons";
+    import Movie from "../../components/Movie.svelte";
     import { onMount } from "svelte";
     import EditProfile from "../../components/EditProfile.svelte";
     import { userStore } from "../../stores/authStore";
@@ -10,10 +11,12 @@
     let user = $userStore;
     let userData;
     let lastFourMovies = [];
+    let reviews = [];
     const profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
 
     onMount(async () => {
         await fetchUserData();
+        await fetchUserReviews();
     });
 
     async function fetchUserData() {
@@ -25,7 +28,16 @@
         }
         userData = data;
         lastFourMovies = userData.last_four;
-        console.log(userData);
+    }
+
+    async function fetchUserReviews() {
+        const { data, status } = await fetchGet(
+            `${$BASE_URL}/api/logs/user/${user.id}/reviews?limit=2`
+        );
+        if (status === 404) {
+            return;
+        }
+        reviews = data;
     }
 </script>
 
@@ -39,13 +51,15 @@
                 class="w-20 h-20 rounded-full"
             />
             <div>
-                <h1 class="text-3xl font-bold text-slate-900">
+                <h1 class="text-3xl font-bold text-slate-900 text-left">
                     {user.username}
                 </h1>
+                <span class="text-slate-900 text-left text-xs flex items-center">
+                    <MapPinOutline size="xs" class="mr-1" color="red"/>{user.location}
+                  </span>
                 <div class="text-gray-600">
                     <span>3 followers</span> • <span>8 following</span> •
-                    <span>{userData?.unique_movies_watched} movies watched</span
-                    >
+                    <span>{userData?.unique_movies_watched} movies watched</span>
                 </div>
             </div>
         </div>
@@ -67,11 +81,7 @@
                         <div class="grid grid-cols-4 gap-4 mt-4">
                             {#each lastFourMovies as movie}
                                 <div class="text-center">
-                                    <Img
-                                        src={`https://image.tmdb.org/t/p/original/${movie.poster_path}`}
-                                        alt={movie.title}
-                                        class="w-full h-auto shadow-sm"
-                                    />
+                                    <Movie posterPath={movie.poster_path} alt={movie.title} movieId={movie.movie_id} width="w-4" />
                                     <div class="mt-2 d-flex align-items-center">
                                         <span class="text-red-500 me-2">
                                             <Rating
@@ -88,37 +98,37 @@
                                 </div>
                             {/each}
                         </div>
+                        <Button class="mt-4">
+                            View more
+                        </Button>
                     </div>
                     <div class="mt-8">
                         <h2 class="text-2xl font-bold text-slate-900">
                             Recent Reviews
                         </h2>
                         <div class="mt-4 space-y-4 mb-2">
-                            {#each Array(2) as _, i}
+                            {#each reviews as review}
                                 <div class="flex space-x-4">
-                                    <img
-                                        src="shrek_poster.jpg"
-                                        alt="Shrek"
-                                        class="w-24 h-36"
-                                    />
+                                    <Movie posterPath={review.poster_path} alt={review.title} movieId={review.movie_id} width={128} />
                                     <div>
                                         <h3
-                                            class="text-xl font-bold text-slate-900"
+                                            class="text-lg font-bold text-slate-900"
                                         >
-                                            Shrek <span class="text-gray-500"
-                                                >(2001)</span
+                                            {review.title} <span class="text-gray-500 text-sm"
+                                                >({review.release_date.split("T")[0]})</span
                                             >
                                         </h3>
-                                        <div class="text-gray-600">
-                                            Watched on 8/5/2024
+                                        <div class="text-gray-600 text-sm">
+                                            Watched on {review.watched_on.split("T")[0]}
                                         </div>
-                                        <p class="mt-2 text-gray-700">
-                                            Lorem ipsum dolor sit amet,
-                                            consectetur adipiscing elit...
-                                        </p>
+                                        <Hr hrClass="h-px my-2 bg-primary-300 border-0 dark:bg-primary-700"/>
+                                        <p class="mt-2 text-sm text-left text-gray-700">{review.review}</p>
                                     </div>
                                 </div>
                             {/each}
+                            <Button class="mt-4">
+                                View more
+                            </Button>
                         </div>
                     </div>
                 </div>
