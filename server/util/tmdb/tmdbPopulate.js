@@ -6,7 +6,7 @@ const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.TMDB_API_KEY;
 
 let currentPage = 1;
-let maxDate = new Date("2000-01-01").toISOString().split('T')[0];
+let maxDate = new Date("2024-05-01").toISOString().split('T')[0];
 let minDate = getMinDate(maxDate, 1);
 let maxYear = 1950;
 

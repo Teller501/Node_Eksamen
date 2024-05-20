@@ -186,14 +186,18 @@ router.get("/api/movies/recommender", async (req, res) => {
         const genreFilter = req.query.genre;
         const tmdbIdSet = new Set(tmdbIds);
 
-        const response = await getAllMovies(
+        let response = await getAllMovies(
             page,
             limit,
-            true,
+            false,
             yearFilter,
             genreFilter,
             tmdbIdSet
         );
+
+        const shuffledMovies = response.data.sort(() => 0.5 - Math.random());
+
+        response.data = shuffledMovies;
 
         res.send(response);
     } catch (error) {
@@ -201,6 +205,7 @@ router.get("/api/movies/recommender", async (req, res) => {
         res.status(500).send("Failed to fetch recommender movies");
     }
 });
+
 
 router.get("/api/movies/:id", async (req, res) => {
     try {

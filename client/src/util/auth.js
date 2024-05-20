@@ -16,32 +16,34 @@ export function isTokenExpired(token) {
 
 export async function refreshToken(refreshToken) {
     try {
-        const response = await fetch("http://localhost:8080/api/token", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ token: refreshToken }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            tokenStore.set(data.token);
-            return data.token;
+      const response = await fetch("http://localhost:8080/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: refreshToken }),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        tokenStore.set(data.token);
+        return data.token;
+      } else {
+        const rememberMe = localStorage.getItem("rememberMe") === "true";
+  
+        if (rememberMe) {
+          return null;
         } else {
-            logoutUser();
-            navigate("/", {
-                replace: true,
-            });
+          logoutUser();
+          navigate("/", { replace: true });
         }
+      }
     } catch (error) {
-        console.error("Error refreshing token:", error);
-        logoutUser();
-        navigate("/", {
-            replace: true,
-        });
+      console.error("Error refreshing token:", error);
+      logoutUser();
+      navigate("/", { replace: true });
     }
-}
+  }
 
 export function logoutUser() {
     const rememberMe = localStorage.getItem("rememberMe") === "true";
