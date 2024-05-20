@@ -18,6 +18,7 @@
 
     let location = $userStore.location ?? "";
     let editProfileModal = false;
+    const profilePicturePath = `${$BASE_URL}/${$userStore.profile_picture}`;
     let selectedImage = null;
 
     async function handleEditProfile(event) {
@@ -77,7 +78,7 @@
                 />
             {:else}
                 <img
-                    src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                    src={profilePicturePath ?? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                     alt="profile-pic"
                     class="rounded-full me-4 w-48 h-48 border shadow"
                 />

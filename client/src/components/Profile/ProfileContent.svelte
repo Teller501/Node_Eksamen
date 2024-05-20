@@ -1,0 +1,138 @@
+<script>
+    import {
+        Img,
+        Rating,
+        Hr,
+        Button,
+    } from "flowbite-svelte";
+    import { ClockOutline } from "flowbite-svelte-icons";
+    import Movie from "../Movie.svelte";
+    import Favorites from "../Favorites.svelte";
+    import posterPlaceholder from "../../assets/poster-placeholder.png";
+    import { userStore } from "../../stores/authStore";
+
+    export let lastFourMovies = [];
+    export let reviews = [];
+    export let favorites = [];
+
+    let user = $userStore;
+</script>
+
+<div class="container mx-auto px-4 mt-8 mb-12 grid grid-cols-3 gap-4">
+    <div class="col-span-2">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900">Last watched</h2>
+            <div class="grid grid-cols-4 gap-4 mt-4">
+                {#each lastFourMovies as movie}
+                    <div class="text-center">
+                        <Movie
+                            posterPath={movie.poster_path}
+                            alt={movie.title}
+                            movieId={movie.movie_id}
+                            width="w-4"
+                        />
+                        <div class="mt-2 d-flex align-items-center">
+                            <span class="text-red-500 me-2">
+                                <Rating
+                                    total={5}
+                                    size={20}
+                                    rating={movie.rating}
+                                />
+                            </span>
+                            <span
+                                class="text-gray-500 text-xs flex items-center"
+                            >
+                                <ClockOutline size="xs" class="mr-1" />
+                                {movie.watched_on.split("T")[0]}
+                            </span>
+                        </div>
+                    </div>
+                {/each}
+            </div>
+            <Button class="mt-4">View more</Button>
+        </div>
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold text-slate-900">Recent Reviews</h2>
+            <div class="mt-4 space-y-4 mb-2">
+                {#each reviews as review}
+                    <div class="flex space-x-4">
+                        <Movie
+                            posterPath={review.poster_path}
+                            alt={review.title}
+                            movieId={review.movie_id}
+                            width={128}
+                        />
+                        <div class="w-full">
+                            <h3
+                                class={`text-lg font-bold text-slate-900 ${review.title.length > 20 ? "text-sm" : "text-lg"}`}
+                            >
+                                <span>{review.title}</span>
+                                <span class="text-gray-500 text-xs font-light"
+                                    >({review.release_date.split("T")[0]})</span
+                                >
+                            </h3>
+                            <div class="text-gray-600 text-sm">
+                                Watched on {review.watched_on.split("T")[0]}
+                            </div>
+                            <Hr
+                                hrClass="h-px my-2 bg-primary-300 border-0 dark:bg-primary-700"
+                            />
+                            <p class="mt-2 text-sm text-left text-gray-700">
+                                {review.review}
+                            </p>
+                        </div>
+                    </div>
+                {/each}
+                <Button class="mt-4">View more</Button>
+            </div>
+        </div>
+    </div>
+    <div class="col-span-1 space-y-4">
+        <div class="bg-white p-4 rounded-md shadow-md">
+            <h3 class="text-lg font-bold text-slate-900">
+                About {user?.username}
+            </h3>
+            <p class="text-gray-700 mt-2">
+                {user?.bio}
+            </p>
+        </div>
+        <div class="bg-white p-4 rounded-md shadow-md mt-4">
+            <div class="relative flex items-center">
+                <h3 class="text-lg font-bold text-slate-900 mx-auto">
+                    Favorites
+                </h3>
+                <Favorites />
+            </div>
+            <div class="flex space-x-1 mt-2">
+                {#each favorites as favorite, i (favorite.movie_id)}
+                    <Movie
+                        posterPath={favorite.poster_path}
+                        width={64}
+                        alt={`Favorite ${i + 1}, (${favorite.title})`}
+                        movieId={favorite.movie_id}
+                    />
+                {/each}
+
+                {#each Array(4 - favorites.length) as _}
+                    <Img
+                        src={posterPlaceholder}
+                        alt="Placeholder"
+                        class="w-10 h-16"
+                    />
+                {/each}
+            </div>
+        </div>
+        <div class="bg-white p-4 rounded-md shadow-md mt-4">
+            <h3 class="text-lg font-bold text-slate-900">Watchlist</h3>
+            <div class="flex space-x-2 mt-2">
+                {#each Array(4) as _, i}
+                    <img
+                        src="shrek_poster.jpg"
+                        alt="Watchlist"
+                        class="w-12 h-16"
+                    />
+                {/each}
+            </div>
+        </div>
+    </div>
+</div>

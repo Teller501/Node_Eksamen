@@ -14,7 +14,7 @@
       {alt}
       {width}
       data-movie-id={movieId}
-      class="rounded-sm mx-2 drop-shadow-md hover:scale-105"
+      class="rounded-sm mr-2 drop-shadow-md hover:scale-105"
     />
   </a>
 </div>

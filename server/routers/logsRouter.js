@@ -13,7 +13,7 @@ async function getAllLogs(page = 1, limit = 10) {
         `;
         const params = [limit, (page - 1) * limit];
         const logs = await pgClient.query(query, params);
-        
+
         const totalLogsQuery = "SELECT COUNT(*) FROM watch_logs";
         const totalLogsResult = await pgClient.query(totalLogsQuery);
         const totalLogs = totalLogsResult.rows[0].count;
@@ -27,8 +27,8 @@ async function getAllLogs(page = 1, limit = 10) {
                 total_pages: totalPages,
                 has_next_page: page < totalPages,
                 has_previous_page: page > 1,
-                next_page: page < totalPages? page + 1 : null,
-                previous_page: page > 1? page - 1 : null,
+                next_page: page < totalPages ? page + 1 : null,
+                previous_page: page > 1 ? page - 1 : null,
             },
         };
     } catch (error) {
@@ -37,7 +37,6 @@ async function getAllLogs(page = 1, limit = 10) {
     }
 }
 
-
 router.get("/api/logs", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -45,7 +44,6 @@ router.get("/api/logs", async (req, res) => {
 
     res.send(logs);
 });
-
 
 router.get("/api/logs/:id", async (req, res) => {
     const id = req.params.id;
@@ -78,7 +76,7 @@ router.get("/api/logs/movie/:movieId", async (req, res) => {
 
     if (result.rows.length === 0) {
         res.send({
-            message: "No reviews found for this movie."
+            message: "No reviews found for this movie.",
         });
     } else {
         const totalLogs = await pgClient.query(
@@ -97,16 +95,14 @@ router.get("/api/logs/movie/:movieId", async (req, res) => {
                 total_pages: totalPages,
                 has_next_page: hasNextPage,
                 has_previous_page: hasPreviousPage,
-                next_page: hasNextPage? page + 1 : null,
-                previous_page: hasPreviousPage? page - 1 : null,
+                next_page: hasNextPage ? page + 1 : null,
+                previous_page: hasPreviousPage ? page - 1 : null,
             },
         };
 
         res.send(response);
     }
 });
-
-
 
 router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
     const movieId = req.params.movieId;
@@ -117,14 +113,18 @@ router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
 
     if (result.rows.length === 0) {
         res.send({
-            data: { movie_id: movieId, total_logs: 0, total_reviews: 0, total_ratings: 0, average_rating: null },
+            data: {
+                movie_id: movieId,
+                total_logs: 0,
+                total_reviews: 0,
+                total_ratings: 0,
+                average_rating: null,
+            },
         });
     } else {
         res.send({ data: result.rows[0] });
     }
 });
-
-
 
 router.get("/api/logs/reviews/:movieId", async (req, res) => {
     const movieId = req.params.movieId;
@@ -138,13 +138,12 @@ router.get("/api/logs/reviews/:movieId", async (req, res) => {
 
     if (result.rows.length === 0) {
         res.status(404).send({
-            message: "No reviews found for this movie."
+            message: "No reviews found for this movie.",
         });
     } else {
         res.send({ data: result.rows });
     }
 });
-
 
 router.get("/api/logs/user/:userId", async (req, res) => {
     const userId = req.params.userId;
@@ -169,7 +168,7 @@ router.get("/api/logs/user/:userId", async (req, res) => {
 
     if (result.rows.length === 0) {
         res.status(404).send({
-            message: "No logs found for this user."
+            message: "No logs found for this user.",
         });
     } else {
         const movieDetailsPromises = result.rows.map(async (row) => {
@@ -180,7 +179,7 @@ router.get("/api/logs/user/:userId", async (req, res) => {
                 title: row.title,
                 rating: row.rating,
                 watched_on: row.watched_on,
-                poster_path: movieDoc.posterPath
+                poster_path: movieDoc.posterPath,
             };
         });
 
@@ -189,11 +188,75 @@ router.get("/api/logs/user/:userId", async (req, res) => {
         const formattedResponse = {
             data: {
                 unique_movies_watched: result.rows[0].unique_movies_watched,
-                last_four: movieDetails.map(detail => detail)
-            }
+                last_four: movieDetails.map((detail) => detail),
+            },
         };
 
         res.send(formattedResponse);
+    }
+});
+
+router.get("/api/logs/user/:userId/watched", async (req, res) => {
+    const userId = req.params.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const logsQuery = `
+        SELECT DISTINCT ON (watch_logs.movie_id) watch_logs.id, movies.title, movies.id AS movie_id, movies.release_date, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at, watch_logs.movie_id
+        FROM watch_logs
+        INNER JOIN movies ON watch_logs.movie_id = movies.id
+        WHERE watch_logs.user_id = $1
+        ORDER BY watch_logs.movie_id, watch_logs.created_at DESC
+        LIMIT $2 OFFSET $3
+    `;
+
+    const logsResult = await pgClient.query(logsQuery, [userId, limit, offset]);
+
+    const countQuery = `
+        SELECT COUNT(DISTINCT watch_logs.movie_id)
+        FROM watch_logs
+        WHERE watch_logs.user_id = $1
+    `;
+
+    const countResult = await pgClient.query(countQuery, [userId]);
+    const totalUniqueMovies = countResult.rows[0].count;
+    const totalPages = Math.ceil(totalUniqueMovies / limit);
+
+    if (logsResult.rows.length === 0) {
+        res.status(404).send({
+            message: "No logs found for this user."
+        });
+    } else {
+        const logDetailsPromises = logsResult.rows.map(async (row) => {
+            const movieId = Number(row.movie_id);
+            const movieDoc = await mongoClient.movies.findOne({ id: movieId });
+            return {
+                id: row.id,
+                movie_id: movieId,
+                title: row.title,
+                release_date: row.release_date,
+                watched_on: row.watched_on,
+                rating: row.rating,
+                review: row.review,
+                created_at: row.created_at,
+                poster_path: movieDoc? movieDoc.posterPath : null
+            };
+        });
+
+        const logDetails = await Promise.all(logDetailsPromises);
+
+        res.send({
+            data: logDetails,
+            pagination: {
+                current_page: page,
+                total_pages: totalPages,
+                has_next_page: page < totalPages,
+                has_previous_page: page > 1,
+                next_page: page < totalPages? page + 1 : null,
+                previous_page: page > 1? page - 1 : null,
+            }
+        });
     }
 });
 
@@ -203,7 +266,7 @@ router.get("/api/logs/user/:userId/reviews", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
-  
+
     const reviewsQuery = `
       SELECT watch_logs.id, movies.title, movies.id AS movie_id, movies.release_date, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at, watch_logs.movie_id
       FROM watch_logs
@@ -212,59 +275,59 @@ router.get("/api/logs/user/:userId/reviews", async (req, res) => {
       ORDER BY watch_logs.created_at DESC
       LIMIT $2 OFFSET $3
     `;
-  
-    const reviewsResult = await pgClient.query(reviewsQuery, [userId, limit, offset]);
-  
+
+    const reviewsResult = await pgClient.query(reviewsQuery, [
+        userId,
+        limit,
+        offset,
+    ]);
+
     const countQuery = `
       SELECT COUNT(*)
       FROM watch_logs
       WHERE watch_logs.user_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''
     `;
-  
+
     const countResult = await pgClient.query(countQuery, [userId]);
     const totalReviews = countResult.rows[0].count;
     const totalPages = Math.ceil(totalReviews / limit);
-  
+
     if (reviewsResult.rows.length === 0) {
-      res.status(404).send({
-        message: "No reviews found for this user."
-      });
+        res.status(404).send({
+            message: "No reviews found for this user.",
+        });
     } else {
-      const reviewDetailsPromises = reviewsResult.rows.map(async (row) => {
-        const movieId = Number(row.movie_id);
-        const movieDoc = await mongoClient.movies.findOne({ id: movieId });
-        return {
-          id: row.id,
-          movie_id: movieId,
-          title: row.title,
-          release_date: row.release_date,
-          watched_on: row.watched_on,
-          rating: row.rating,
-          review: row.review,
-          created_at: row.created_at,
-          poster_path: movieDoc ? movieDoc.posterPath : null
-        };
-      });
-  
-      const reviewDetails = await Promise.all(reviewDetailsPromises);
-  
-      res.send({
-        data: reviewDetails,
-        pagination: {
-          current_page: page,
-          total_pages: totalPages,
-          has_next_page: page < totalPages,
-          has_previous_page: page > 1,
-          next_page: page < totalPages ? page + 1 : null,
-          previous_page: page > 1 ? page - 1 : null,
-        }
-      });
+        const reviewDetailsPromises = reviewsResult.rows.map(async (row) => {
+            const movieId = Number(row.movie_id);
+            const movieDoc = await mongoClient.movies.findOne({ id: movieId });
+            return {
+                id: row.id,
+                movie_id: movieId,
+                title: row.title,
+                release_date: row.release_date,
+                watched_on: row.watched_on,
+                rating: row.rating,
+                review: row.review,
+                created_at: row.created_at,
+                poster_path: movieDoc ? movieDoc.posterPath : null,
+            };
+        });
+
+        const reviewDetails = await Promise.all(reviewDetailsPromises);
+
+        res.send({
+            data: reviewDetails,
+            pagination: {
+                current_page: page,
+                total_pages: totalPages,
+                has_next_page: page < totalPages,
+                has_previous_page: page > 1,
+                next_page: page < totalPages ? page + 1 : null,
+                previous_page: page > 1 ? page - 1 : null,
+            },
+        });
     }
-  });
-
-
-
-
+});
 
 router.post("/api/logs", async (req, res) => {
     const { movie_id, user_id, watched_on, rating, review } = req.body;
@@ -278,7 +341,13 @@ router.post("/api/logs", async (req, res) => {
 
         await mongoClient.activity.updateOne(
             { movieId: movie_id },
-            { $set: { userId: user_id, activityType: "watched", date: watched_on } },
+            {
+                $set: {
+                    userId: user_id,
+                    activityType: "watched",
+                    date: watched_on,
+                },
+            },
             { upsert: true }
         );
 
@@ -315,7 +384,13 @@ router.patch("/api/logs/:id", async (req, res) => {
         const { movie_id, user_id, watched_on } = updates;
         await mongoClient.activity.updateOne(
             { movieId: movie_id },
-            { $set: { userId: user_id, activityType: "watched", date: watched_on } },
+            {
+                $set: {
+                    userId: user_id,
+                    activityType: "watched",
+                    date: watched_on,
+                },
+            },
             { upsert: true }
         );
 
@@ -327,7 +402,6 @@ router.patch("/api/logs/:id", async (req, res) => {
         });
     }
 });
-
 
 router.delete("/api/logs/:id", async (req, res) => {
     const id = req.params.id;
