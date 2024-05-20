@@ -82,6 +82,11 @@ router.post("/api/favorites", async (req, res) => {
         const result = await pgClient.query(insertQuery, [user_id, movie_id]);
         const favorite = result.rows[0];
 
+        const mongoData = await mongoClient.movies.findOne({ id: Number(movie_id) });
+
+        favorite.poster_path = mongoData ? mongoData.posterPath : null;
+        favorite.title = mongoData ? mongoData.title : null;
+
         res.json({ data: favorite });
     } catch (error) {
         console.error("Error adding favorite:", error);

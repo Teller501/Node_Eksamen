@@ -37,11 +37,10 @@
     }
 
     function handleSearch() {
-    // navigate from svelte-routing removes token and refreshToken from localStorage
-    if (searchQuery.trim()) {
-        window.location.href = `/search/${encodeURIComponent(searchQuery.trim())}`;
+        if (searchQuery.trim()) {
+            window.location.href = `/search/${encodeURIComponent(searchQuery.trim())}`;
+        }
     }
-}
 </script>
 
 <Router>
@@ -94,8 +93,7 @@
         <NavUl>
             <NavLi href="/home" active={true}>Home</NavLi>
             <NavLi href="/movies">Movies</NavLi>
-            <NavLi href="/recommender" class="text-blue">Recommender (AI)</NavLi
-            >
+            <NavLi href="/recommender" class="text-blue">Recommender (AI)</NavLi>
             {#if $userStore}
                 <NavLi class="cursor-pointer">
                     Profile<ChevronDownOutline
@@ -103,11 +101,11 @@
                     />
                 </NavLi>
                 <Dropdown class="w-44 z-20 bg-slate-50 rounded">
-                    <DropdownItem href="/">Home</DropdownItem>
+                    <DropdownItem href="/home">Home</DropdownItem>
                     <DropdownItem href="/profile">Profile</DropdownItem>
                     <DropdownItem href="/movies">Movies</DropdownItem>
                     <DropdownItem href="/">Reviews</DropdownItem>
-                    <DropdownItem href="/docs/components/navbar"
+                    <DropdownItem href="/"
                         >Settings</DropdownItem
                     >
                     <DropdownDivider />
@@ -126,9 +124,11 @@
         <Route path="/reset-password/:token" let:params>
             <ResetPassword {params} />
         </Route>
-        <Route path="/"><Auth /></Route>
+        {#if !$userStore}
+            <Route path="/"><Auth /></Route>
+        {/if}
         {#if $userStore}
-            <PrivateRoute path="/*"><Home /></PrivateRoute>
+            <PrivateRoute path="*"><Home /></PrivateRoute>
         {/if}
         <Route path="*"><Auth /></Route>
         <PrivateRoute path="/home"><Home /></PrivateRoute>

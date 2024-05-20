@@ -2,6 +2,7 @@
     import { Button, Modal, Img } from "flowbite-svelte";
     import { CirclePlusSolid, CloseCircleSolid } from "flowbite-svelte-icons";
     import posterPlaceholder from "../assets/poster-placeholder.png";
+    import SearchModal from "./SearchModal.svelte";
     import { fetchDelete } from "../util/api.js";
     import { userStore } from "../stores/authStore.js";
     import { BASE_URL } from "../stores/generalStore.js";
@@ -59,12 +60,7 @@
         {#each Array(4 - favorites.length) as _}
             <div class="relative w-32 mx-2 mb-2 shadow-sm">
                 <Img src={posterPlaceholder} alt="Placeholder" />
-                <Button class="bg-transparent hover:bg-transparent active:ring-0 focus:ring-0 hover:cursor-default">
-                    <CirclePlusSolid
-                        size="md"
-                        class="absolute top-0 right-0 fill-primary-600 hover:fill-primary-800 hover:cursor-pointer"
-                    />
-                </Button>
+                <SearchModal />
             </div>
         {/each}
     </div>

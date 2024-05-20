@@ -39,13 +39,13 @@ export async function fetchPost(url, body, token) {
         });
 
         status = response.status;
-
+        data = await response.json();
+        
         if (!response.ok) {
             console.error(`HTTP error! Status: ${status}`);
-            return { status };
+            return { status, data };
         }
 
-        data = await response.json();
         return { status, data };
     } catch (error) {
         console.error("Fetch error:", error);
