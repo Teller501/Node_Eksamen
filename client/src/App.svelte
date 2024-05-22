@@ -19,14 +19,15 @@
     import { SearchOutline, ChevronDownOutline } from "flowbite-svelte-icons";
     import { userStore } from "./stores/authStore";
     import { logoutUser } from "./util/auth.js";
-    import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
     import PrivateRoute from "./components/PrivateRoute.svelte";
     import Home from "./pages/Home/Home.svelte";
+    import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
     import Movies from "./pages/Movies/Movies.svelte";
     import Search from "./pages/Search/Search.svelte";
     import Profile from "./pages/Profile/Profile.svelte";
     import Recommender from "./pages/Recommender/Recommender.svelte";
     import Recommendations from "./pages/Recommendations/Recommendations.svelte";
+    import NotFound from "./pages/NotFound/NotFound.svelte";
 
     let searchQuery = "";
 
@@ -128,7 +129,7 @@
             <Route path="/"><Auth /></Route>
         {/if}
         {#if $userStore}
-            <PrivateRoute path="*"><Home /></PrivateRoute>
+            <PrivateRoute path="/"><Home /></PrivateRoute>
         {/if}
         <Route path="*"><Auth /></Route>
         <PrivateRoute path="/home"><Home /></PrivateRoute>
@@ -148,5 +149,6 @@
         <Route path="/:username" let:params>
             <Profile {params} />
         </Route>
+        <Route path="/404"><NotFound /></Route>
     </div>
 </Router>

@@ -14,6 +14,11 @@ export async function fetchGet(url, token) {
 
         status = response.status;
 
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${status}`);
+            return { data, status, pagination };
+        }
+
         const result = await response.json();
         data = result.data;
         pagination = result.pagination;

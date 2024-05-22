@@ -10,7 +10,6 @@
   
     onMount(() => (currentURL = window.location.href));
   
-    // Helper function to memoize the result of isTokenExpired for a single evaluation cycle
     function isTokenExpiredOnce() {
       if (tokenExpired === undefined) {
         tokenExpired = isTokenExpired($tokenStore);

@@ -37,7 +37,13 @@
     });
 
     async function fetchUser() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/users/${username}`);
+        const { data, status } = await fetchGet(`${$BASE_URL}/api/users/${username}`);
+
+        if (status === 404) {
+            window.location.href = "/404";
+            return;
+        }
+
         user = data;
     }
 
@@ -45,9 +51,7 @@
         const { data, status } = await fetchGet(
             `${$BASE_URL}/api/logs/user/${user.id}`
         );
-        if (status === 404) {
-            return;
-        }
+
         userData = data;
         lastFourMovies = userData.last_four;
     }

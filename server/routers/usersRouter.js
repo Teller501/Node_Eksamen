@@ -8,7 +8,9 @@ const router = Router();
 
 const checkFileType = function (file, cb) {
     const fileTypes = /jpeg|jpg|png/;
-    const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const extName = fileTypes.test(
+        path.extname(file.originalname).toLowerCase()
+    );
     const mimeType = fileTypes.test(file.mimetype);
 
     if (mimeType && extName) {
@@ -37,7 +39,7 @@ router.get("/api/users", async (req, res) => {
     try {
         const query = "SELECT * FROM users";
         const result = await pgClient.query(query);
-        
+
         const users = result.rows;
 
         res.json({ data: users });
@@ -49,27 +51,37 @@ router.get("/api/users", async (req, res) => {
 
 router.get("/api/users/:id([0-9]+)", async (req, res) => {
     try {
-      const query = "SELECT * FROM users WHERE id = $1";
-      const result = await pgClient.query(query, [req.params.id]);
-      const user = result.rows[0];
-      res.json({ data: user });
+        const query = "SELECT * FROM users WHERE id = $1";
+        const result = await pgClient.query(query, [req.params.id]);
+        const user = result.rows[0];
+
+        if (!user) {
+            return res.status(404).send({ error: "User not found" });
+        }
+
+        res.json({ data: user });
     } catch (error) {
-      console.error("Error getting user:", error);
-      res.status(500).send("Failed to get user");
+        console.error("Error getting user:", error);
+        res.status(500).send({ error: "Failed to get user" });
     }
-  });
-  
-  router.get("/api/users/:username([a-zA-Z0-9_]+)", async (req, res) => {
+});
+
+router.get("/api/users/:username([a-zA-Z0-9_]+)", async (req, res) => {
     try {
-      const query = "SELECT * FROM users WHERE username = $1";
-      const result = await pgClient.query(query, [req.params.username]);
-      const user = result.rows[0];
-      res.json({ data: user });
+        const query = "SELECT * FROM users WHERE username = $1";
+        const result = await pgClient.query(query, [req.params.username]);
+        const user = result.rows[0];
+
+        if (!user) {
+            return res.status(404).send({ error: "User not found" });
+        }
+
+        res.json({ data: user });
     } catch (error) {
-      console.error("Error getting user:", error);
-      res.status(500).send("Failed to get user");
+        console.error("Error getting user:", error);
+        res.status(500).send({ error: "Failed to get user" });
     }
-  });
+});
 
 router.patch(
     "/api/users/:id",
@@ -114,6 +126,5 @@ router.patch(
         }
     }
 );
-
 
 export default router;
