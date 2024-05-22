@@ -7,6 +7,8 @@ export function isTokenExpired(token) {
         const decodedToken = jwtDecode(token);
         const currentTime = Date.now() / 1000;
 
+        console.log("Token expiration:", decodedToken.exp, currentTime)
+
         return decodedToken.exp < currentTime;
     } catch (error) {
         console.error("Failed to decode token:", error);
@@ -28,15 +30,11 @@ export async function refreshToken(refreshToken) {
         const data = await response.json();
         tokenStore.set(data.token);
         return data.token;
-      } else {
-        const rememberMe = localStorage.getItem("rememberMe") === "true";
-  
-        if (rememberMe) {
-          return null;
-        } else {
-          logoutUser();
-          navigate("/", { replace: true });
-        }
+      } else {  
+        
+        logoutUser();
+        navigate("/", { replace: true });
+        
       }
     } catch (error) {
       console.error("Error refreshing token:", error);
