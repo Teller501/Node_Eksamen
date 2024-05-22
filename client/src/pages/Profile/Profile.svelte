@@ -1,12 +1,6 @@
 <script>
-    import {
-        Tabs,
-        TabItem,
-        Avatar,
-    } from "flowbite-svelte";
-    import {
-        MapPinSolid,
-    } from "flowbite-svelte-icons";
+    import { Tabs, TabItem, Avatar } from "flowbite-svelte";
+    import { MapPinSolid } from "flowbite-svelte-icons";
     import EditProfile from "../../components/EditProfile.svelte";
     import ProfileContent from "../../components/Profile/ProfileContent.svelte";
     import WatchedContent from "../../components/Profile/WatchedContent.svelte";
@@ -16,21 +10,36 @@
     import { fetchGet } from "../../util/api.js";
     import { favoritesStore } from "../../stores/favoritesStore.js";
 
+    export let params;
+    const username = params.username;
+
     let user = $userStore;
     let userData;
     let lastFourMovies = [];
     let reviews = [];
     let favorites = [];
     let watchedMovies = [];
+    let profilePicturePath;
 
-    const profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
+    let isOwner = false;
+
+    $: isOwner = username === $userStore.username;
 
     onMount(async () => {
+        if (!isOwner) {
+            await fetchUser();
+        }
         await fetchUserData();
         await fetchUserReviews();
         await fetchUserFavorites();
         await fetchWatchedMovies();
+        profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
     });
+
+    async function fetchUser() {
+        const { data } = await fetchGet(`${$BASE_URL}/api/users/${username}`);
+        user = data;
+    }
 
     async function fetchUserData() {
         const { data, status } = await fetchGet(
@@ -107,7 +116,9 @@
                 </div>
             </div>
         </div>
-        <EditProfile />
+        {#if isOwner}
+            <EditProfile />
+        {/if}
     </div>
 </div>
 
@@ -118,7 +129,7 @@
             title="Profile"
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
-            <ProfileContent {lastFourMovies} {reviews} {favorites} />
+            <ProfileContent {lastFourMovies} {reviews} {favorites} {user} {isOwner}/>
         </TabItem>
         <TabItem
             title="Watched"

@@ -4,13 +4,15 @@
     import posterPlaceholder from "../assets/poster-placeholder.png";
     import SearchModal from "./SearchModal.svelte";
     import { fetchDelete } from "../util/api.js";
-    import { userStore } from "../stores/authStore.js";
     import { BASE_URL } from "../stores/generalStore.js";
     import { favoritesStore } from "../stores/favoritesStore.js";
     import { get } from 'svelte/store';
 
+    export let user;
+    export let isOwner;
+
     let formModal = false;
-    const userId = $userStore.id;
+    const userId = user.id;
     let favorites = get(favoritesStore);
 
     favoritesStore.subscribe(value => {
@@ -23,15 +25,17 @@
     }
 </script>
 
-<Button
+{#if isOwner}
+    <Button
     on:click={() => (formModal = true)}
     class="absolute right-0 bg-transparent hover:bg-transparent active:ring-0 focus:ring-0 hover:cursor-default"
->
+    >
     <CirclePlusSolid
         size="md"
         class="fill-primary-600 hover:fill-primary-800 hover:cursor-pointer"
     />
-</Button>
+    </Button>
+{/if}
 
 <Modal
     bind:open={formModal}

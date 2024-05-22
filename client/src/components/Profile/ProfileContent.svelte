@@ -9,13 +9,12 @@
     import Movie from "../Movie.svelte";
     import Favorites from "../Favorites.svelte";
     import posterPlaceholder from "../../assets/poster-placeholder.png";
-    import { userStore } from "../../stores/authStore";
 
     export let lastFourMovies = [];
     export let reviews = [];
     export let favorites = [];
-
-    let user = $userStore;
+    export let user;
+    export let isOwner;
 </script>
 
 <div class="container mx-auto px-4 mt-8 mb-12 grid grid-cols-3 gap-4">
@@ -101,7 +100,7 @@
                 <h3 class="text-lg font-bold text-slate-900 mx-auto">
                     Favorites
                 </h3>
-                <Favorites />
+                <Favorites {user} {isOwner}/>
             </div>
             <div class="flex space-x-1 mt-2">
                 {#each favorites as favorite, i (favorite.movie_id)}

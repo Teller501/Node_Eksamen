@@ -102,7 +102,7 @@
                 </NavLi>
                 <Dropdown class="w-44 z-20 bg-slate-50 rounded">
                     <DropdownItem href="/home">Home</DropdownItem>
-                    <DropdownItem href="/profile">Profile</DropdownItem>
+                    <DropdownItem href={`/${$userStore.username}`}>Profile</DropdownItem>
                     <DropdownItem href="/movies">Movies</DropdownItem>
                     <DropdownItem href="/">Reviews</DropdownItem>
                     <DropdownItem href="/"
@@ -145,8 +145,8 @@
         <PrivateRoute path="/recommendations">
             <Recommendations />
         </PrivateRoute>
-        <PrivateRoute path="/profile">
-            <Profile />
-        </PrivateRoute>
+        <Route path="/:username" let:params>
+            <Profile {params} />
+        </Route>
     </div>
 </Router>

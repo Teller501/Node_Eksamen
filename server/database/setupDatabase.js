@@ -9,7 +9,6 @@ const isDeleteMode = process.argv.includes("delete");
             await pgClient.query(`DROP TABLE IF EXISTS movie_genres;`);
             await pgClient.query(`DROP TABLE IF EXISTS genres;`);
             await pgClient.query(`DROP TABLE IF EXISTS watch_logs;`);
-            await pgClient.query(`DROP TABLE IF EXISTS movies;`);
             await pgClient.query(`DROP TABLE IF EXISTS users;`);
             await mongoClient.movies.deleteMany({});
         }

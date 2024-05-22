@@ -17,7 +17,7 @@
   } from "flowbite-svelte";
   import { EditSolid, ClockOutline, EyeOutline } from "flowbite-svelte-icons";
 
-  let movieId = window.location.pathname.split("/").pop();
+  const movieId = window.location.pathname.split("/").pop();
   let movieDetails;
   let reviews;
   let movieStats;
