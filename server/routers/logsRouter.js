@@ -107,7 +107,24 @@ router.get("/api/logs/movie/:movieId", async (req, res) => {
 router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
     const movieId = req.params.movieId;
     const result = await pgClient.query(
-        "SELECT movie_id, COUNT(*) AS total_logs, SUM(CASE WHEN review IS NOT NULL AND review <> '' THEN 1 ELSE 0 END) AS total_reviews, SUM(CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) AS total_ratings, AVG(CASE WHEN rating IS NOT NULL THEN rating ELSE NULL END) AS average_rating FROM watch_logs WHERE movie_id = $1 GROUP BY movie_id",
+        `SELECT
+        wl.movie_id,
+        COUNT(DISTINCT wlm.user_id) AS total_watchlist_users,
+        COUNT(*) AS total_logs,
+        SUM(CASE WHEN wl.review IS NOT NULL AND wl.review <> '' THEN 1 ELSE 0 END) AS total_reviews,
+        SUM(CASE WHEN wl.rating IS NOT NULL THEN 1 ELSE 0 END) AS total_ratings,
+        ROUND(AVG(CASE WHEN wl.rating IS NOT NULL THEN wl.rating ELSE NULL END), 2) AS average_rating,
+        MAX(wl.rating) AS max_rating,
+        MIN(wl.rating) AS min_rating
+        FROM
+            watch_logs wl
+        LEFT JOIN
+            watchlist_movies wlm ON wl.movie_id = wlm.movie_id
+        WHERE
+            wl.movie_id = $1
+        GROUP BY
+            wl.movie_id;    
+        `,
         [movieId]
     );
 

@@ -4,6 +4,7 @@
     import EditProfile from "../../components/EditProfile.svelte";
     import ProfileContent from "../../components/Profile/ProfileContent.svelte";
     import WatchedContent from "../../components/Profile/WatchedContent.svelte";
+    import WatchList from "../../components/WatchList.svelte";
     import { onMount } from "svelte";
     import { userStore } from "../../stores/authStore";
     import { BASE_URL } from "../../stores/generalStore.js";
@@ -19,6 +20,7 @@
     let reviews = [];
     let favorites = [];
     let watchedMovies = [];
+    let watchList = [];
     let profilePicturePath;
 
     let isOwner = false;
@@ -33,6 +35,7 @@
         await fetchUserReviews();
         await fetchUserFavorites();
         await fetchWatchedMovies();
+        await fetchWatchList();
         profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
     });
 
@@ -89,6 +92,16 @@
         }
         watchedMovies = data;
     }
+
+    async function fetchWatchList() {
+        const { data, status } = await fetchGet(
+            `${$BASE_URL}/api/watchlist/${user.id}`
+        );
+        if (status === 404) {
+            return;
+        }
+        watchList = data;
+    }
 </script>
 
 <div class="container mx-auto p-4">
@@ -133,7 +146,7 @@
             title="Profile"
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
-            <ProfileContent {lastFourMovies} {reviews} {favorites} {user} {isOwner}/>
+            <ProfileContent {lastFourMovies} {reviews} {favorites} {user} {isOwner} {watchList}/>
         </TabItem>
         <TabItem
             title="Watched"
@@ -145,11 +158,7 @@
             title="Watchlist"
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                <b>Users:</b>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                tempor incididunt ut labore et dolore magna aliqua.
-            </p>
+            <WatchList {watchList} />
         </TabItem>
         <TabItem
             title="Reviews"

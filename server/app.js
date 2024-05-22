@@ -57,6 +57,9 @@ app.use(usersRouter);
 import favoritesRouter from "./routers/favoritesRouter.js";
 app.use(favoritesRouter);
 
+import watchlistRouter from "./routers/watchlistRouter.js";
+app.use(watchlistRouter);
+
 import authenticateToken from "./util/authenticateToken.js";
 
 const PORT = process.env.PORT ?? 8080;

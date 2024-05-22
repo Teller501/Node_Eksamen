@@ -15,6 +15,7 @@
     export let favorites = [];
     export let user;
     export let isOwner;
+    export let watchList = [];
 </script>
 
 <div class="container mx-auto px-4 mt-8 mb-12 grid grid-cols-3 gap-4">
@@ -124,14 +125,18 @@
         <div class="bg-white p-4 rounded-md shadow-md mt-4">
             <h3 class="text-lg font-bold text-slate-900">Watchlist</h3>
             <div class="flex space-x-2 mt-2">
-                {#each Array(4) as _, i}
-                    <img
-                        src="shrek_poster.jpg"
-                        alt="Watchlist"
-                        class="w-12 h-16"
-                    />
-                {/each}
-            </div>
+                {#each watchList.slice(0, 4) as movie}
+                <Movie
+                    posterPath={movie.poster_path}
+                    width={64}
+                    alt={movie.title}
+                    movieId={movie.movie_id}
+                />
+            {/each}
+        </div>
+        {#if watchList.length > 4}
+            <Button class="mt-4">View more</Button>
+        {/if}
         </div>
     </div>
 </div>

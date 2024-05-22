@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { BASE_URL } from "../../stores/generalStore";
-  import { fetchGet } from "../../util/api";
+  import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
   import tmdbLogo from "../../assets/tmdb-logo.png";
   import cinematchLogo from "../../assets/CineMatch.png"
   import Review from "../../components/Review.svelte";
@@ -15,12 +15,14 @@
     Accordion,
     Img,
   } from "flowbite-svelte";
-  import { EditSolid, ClockOutline, EyeOutline } from "flowbite-svelte-icons";
+  import { ClockOutline, EyeOutline } from "flowbite-svelte-icons";
+  import { userStore } from "../../stores/authStore";
 
   const movieId = window.location.pathname.split("/").pop();
   let movieDetails;
   let reviews;
   let movieStats;
+  let isOnWatchlist = false;
 
   async function fetchMovie() {
     const { data } = await fetchGet(`${$BASE_URL}/api/movies/${movieId}`);
@@ -43,10 +45,34 @@
     movieStats = data;
   }
 
+  async function toggleMovieOnWatchlist() {
+    if (isOnWatchlist) {
+        const { status } = await fetchDelete(`${$BASE_URL}/api/watchlist/${$userStore.id}/${movieId}`);
+        if (status === 200) {
+            isOnWatchlist = false;
+        }
+    } else {
+        const response = await fetchPost(`${$BASE_URL}/api/watchlist/${$userStore.id}`, 
+        { movieId: movieId });
+
+        if (response.status === 201) {
+            isOnWatchlist = true;
+        }
+    }
+}
+
+
   onMount(async () => {
     await fetchMovie();
     await fetchReview(movieId);
     await fetchStats(movieId);
+
+    // Fetch the watchlist status
+    const response = await fetch(`${$BASE_URL}/api/watchlist/${$userStore.id}/${movieId}`);
+    if (response.ok) {
+      const { data } = await response.json();
+      isOnWatchlist = data ? data.some(movie => movie.movie_id === movieId) : false;
+    }
   });
 </script>
 
@@ -83,7 +109,7 @@
       >
         out of {movieDetails?.vote_count} ratings
     </p>
-      <Img src={tmdbLogo} alt="TMDB logo" class="w-6 h-6" />
+      <Img src={tmdbLogo} alt="TMDB logo" class="w-6 h-6 border rounded p-1 shadow" />
     </Rating>
 
     <Rating count rating={movieStats?.average_rating ?? 0}>
@@ -94,26 +120,28 @@
       >
         out of {movieStats?.total_ratings} ratings
     </p>
-      <Img src={cinematchLogo} alt="TMDB logo" class="w-6 h-6" />
+      <Img src={cinematchLogo} alt="Cinematch logo" class="w-6 h-6" />
     </Rating>
 
     <p class="text-gray-700 inline-flex items-center">
-    {movieStats?.total_logs}      <EyeOutline />
+    {movieStats?.total_logs} <EyeOutline />
     </p>
 
     <p class="text-gray-700 inline-flex items-center">
-      15k <ClockOutline />
+      {movieStats?.total_watchlist_users} <ClockOutline />
     </p>
 
     <hr class="my-4 border-gray-200 dark:border-gray-700" />
 
-    <div class="justify-between flex items-center">
+    <div class="justify-center flex items-center">
       <LogMovie posterPath={movieDetails?.poster_path} title={movieDetails?.title} movieId={movieDetails?.id}/>
-      <Button>
-        Add to watchlist <ClockOutline />
-      </Button>
-      <Button>
-        Have watched <EyeOutline />
+      <Button class="ms-10" on:click={toggleMovieOnWatchlist}>
+        {#if isOnWatchlist}
+          Remove from watchlist
+        {:else}
+          Add to watchlist
+        {/if}
+        <ClockOutline />
       </Button>
     </div>
 
