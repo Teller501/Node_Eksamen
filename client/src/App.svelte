@@ -17,7 +17,7 @@
     import Activation from "./components/Activation.svelte";
     import ResetPassword from "./pages/ResetPassword/ResetPassword.svelte";
     import { SearchOutline, ChevronDownOutline } from "flowbite-svelte-icons";
-    import { userStore } from "./stores/authStore";
+    import { userStore, tokenStore } from "./stores/authStore";
     import { logoutUser } from "./util/auth.js";
     import PrivateRoute from "./components/PrivateRoute.svelte";
     import Home from "./pages/Home/Home.svelte";
@@ -34,7 +34,7 @@
     function handleLogout(event) {
         event.preventDefault();
         localStorage.removeItem("rememberMe");
-        logoutUser();
+        logoutUser($tokenStore);
     }
 
     function handleSearch() {

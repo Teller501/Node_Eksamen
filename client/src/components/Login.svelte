@@ -18,10 +18,10 @@
 
     async function handleLogin(event) {
         event.preventDefault();
-        const user = { username, password };
+        const body = { username, password, rememberMe };
         const { status, data } = await fetchPost(
             `${$BASE_URL}/api/login`,
-            user
+            body
         );
 
         if (status === 200) {

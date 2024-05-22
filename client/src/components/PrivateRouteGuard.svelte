@@ -19,7 +19,7 @@
   
     $: if ($userStore && isTokenExpiredOnce() && !isRefreshingToken) {
       isRefreshingToken = true;
-      refreshToken($refreshTokenStore)
+      refreshToken($refreshTokenStore, $tokenStore)
         .then((newToken) => {
           if (newToken) {
             tokenStore.update((store) => {
@@ -27,12 +27,12 @@
               return store;
             });
           } else {
-            logoutUser();
+            logoutUser($tokenStore);
             navigate("/", { state: { from: currentURL }, replace: true });
           }
         })
         .catch(() => {
-          logoutUser();
+          logoutUser($tokenStore);
           navigate("/", { state: { from: currentURL }, replace: true });
         })
         .finally(() => {

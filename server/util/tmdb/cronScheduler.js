@@ -1,55 +1,11 @@
-import cron from 'node-cron';
-import fetchTMDBData from './tmdbPopulate.js';
-import axios from 'axios';
+import cron from "node-cron";
+import { fetchTMDBData } from "./tmdbPopulate.js";
 
 export default function scheduleTMDBPopulation() {
-    cron.schedule('*/10 * * * *', async () => {
+    cron.schedule('*/5 * * * *', async () => {
         console.log(`Fetching data at ${new Date().toISOString()}`);
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
-    });
-    cron.schedule('*/10 * * * *', async () => {
-        await fetchTMDBData();
+        for (let i = 0; i < 20; i++) {
+            fetchTMDBData();
+        }
     });
 }

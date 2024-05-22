@@ -1,16 +1,21 @@
 import axios from "axios";
 import pgClient from "../../database/pgConnection.js";
 import mongoClient from "../../database/mongoDBConnection.js";
+import Bottleneck from "bottleneck";
 
 const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.TMDB_API_KEY;
+
+const limiter = new Bottleneck({
+    minTime: 20 // Ensures we don't exceed 50 requests per second
+});
 
 let currentPage = 1;
 let maxDate = new Date("2024-05-01").toISOString().split('T')[0];
 let minDate = getMinDate(maxDate, 1);
 let maxYear = 1950;
 
-export default async function fetchTMDBData() {
+const fetchTMDBData = limiter.wrap(async function () {
     try {
         const response = await axios.get(
             `${BASE_URL}/discover/movie?include_adult=false&include_video=false&language=en-US&page=${currentPage}&sort_by=popularity.desc&api_key=${API_KEY}&primary_release_date.gte=${minDate}&primary_release_date.lte=${maxDate}`
@@ -33,24 +38,24 @@ export default async function fetchTMDBData() {
         }
 
         const movies = response.data.results;
-        for (const movie of movies) {
-            const detailedMovieResponse = await axios.get(
-                `${BASE_URL}/movie/${movie.id}?api_key=${API_KEY}`
-            );
-            const castResponse = await axios.get(
-                `${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`
-            );
-            await insertMovieToMySQL(detailedMovieResponse.data);
-            await insertMovieToMongoDB(
-                detailedMovieResponse.data,
-                castResponse.data.cast
-            );
-        }
+
+        const moviePromises = movies.map(async (movie) => {
+            try {
+                const detailedMovieResponse = await axios.get(`${BASE_URL}/movie/${movie.id}?api_key=${API_KEY}`);
+                const castResponse = await axios.get(`${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`);
+                await insertMovieToMySQL(detailedMovieResponse.data);
+                await insertMovieToMongoDB(detailedMovieResponse.data, castResponse.data.cast);
+            } catch (error) {
+                console.error(`Failed to fetch details for movie ID: ${movie.id}`, error);
+            }
+        });
+
+        await Promise.all(moviePromises);
 
     } catch (error) {
         console.error("Failed to fetch or store movies:", error);
     }
-}
+});
 
 function getMinDate(maxDate, monthsToSubtract) {
     const maxDateObj = new Date(maxDate);
@@ -128,8 +133,10 @@ async function insertMovieToMongoDB(movieData, cast) {
         };
         const options = { upsert: true };
 
-        const result = await mongoClient.movies.updateOne(filter, update, options);
+        await mongoClient.movies.updateOne(filter, update, options);
     } catch (error) {
         console.error("Failed to upsert movie in MongoDB:", error);
     }
 }
+
+export { fetchTMDBData };

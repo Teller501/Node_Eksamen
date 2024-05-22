@@ -20,8 +20,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const users = [];
 const saltRounds = 14;
 
-function generateAccessToken(user) {
-    return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "15m" });
+function generateAccessToken(user, rememberMe = false) {
+    return jwt.sign(user, process.env.JWT_SECRET, {
+        expiresIn: rememberMe ? "7d" : "30m",
+    });
 }
 
 async function sendActivationEmail(email, activationToken) {
@@ -93,6 +95,7 @@ router.post("/api/login", validateUserLogin, async (req, res) => {
     }
 
     const user = result.rows[0];
+    const rememberMe = req.body.rememberMe;
 
     if (!user.is_active) {
         return res.status(400).send({ error: "User not activated" });
@@ -100,9 +103,12 @@ router.post("/api/login", validateUserLogin, async (req, res) => {
 
     try {
         if (await bcrypt.compare(req.body.password, user.password)) {
-            const token = generateAccessToken(user);
+            const token = generateAccessToken(user, rememberMe);
             const refreshToken = jwt.sign(user, process.env.JWT_REFRESH_SECRET);
-            redisClient.set(refreshToken, user.username, { EX: 1800 });
+            if (rememberMe) {
+                await redisClient.set(refreshToken, user.username, { EX: 604800 });
+            }
+            await redisClient.set(refreshToken, user.username, { EX: 1800 });
             res.send({ token: token, refreshToken: refreshToken, user: user });
         } else {
             res.status(400).send({ error: "Invalid password" });
@@ -148,6 +154,7 @@ router.post("/api/token", validateToken, async (req, res) => {
   
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
       if (err) return res.sendStatus(403);
+      console.log(err);
   
       pgClient.query(`SELECT is_active FROM users WHERE username = $1`, [user.username])
         .then(async (result) => {
@@ -260,8 +267,8 @@ router.post("/api/remember-me", async (req, res) => {
     }
 });
 
-router.delete("/api/logout", (req, res) => {
-    redisClient.del(req.body.token);
+router.delete("/api/logout/:token", (req, res) => {
+    redisClient.del(req.params.token);
     res.sendStatus(204);
 });
 
