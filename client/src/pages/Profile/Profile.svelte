@@ -4,12 +4,14 @@
     import EditProfile from "../../components/EditProfile.svelte";
     import ProfileContent from "../../components/Profile/ProfileContent.svelte";
     import WatchedContent from "../../components/Profile/WatchedContent.svelte";
-    import WatchList from "../../components/WatchList.svelte";
-    import { onMount } from "svelte";
+    import WatchList from "../../components/Profile/WatchListContent.svelte";
+    import Reviews from "../../components/Profile/ReviewsContent.svelte";
+    import { onMount, onDestroy } from "svelte";
     import { userStore } from "../../stores/authStore";
     import { BASE_URL } from "../../stores/generalStore.js";
     import { fetchGet } from "../../util/api.js";
     import { favoritesStore } from "../../stores/favoritesStore.js";
+    import { activeTab } from '../../stores/tabStore.js';
 
     export let params;
     const username = params.username;
@@ -39,6 +41,10 @@
         profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
     });
 
+    onDestroy(() => {
+        activeTab.set('Profile');
+    })
+
     async function fetchUser() {
         const { data, status } = await fetchGet(`${$BASE_URL}/api/users/${username}`);
 
@@ -61,7 +67,7 @@
 
     async function fetchUserReviews() {
         const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/logs/user/${user.id}/reviews?limit=2`
+            `${$BASE_URL}/api/logs/user/${user.id}/reviews`
         );
         if (status === 404) {
             return;
@@ -142,36 +148,41 @@
 <div class="container mx-auto px-4 mt-4">
     <Tabs tabStyle="pill">
         <TabItem
-            open
+            open={$activeTab === 'Profile'}
             title="Profile"
+            on:click={() => activeTab.set('Profile')}
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
             <ProfileContent {lastFourMovies} {reviews} {favorites} {user} {isOwner} {watchList}/>
         </TabItem>
         <TabItem
+            open={$activeTab === 'Watched'}
             title="Watched"
+            on:click={() => activeTab.set('Watched')}
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
             <WatchedContent {watchedMovies} />
         </TabItem>
         <TabItem
+            open={$activeTab === 'Watchlist'}
             title="Watchlist"
+            on:click={() => activeTab.set('Watchlist')}
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
             <WatchList {watchList} />
         </TabItem>
         <TabItem
+            open={$activeTab === 'Reviews'}
             title="Reviews"
+            on:click={() => activeTab.set('Reviews')}
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                <b>Dashboard:</b>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                tempor incididunt ut labore et dolore magna aliqua.
-            </p>
+            <Reviews {reviews} />
         </TabItem>
         <TabItem
+            open={$activeTab === 'List'}
             title="List"
+            on:click={() => activeTab.set('List')}
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
             <p class="text-sm text-gray-500 dark:text-gray-400">

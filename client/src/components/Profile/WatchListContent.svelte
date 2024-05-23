@@ -1,5 +1,5 @@
 <script>
-    import Movie from "./Movie.svelte";
+    import Movie from "../Movie.svelte";
 
     export let watchList = [];
 
@@ -13,7 +13,7 @@
                 posterPath={movie.poster_path}
                 alt={movie.title}
                 movieId={movie.movie_id}
-                width="w-4"
+                width={128}
             />
         {/each}
     </div>

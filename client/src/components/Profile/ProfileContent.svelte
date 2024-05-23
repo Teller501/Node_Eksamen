@@ -1,14 +1,10 @@
 <script>
-    import {
-        Img,
-        Rating,
-        Hr,
-        Button,
-    } from "flowbite-svelte";
+    import { Img, Rating, Hr, Button } from "flowbite-svelte";
     import { ClockOutline } from "flowbite-svelte-icons";
     import Movie from "../Movie.svelte";
     import Favorites from "../Favorites.svelte";
     import posterPlaceholder from "../../assets/poster-placeholder.png";
+    import { activeTab } from "../../stores/tabStore.js";
 
     export let lastFourMovies = [];
     export let reviews = [];
@@ -16,6 +12,11 @@
     export let user;
     export let isOwner;
     export let watchList = [];
+
+    function goToTab(tabName) {
+        activeTab.set(tabName);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 </script>
 
 <div class="container mx-auto px-4 mt-8 mb-12 grid grid-cols-3 gap-4">
@@ -49,12 +50,12 @@
                     </div>
                 {/each}
             </div>
-            <Button class="mt-4">View more</Button>
+            <Button class="mt-4" on:click={() => goToTab("Watched")}>View more</Button>
         </div>
         <div class="mt-8">
             <h2 class="text-2xl font-bold text-slate-900">Recent Reviews</h2>
             <div class="mt-4 space-y-4 mb-2">
-                {#each reviews as review}
+                {#each reviews.slice(0, 2) as review}
                     <div class="flex space-x-4">
                         <Movie
                             posterPath={review.poster_path}
@@ -83,7 +84,8 @@
                         </div>
                     </div>
                 {/each}
-                <Button class="mt-4">View more</Button>
+                <Button class="mt-4" on:click={() => goToTab("Reviews")}>View more</Button
+                >
             </div>
         </div>
     </div>
@@ -101,7 +103,7 @@
                 <h3 class="text-lg font-bold text-slate-900 mx-auto">
                     Favorites
                 </h3>
-                <Favorites {user} {isOwner}/>
+                <Favorites {user} {isOwner} />
             </div>
             <div class="flex space-x-1 mt-2">
                 {#each favorites as favorite, i (favorite.movie_id)}
@@ -126,17 +128,17 @@
             <h3 class="text-lg font-bold text-slate-900">Watchlist</h3>
             <div class="flex space-x-2 mt-2">
                 {#each watchList.slice(0, 4) as movie}
-                <Movie
-                    posterPath={movie.poster_path}
-                    width={64}
-                    alt={movie.title}
-                    movieId={movie.movie_id}
-                />
-            {/each}
-        </div>
-        {#if watchList.length > 4}
-            <Button class="mt-4">View more</Button>
-        {/if}
+                    <Movie
+                        posterPath={movie.poster_path}
+                        width={64}
+                        alt={movie.title}
+                        movieId={movie.movie_id}
+                    />
+                {/each}
+            </div>
+            {#if watchList.length > 4}
+                <Button class="mt-4" on:click={() => goToTab("Watchlist")}>View more</Button>
+            {/if}
         </div>
     </div>
 </div>

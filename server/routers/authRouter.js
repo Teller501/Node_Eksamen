@@ -154,7 +154,6 @@ router.post("/api/token", validateToken, async (req, res) => {
   
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
       if (err) return res.sendStatus(403);
-      console.log(err);
   
       pgClient.query(`SELECT is_active FROM users WHERE username = $1`, [user.username])
         .then(async (result) => {
@@ -258,7 +257,7 @@ router.post("/api/remember-me", async (req, res) => {
     try {
         await redisClient.set(
             `${refreshToken}:rememberMe`,
-            rememberMe.toString()
+            rememberMe.toString(), { EX: 604800 }
         );
         res.status(200).send({ data: "Remember me set" });
     } catch (error) {

@@ -107,41 +107,41 @@ router.get("/api/logs/movie/:movieId", async (req, res) => {
 router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
     const movieId = req.params.movieId;
     const result = await pgClient.query(
-        `SELECT
-        wl.movie_id,
+      `
+      SELECT
+        wlm.movie_id,
         COUNT(DISTINCT wlm.user_id) AS total_watchlist_users,
-        COUNT(*) AS total_logs,
+        COUNT(DISTINCT wl.id) AS total_logs,
         SUM(CASE WHEN wl.review IS NOT NULL AND wl.review <> '' THEN 1 ELSE 0 END) AS total_reviews,
         SUM(CASE WHEN wl.rating IS NOT NULL THEN 1 ELSE 0 END) AS total_ratings,
         ROUND(AVG(CASE WHEN wl.rating IS NOT NULL THEN wl.rating ELSE NULL END), 2) AS average_rating,
         MAX(wl.rating) AS max_rating,
         MIN(wl.rating) AS min_rating
-        FROM
-            watch_logs wl
-        LEFT JOIN
-            watchlist_movies wlm ON wl.movie_id = wlm.movie_id
-        WHERE
-            wl.movie_id = $1
-        GROUP BY
-            wl.movie_id;    
-        `,
-        [movieId]
+      FROM watchlist_movies wlm
+      LEFT JOIN watch_logs wl ON wlm.movie_id = wl.movie_id AND wlm.user_id = wl.user_id
+      WHERE wlm.movie_id = $1
+      GROUP BY wlm.movie_id;
+      `,
+      [movieId]
     );
-
+  
     if (result.rows.length === 0) {
-        res.send({
-            data: {
-                movie_id: movieId,
-                total_logs: 0,
-                total_reviews: 0,
-                total_ratings: 0,
-                average_rating: null,
-            },
-        });
+      res.send({
+        data: {
+          movie_id: movieId,
+          total_watchlist_users: 0,
+          total_logs: 0,
+          total_reviews: 0,
+          total_ratings: 0,
+          average_rating: null,
+          max_rating: null,
+          min_rating: null,
+        },
+      });
     } else {
-        res.send({ data: result.rows[0] });
+      res.send({ data: result.rows[0] });
     }
-});
+  });
 
 router.get("/api/logs/reviews/:movieId", async (req, res) => {
     const movieId = req.params.movieId;
@@ -242,7 +242,7 @@ router.get("/api/logs/user/:userId/watched", async (req, res) => {
 
     if (logsResult.rows.length === 0) {
         res.status(404).send({
-            message: "No logs found for this user."
+            message: "No logs found for this user.",
         });
     } else {
         const logDetailsPromises = logsResult.rows.map(async (row) => {
@@ -257,7 +257,7 @@ router.get("/api/logs/user/:userId/watched", async (req, res) => {
                 rating: row.rating,
                 review: row.review,
                 created_at: row.created_at,
-                poster_path: movieDoc? movieDoc.posterPath : null
+                poster_path: movieDoc ? movieDoc.posterPath : null,
             };
         });
 
@@ -270,13 +270,12 @@ router.get("/api/logs/user/:userId/watched", async (req, res) => {
                 total_pages: totalPages,
                 has_next_page: page < totalPages,
                 has_previous_page: page > 1,
-                next_page: page < totalPages? page + 1 : null,
-                previous_page: page > 1? page - 1 : null,
-            }
+                next_page: page < totalPages ? page + 1 : null,
+                previous_page: page > 1 ? page - 1 : null,
+            },
         });
     }
 });
-
 
 router.get("/api/logs/user/:userId/reviews", async (req, res) => {
     const userId = req.params.userId;
