@@ -23,6 +23,7 @@
   "dependencies": {
     "@ernane/svelte-star-rating": "^1.1.7",
     "jwt-decode": "^4.0.0",
+    "socket.io-client": "^4.7.5",
     "svelte-french-toast": "^1.2.0",
     "svelte-routing": "^2.12.0"
   }

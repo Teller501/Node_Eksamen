@@ -10,8 +10,8 @@ await client.connect();
 
 const db = client.db(dbName);
 
-  export default {
+export default {
     movies: db.collection("movies"),
-    activity: db.collection("activity"),
+    activities: db.collection("activities"),
     recommendations: db.collection("recommendations"),
-  };
+};

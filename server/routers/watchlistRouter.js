@@ -4,7 +4,7 @@ import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
-router.get("/api/watchlist/:userId/:movieId?", async (req, res) => { 
+router.get("/api/watchlist/:userId/:movieId?", async (req, res) => {
     try {
         const userId = req.params.userId;
         const movieId = req.params.movieId;
@@ -40,17 +40,20 @@ router.get("/api/watchlist/:userId/:movieId?", async (req, res) => {
             return res.status(404).send("No watchlist found");
         }
 
-        const enrichedWatchlist = await Promise.all(watchlist.map(async (movie) => {
-            const mongoData = await mongoClient.movies.findOne({ id: Number(movie.movie_id) });
-            return {
-                ...movie,
-                poster_path: mongoData ? mongoData.posterPath : null
-            };
-        }));
+        const enrichedWatchlist = await Promise.all(
+            watchlist.map(async (movie) => {
+                const mongoData = await mongoClient.movies.findOne({
+                    id: Number(movie.movie_id),
+                });
+                return {
+                    ...movie,
+                    poster_path: mongoData ? mongoData.posterPath : null,
+                };
+            })
+        );
 
         res.json({ data: enrichedWatchlist });
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Error getting watchlist:", error);
         res.status(500).send("Failed to get watchlist");
     }
@@ -73,13 +76,36 @@ router.post("/api/watchlist/:userId", async (req, res) => {
             return res.status(404).send("Movie not found");
         }
 
-        res.status(201).json({ data: movie }); 
+        const movieQuery = await pgClient.query(
+            `SELECT title FROM movies WHERE id = $1`,
+            [movieId]
+        );
+        const userQuery = await pgClient.query(
+            `SELECT username FROM users WHERE id = $1`,
+            [userId]
+        );
+
+        const currentDate = new Date().toISOString();
+
+        await mongoClient.activities.updateOne(
+            { movieId: movieId },
+            {
+                $set: {
+                    username: userQuery.rows[0].username,
+                    title: movieQuery.rows[0].title,
+                    activityType: "watchlist",
+                    createdAt: currentDate,
+                },
+            },
+            { upsert: true }
+        );
+
+        res.status(201).json({ data: movie });
     } catch (error) {
         console.error("Error adding movie to watchlist:", error);
         res.status(500).send("Failed to add movie to watchlist");
     }
 });
-
 
 router.delete("/api/watchlist/:userId/:movieId", async (req, res) => {
     try {
@@ -99,8 +125,7 @@ router.delete("/api/watchlist/:userId/:movieId", async (req, res) => {
         }
 
         res.json({ data: movie });
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Error removing movie from watchlist:", error);
         res.status(500).send("Failed to remove movie from watchlist");
     }

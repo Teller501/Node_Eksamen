@@ -1,114 +1,142 @@
 <script>
-  import { onMount } from "svelte";
-  import { fetchGet } from "../../util/api";
-  import { BASE_URL } from "../../stores/generalStore";
-  import Movie from "../../components/Movie.svelte";
-  import { ImagePlaceholder, Button, Avatar } from "flowbite-svelte";
-  import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
-  import { userStore } from "../../stores/authStore";
+    import { onMount } from "svelte";
+    import { fetchGet } from "../../util/api";
+    import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
+    import Movie from "../../components/Movie.svelte";
+    import { ImagePlaceholder, Button, Avatar } from "flowbite-svelte";
+    import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
+    import { userStore } from "../../stores/authStore";
+    import { activityStore } from "../../stores/activityStore.js";
+    import io from "socket.io-client";
+    import ActivityList from "../../components/ActivityList.svelte";
 
-  let popularMovies = null;
-  let page = 1;
-  let recentLogs = null;
+    let popularMovies = null;
+    let page = 1;
+    let recentLogs = null;
 
-  async function fetchMovies() {
-    const { data } = await fetchGet(
-      `${$BASE_URL}/api/movies/popular?limit=5&page=${page}`
-    );
-    popularMovies = data;
-  }
+    const socket = io($SOCKET_URL);
 
-  async function fetchLogs() {
-    const { data } = await fetchGet(`${$BASE_URL}/api/logs/recent`);
-    recentLogs = data;
-  }
+    socket.on("activityLogUpdate", (data) => {
+        const activity = data.data;
 
-  onMount(() => {
-    fetchMovies();
-    fetchLogs();
-  });
+        activityStore.update((activityListArray) => {
+            activityListArray = [activity, ...activityListArray];
+            return activityListArray;
+        });
+    });
 
-  function handleNextPopularMoviePage() {
-    popularMovies = null;
-    page++;
-    fetchMovies();
-  }
+    async function fetchMovies() {
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/movies/popular?limit=5&page=${page}`
+        );
+        popularMovies = data;
+    }
 
-  function handlePreviousPopularMoviePage() {
-    if (page === 1) return;
-    popularMovies = null;
-    page--;
-    fetchMovies();
-  }
+    async function fetchLogs() {
+        const { data } = await fetchGet(`${$BASE_URL}/api/logs/recent`);
+        recentLogs = data;
+    }
+
+    onMount(async () => {
+		fetchMovies()
+		fetchLogs()
+    });
+
+    function handleNextPopularMoviePage() {
+        popularMovies = null;
+        page++;
+        fetchMovies();
+    }
+
+    function handlePreviousPopularMoviePage() {
+        if (page === 1) return;
+        popularMovies = null;
+        page--;
+        fetchMovies();
+    }
 </script>
 
+<ActivityList />
+
 <div class="shadow bg-white rounded-lg p-4 border">
-  <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">Popular Movies</h2>
-  <div id="popular-movies" class="w-full flex items-center justify-between">
-    <Button
-      class="bg-transparent border-none p-0 inline-flex justify-center items-center hover:bg-transparent focus:outline-none focus-within:ring-0"
-      on:click={handlePreviousPopularMoviePage}
-    >
-      <CaretLeftSolid
-        class="w-8 h-8 text-slate-900 hover:text-slate-400 cursor-pointer"
-      />
-    </Button>
-    <div class="grid grid-cols-5">
-      {#if popularMovies}
-        {#each popularMovies as movie}
-          <Movie
-            posterPath={movie.poster_path}
-            alt={movie.title}
-            width={172}
-            movieId={movie.id}
-          />
-        {/each}
-      {:else}
-        {#each Array(5).fill() as _}
-          <ImagePlaceholder
-            imgOnly
-            class="w-32 rounded-sm mx-2 drop-shadow-md"
-          />
-        {/each}
-      {/if}
+    <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
+        Popular Movies
+    </h2>
+    <div id="popular-movies" class="w-full flex items-center justify-between">
+        <Button
+            class="bg-transparent border-none p-0 inline-flex justify-center items-center hover:bg-transparent focus:outline-none focus-within:ring-0"
+            on:click={handlePreviousPopularMoviePage}
+        >
+            <CaretLeftSolid
+                class="w-8 h-8 text-slate-900 hover:text-slate-400 cursor-pointer"
+            />
+        </Button>
+        <div class="grid grid-cols-5">
+            {#if popularMovies}
+                {#each popularMovies as movie}
+                    <Movie
+                        posterPath={movie.poster_path}
+                        alt={movie.title}
+                        width={172}
+                        movieId={movie.id}
+                    />
+                {/each}
+            {:else}
+                {#each Array(5).fill() as _}
+                    <ImagePlaceholder
+                        imgOnly
+                        class="w-32 rounded-sm mx-2 drop-shadow-md"
+                    />
+                {/each}
+            {/if}
+        </div>
+        <Button
+            class="bg-transparent border-none p-0 inline-flex justify-center items-center hover:bg-transparent focus:outline-none focus-within:ring-0"
+            on:click={handleNextPopularMoviePage}
+        >
+            <CaretRightSolid
+                class="w-8 h-8 text-slate-900 hover:text-slate-400 cursor-pointer"
+            />
+        </Button>
     </div>
-    <Button
-      class="bg-transparent border-none p-0 inline-flex justify-center items-center hover:bg-transparent focus:outline-none focus-within:ring-0"
-      on:click={handleNextPopularMoviePage}
-    >
-      <CaretRightSolid
-        class="w-8 h-8 text-slate-900 hover:text-slate-400 cursor-pointer"
-      />
-    </Button>
-  </div>
 </div>
 
 <div class="shadow bg-white rounded-lg p-4 border mt-4">
-  <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">Recent Reviews</h2>
+    <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
+        Recent Reviews
+    </h2>
 
-  <div class="grid grid-cols-4 gap-4">
-    {#if recentLogs}
-        {#each recentLogs.slice(0, 4) as log}
-      <div class="flex space-x-4">
-        <div class="w-full">
-            <div class="flex items-center w-full">
-                <h3 class="text-slate-900 font-bold me-1">{log.username}</h3>
-                <Avatar
-                src={`${$BASE_URL}/${log.profile_picture}` ??
-                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                alt="Profile Picture"
-                class="w-5 h-5"
-            />
-            </div>
-          <div class="text-gray-600 text-sm">{log.created_at.split("T")[0]}</div>
-          <hr class="h-px m-2 bg-primary-300 border-0 dark:bg-primary-700" />
-          <p class="mt-2 text-sm text-left text-gray-700">{log.movie_title} - {log.rating}★</p>
-          <p class="mt-2 text-sm text-left text-gray-700">{log.review}</p>
-        </div>
-      </div>
-    {/each}
-    {/if}
-  </div>
+    <div class="grid grid-cols-4 gap-4">
+        {#if recentLogs}
+            {#each recentLogs.slice(0, 4) as log}
+                <div class="flex space-x-4">
+                    <div class="w-full">
+                        <div class="flex items-center w-full">
+                            <h3 class="text-slate-900 font-bold me-1">
+                                {log.username}
+                            </h3>
+                            <Avatar
+                                src={`${$BASE_URL}/${log.profile_picture}` ??
+                                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                alt="Profile Picture"
+                                class="w-5 h-5"
+                            />
+                        </div>
+                        <div class="text-gray-600 text-sm">
+                            {log.created_at.split("T")[0]}
+                        </div>
+                        <hr
+                            class="h-px m-2 bg-primary-300 border-0 dark:bg-primary-700"
+                        />
+                        <p class="mt-2 text-sm text-left text-gray-700">
+                            {log.movie_title} - {log.rating}★
+                        </p>
+                        <p class="mt-2 text-sm text-left text-gray-700">
+                            {log.review}
+                        </p>
+                    </div>
+                </div>
+            {/each}
+        {/if}
+    </div>
 </div>
-
-

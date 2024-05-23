@@ -1,11 +1,11 @@
 import "dotenv/config";
-import express from "express";
 
+import express from "express";
 const app = express();
 
 import path from "path";
-const imagesDir = path.resolve('./images');
-app.use('/images', express.static(imagesDir));
+const imagesDir = path.resolve("./images");
+app.use("/images", express.static(imagesDir));
 
 app.use(express.json({ limit: "2mb" }));
 
@@ -19,6 +19,19 @@ app.use(
         origin: true,
     })
 );
+
+import http from "http";
+const server = http.createServer(app);
+
+import { Server } from "socket.io";
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["*"],
+    },
+});
+
+export { io };
 
 import { rateLimit } from "express-rate-limit";
 const limiter = rateLimit({
@@ -60,7 +73,19 @@ app.use(favoritesRouter);
 import watchlistRouter from "./routers/watchlistRouter.js";
 app.use(watchlistRouter);
 
+import activitiesRouter from "./routers/activitiesRouter.js";
+app.use(activitiesRouter);
+
+import mongoClient from "./database/mongoDBConnection.js";
+
+const options = { fullDocument: "updateLookup" };
+const changeStream = mongoClient.activities.watch([], options);
+
+changeStream.on("change", (next) => {
+    io.emit("activityLogUpdate", { data: next.fullDocument });
+});
+
 import authenticateToken from "./util/authenticateToken.js";
 
 const PORT = process.env.PORT ?? 8080;
-app.listen(PORT, () => console.log("Server is running on port", PORT));
+server.listen(PORT, () => console.log("Server is running on port", PORT));

@@ -56,14 +56,13 @@ router.get("/api/logs/recent", async (req, res) => {
         );
 
         res.send({ data: logs.rows });
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Failed to get recent logs:", error);
-        res.status(500).send({ error: "An error occurred while fetching recent logs." });
+        res.status(500).send({
+            error: "An error occurred while fetching recent logs.",
+        });
     }
 });
-
-
 
 router.get("/api/logs/:id", async (req, res) => {
     const id = req.params.id;
@@ -127,7 +126,7 @@ router.get("/api/logs/movie/:movieId", async (req, res) => {
 router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
     const movieId = req.params.movieId;
     const result = await pgClient.query(
-      `
+        `
       SELECT
         wlm.movie_id,
         COUNT(DISTINCT wlm.user_id) AS total_watchlist_users,
@@ -142,26 +141,26 @@ router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
       WHERE wlm.movie_id = $1
       GROUP BY wlm.movie_id;
       `,
-      [movieId]
+        [movieId]
     );
-  
+
     if (result.rows.length === 0) {
-      res.send({
-        data: {
-          movie_id: movieId,
-          total_watchlist_users: 0,
-          total_logs: 0,
-          total_reviews: 0,
-          total_ratings: 0,
-          average_rating: null,
-          max_rating: null,
-          min_rating: null,
-        },
-      });
+        res.send({
+            data: {
+                movie_id: movieId,
+                total_watchlist_users: 0,
+                total_logs: 0,
+                total_reviews: 0,
+                total_ratings: 0,
+                average_rating: null,
+                max_rating: null,
+                min_rating: null,
+            },
+        });
     } else {
-      res.send({ data: result.rows[0] });
+        res.send({ data: result.rows[0] });
     }
-  });
+});
 
 router.get("/api/logs/reviews/:movieId", async (req, res) => {
     const movieId = req.params.movieId;
@@ -375,13 +374,24 @@ router.post("/api/logs", async (req, res) => {
             [movie_id, user_id, watched_on, rating, review, currentDate]
         );
 
-        await mongoClient.activity.updateOne(
+        const movieQuery = await pgClient.query(
+            `SELECT title FROM movies WHERE id = $1`,
+            [movie_id]
+        );
+        const userQuery = await pgClient.query(
+            `SELECT username FROM users WHERE id = $1`,
+            [user_id]
+        );
+
+        await mongoClient.activities.updateOne(
             { movieId: movie_id },
             {
                 $set: {
-                    userId: user_id,
+                    username: userQuery.rows[0].username,
+                    title: movieQuery.rows[0].title,
                     activityType: "watched",
                     date: watched_on,
+                    createdAt: currentDate,
                 },
             },
             { upsert: true }
@@ -418,7 +428,7 @@ router.patch("/api/logs/:id", async (req, res) => {
         }
 
         const { movie_id, user_id, watched_on } = updates;
-        await mongoClient.activity.updateOne(
+        await mongoClient.activities.updateOne(
             { movieId: movie_id },
             {
                 $set: {
