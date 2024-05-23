@@ -1,5 +1,5 @@
 <script>
-    import { Button, Modal, Img } from "flowbite-svelte";
+    import { Button, Modal, Img, Popover } from "flowbite-svelte";
     import { CirclePlusSolid, CloseCircleSolid } from "flowbite-svelte-icons";
     import posterPlaceholder from "../assets/poster-placeholder.png";
     import SearchModal from "./SearchModal.svelte";
@@ -26,7 +26,7 @@
 </script>
 
 {#if isOwner}
-    <Button
+    <Button id="addToFavorite"
     on:click={() => (formModal = true)}
     class="absolute right-0 bg-transparent hover:bg-transparent active:ring-0 focus:ring-0 hover:cursor-default"
     >
@@ -35,6 +35,9 @@
         class="fill-primary-600 hover:fill-primary-800 hover:cursor-pointer"
     />
     </Button>
+    <Popover class="w-64 text-sm font-light " triggeredBy="#addToFavorite">
+        Click here to add your favorite movies
+    </Popover>
 {/if}
 
 <Modal
@@ -56,7 +59,7 @@
                 <Button on:click={() => handleRemoveFavorite(favorite.movie_id)} class="bg-transparent hover:bg-transparent active:ring-0 focus:ring-0 hover:cursor-default">
                     <CloseCircleSolid
                         size="md"
-                        class="absolute top-0 right-0 fill-primary-600 hover:fill-primary-800 hover:cursor-pointer"
+                        class="absolute top-0 right-0 fill-red-600 hover:fill-red-800 hover:cursor-pointer"
                     />
                 </Button>
             </div>

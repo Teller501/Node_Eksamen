@@ -100,16 +100,16 @@
         </div>
         <div class="bg-white p-4 rounded-md shadow-md mt-4">
             <div class="relative flex items-center">
-                <h3 class="text-lg font-bold text-slate-900 mx-auto">
+                <h3 class="text-lg font-bold text-slate-900 ms-16">
                     Favorites
                 </h3>
                 <Favorites {user} {isOwner} />
             </div>
-            <div class="flex space-x-1 mt-2">
+            <div class="flex justify-center space-x-2 mt-2">
                 {#each favorites as favorite, i (favorite.movie_id)}
                     <Movie
                         posterPath={favorite.poster_path}
-                        width={64}
+                        width={68}
                         alt={`Favorite ${i + 1}, (${favorite.title})`}
                         movieId={favorite.movie_id}
                     />
@@ -119,15 +119,18 @@
                     <Img
                         src={posterPlaceholder}
                         alt="Placeholder"
-                        class="w-10 h-16"
+                        class="w-14 h-20"
                     />
                 {/each}
             </div>
         </div>
         <div class="bg-white p-4 rounded-md shadow-md mt-4">
-            <h3 class="text-lg font-bold text-slate-900">Watchlist</h3>
+            <div class="flex items-center">
+                <h3 class="text-lg font-bold text-slate-900 ms-16 me-1">Watchlist </h3>
+                <ClockOutline />
+            </div>
             <div class="flex space-x-2 mt-2">
-                {#each watchList.slice(0, 4) as movie}
+                {#each watchList.slice(0, 3) as movie}
                     <Movie
                         posterPath={movie.poster_path}
                         width={64}
@@ -135,10 +138,16 @@
                         movieId={movie.movie_id}
                     />
                 {/each}
+                <p class="text-gray-500 mt-2">
+                    {#if watchList.length > 3}
+                        +{watchList.length - 3} more
+                    {/if}
+
+                    {#if watchList.length === 0}
+                        No movies in watchlist
+                    {/if}
+                </p>
             </div>
-            {#if watchList.length > 4}
-                <Button class="mt-4" on:click={() => goToTab("Watchlist")}>View more</Button>
-            {/if}
         </div>
     </div>
 </div>

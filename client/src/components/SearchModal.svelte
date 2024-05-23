@@ -66,7 +66,7 @@
 >
     <CirclePlusSolid
         size="md"
-        class="absolute top-0 right-0 fill-primary-600 hover:fill-primary-800 hover:cursor-pointer"
+        class="absolute top-0 right-0 fill-green-600 hover:fill-green-800 hover:cursor-pointer"
     />
 </Button>
 
