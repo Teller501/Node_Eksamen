@@ -87,18 +87,13 @@ router.post("/api/watchlist/:userId", async (req, res) => {
 
         const currentDate = new Date().toISOString();
 
-        await mongoClient.activities.updateOne(
-            { movieId: movieId },
-            {
-                $set: {
-                    username: userQuery.rows[0].username,
-                    title: movieQuery.rows[0].title,
-                    activityType: "watchlist",
-                    createdAt: currentDate,
-                },
-            },
-            { upsert: true }
-        );
+        await mongoClient.activities.insertOne({
+            movieId,
+            username: userQuery.rows[0].username,
+            title: movieQuery.rows[0].title,
+            activityType: "watchlist",
+            createdAt: currentDate,
+        });
 
         res.status(201).json({ data: movie });
     } catch (error) {

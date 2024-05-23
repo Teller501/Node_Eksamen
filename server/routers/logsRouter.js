@@ -383,19 +383,20 @@ router.post("/api/logs", async (req, res) => {
             [user_id]
         );
 
-        await mongoClient.activities.updateOne(
-            { movieId: movie_id },
-            {
-                $set: {
-                    username: userQuery.rows[0].username,
-                    title: movieQuery.rows[0].title,
-                    activityType: "watched",
-                    date: watched_on,
-                    createdAt: currentDate,
-                },
-            },
-            { upsert: true }
-        );
+        await mongoClient.activities.insertOne({
+            movieId: movie_id,
+            username: userQuery.rows[0].username,
+            title: movieQuery.rows[0].title,
+            activityType: "watched",
+            date: watched_on,
+            createdAt: currentDate,
+        });
+
+        const watchlistQuery = await pgClient.query(`SELECT * FROM watchlist_movies WHERE movie_id = $1 AND user_id = $2`, [movie_id, user_id]);
+
+        if (watchlistQuery.rows.length > 0) {
+            await pgClient.query(`DELETE FROM watchlist_movies WHERE movie_id = $1 AND user_id = $2`, [movie_id, user_id]);
+        }
 
         res.send({ data: log.rows[0] });
     } catch (error) {

@@ -14,6 +14,8 @@
     let page = 1;
     let recentLogs = null;
 
+	const user = $userStore;
+
     const socket = io($SOCKET_URL);
 
     socket.on("activityLogUpdate", (data) => {
@@ -56,7 +58,8 @@
     }
 </script>
 
-<ActivityList />
+<h1 class="text-slate-900 text-3xl font-bold">Welcome back to CineMatch, {user.username}!</h1>
+<p class="text-slate-900 font-light mb-16">Here are some of the latest goods within the wonderful movie world, enjoy!</p>
 
 <div class="shadow bg-white rounded-lg p-4 border">
     <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
@@ -140,3 +143,5 @@
         {/if}
     </div>
 </div>
+
+<ActivityList />
