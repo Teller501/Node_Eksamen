@@ -45,6 +45,26 @@ router.get("/api/logs", async (req, res) => {
     res.send(logs);
 });
 
+router.get("/api/logs/recent", async (req, res) => {
+    try {
+        const logs = await pgClient.query(
+            `SELECT watch_logs.*, users.*, movies.title AS movie_title 
+             FROM watch_logs
+             INNER JOIN users ON watch_logs.user_id = users.id
+             INNER JOIN movies ON watch_logs.movie_id = movies.id
+             ORDER BY watch_logs.id DESC`
+        );
+
+        res.send({ data: logs.rows });
+    }
+    catch (error) {
+        console.error("Failed to get recent logs:", error);
+        res.status(500).send({ error: "An error occurred while fetching recent logs." });
+    }
+});
+
+
+
 router.get("/api/logs/:id", async (req, res) => {
     const id = req.params.id;
     const log = await pgClient.query("SELECT * FROM watch_logs WHERE id = $1", [
