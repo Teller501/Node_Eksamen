@@ -33,11 +33,13 @@
         if (!isOwner) {
             await fetchUser();
         }
-        await fetchUserData();
-        await fetchUserReviews();
-        await fetchUserFavorites();
-        await fetchWatchedMovies();
-        await fetchWatchList();
+        await Promise.all([
+            fetchUserData(),
+            fetchUserReviews(),
+            fetchUserFavorites(),
+            fetchWatchedMovies(),
+            fetchWatchList(),
+        ]);
         profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
     });
 

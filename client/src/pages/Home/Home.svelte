@@ -34,14 +34,13 @@
         popularMovies = data;
     }
 
-    async function fetchLogs() {
+    async function fetchRecentLogs() {
         const { data } = await fetchGet(`${$BASE_URL}/api/logs/recent`);
         recentLogs = data;
     }
 
     onMount(async () => {
-		fetchMovies()
-		fetchLogs()
+		await Promise.all([fetchMovies(), fetchRecentLogs()]);
     });
 
     function handleNextPopularMoviePage() {

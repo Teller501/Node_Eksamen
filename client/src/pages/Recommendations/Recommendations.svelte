@@ -27,7 +27,6 @@
     onMount(async () => {
         await fetchRecommendations();
     });
-    console.log(movieDetails);
 </script>
 
 <h1 class="text-slate-900 text-xl font-bold">Your recommendations are ready!</h1>

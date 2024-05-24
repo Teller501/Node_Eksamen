@@ -40,7 +40,6 @@
 
     function changeRating(){
         rating = config.score;
-        console.log(rating);
     }
 
     async function postLog(event){

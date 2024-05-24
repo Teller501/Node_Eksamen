@@ -14,7 +14,6 @@
         const { data } = await fetchGet(
             `${$BASE_URL}/api/movies/search?q=${searchQuery}`
         );
-        console.log(data);
         searchResults = data;
     }
 

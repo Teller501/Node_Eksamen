@@ -21,8 +21,6 @@ const fetchTMDBData = limiter.wrap(async function () {
             `${BASE_URL}/discover/movie?include_adult=false&include_video=false&language=en-US&page=${currentPage}&sort_by=popularity.desc&api_key=${API_KEY}&primary_release_date.gte=${minDate}&primary_release_date.lte=${maxDate}`
         );
 
-        console.log(minDate, maxDate);
-
         const totalPages = response.data.total_pages;
 
         if (currentPage >= totalPages) {
