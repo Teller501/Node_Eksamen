@@ -10,6 +10,11 @@ const isDeleteMode = process.argv.includes("delete");
             await pgClient.query(`DROP TABLE IF EXISTS genres;`);
             await pgClient.query(`DROP TABLE IF EXISTS watch_logs;`);
             await pgClient.query(`DROP TABLE IF EXISTS users;`);
+            await pgClient.query(`DROP TABLE IF EXISTS favorite_movies;`);
+            await pgClient.query(`DROP TABLE IF EXISTS watchlist_movies;`);
+            await pgClient.query(`DROP TABLE IF EXISTS user_follows;`);
+            await pgClient.query(`DROP TABLE IF EXISTS review_likes;`);
+            await pgClient.query(`DROP TABLE IF EXISTS review_comments;`);
             await mongoClient.movies.deleteMany({});
         }
 
@@ -85,6 +90,32 @@ const isDeleteMode = process.argv.includes("delete");
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (movie_id) REFERENCES movies(id)
         )`);
+
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS user_follows (
+            follower_id INT,
+            followed_id INT,
+            PRIMARY KEY (follower_id, followed_id),
+            FOREIGN KEY (follower_id) REFERENCES users(id),
+            FOREIGN KEY (followed_id) REFERENCES users(id)
+        )`);
+
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS review_likes (
+            user_id INT,
+            review_id INT,
+            PRIMARY KEY (user_id, review_id),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (review_id) REFERENCES watch_logs(id)
+        )`);
+
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS review_comments (
+            id SERIAL PRIMARY KEY,
+            review_id INT,
+            user_id INT,
+            comment_text TEXT,
+            comment_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (review_id) REFERENCES watch_logs(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );`);
 
         if (isDeleteMode) {
             await pgClient.query(`INSERT INTO users (username, password, email, is_active)

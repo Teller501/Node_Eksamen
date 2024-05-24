@@ -85,37 +85,51 @@ router.get("/api/activate/:token", validateToken, async (req, res) => {
 });
 
 router.post("/api/login", validateUserLogin, async (req, res) => {
-    const result = await pgClient.query(
-        `SELECT * FROM users WHERE username = $1`,
-        [req.body.username]
-    );
-
-    if (result.rowCount === 0) {
-        return res.status(400).send({ error: "User not found" });
-    }
-
-    const user = result.rows[0];
-    const rememberMe = req.body.rememberMe;
-
-    if (!user.is_active) {
-        return res.status(400).send({ error: "User not activated" });
-    }
-
     try {
+        const result = await pgClient.query(
+            `SELECT * FROM users WHERE username = $1`,
+            [req.body.username]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(400).send({ error: "User not found" });
+        }
+
+        const user = result.rows[0];
+        const rememberMe = req.body.rememberMe;
+
+        if (!user.is_active) {
+            return res.status(400).send({ error: "User not activated" });
+        }
+
         if (await bcrypt.compare(req.body.password, user.password)) {
+            const followCountsQuery = `
+                SELECT 
+                    (SELECT COUNT(*) FROM user_follows WHERE followed_id = $1) AS followers_count,
+                    (SELECT COUNT(*) FROM user_follows WHERE follower_id = $1) AS following_count
+            `;
+            const followCountsResult = await pgClient.query(followCountsQuery, [user.id]);
+            const { followers_count, following_count } = followCountsResult.rows[0];
+
+            user.followers_count = followers_count;
+            user.following_count = following_count;
+
             const token = generateAccessToken(user, rememberMe);
-            const refreshToken = jwt.sign(user, process.env.JWT_REFRESH_SECRET);
+            const refreshToken = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_REFRESH_SECRET);
+
             if (rememberMe) {
                 await redisClient.set(refreshToken, user.username, { EX: 604800 });
+            } else {
+                await redisClient.set(refreshToken, user.username, { EX: 1800 });
             }
-            await redisClient.set(refreshToken, user.username, { EX: 1800 });
-            res.send({ token: token, refreshToken: refreshToken, user: user });
+
+            res.send({ token, refreshToken, user });
         } else {
             res.status(400).send({ error: "Invalid password" });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: "An error occurred" });
+        console.error("Error during login:", error);
+        res.status(500).send({ error: "An error occurred during login" });
     }
 });
 
@@ -268,7 +282,7 @@ router.post("/api/remember-me", async (req, res) => {
 
 router.delete("/api/logout/:token", (req, res) => {
     redisClient.del(req.params.token);
-    res.sendStatus(204);
+    res.status(204).send({ data: "Logged out" });
 });
 
 export default router;

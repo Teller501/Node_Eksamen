@@ -35,7 +35,7 @@
     let searchType = [
         { value: "movies", name: "Movies" },
         { value: "users", name: "Users" },
-    ]
+    ];
 
     function handleLogout(event) {
         event.preventDefault();
@@ -78,10 +78,15 @@
                             }
                         }}
                         id="search-navbar"
-                        class="ps-10 border border-gray-300 rounded-r-md"
+                        class="ps-10 border w-42 border-gray-300 rounded-l-xl rounded-r-none"
                         placeholder="Search..."
                     />
-                    <Select class="w-22" items={searchType} bind:value={selectedSearchType} placeholder={""}/>
+                    <Select
+                        class="w-22 border border-gray-300 rounded-r-xl rounded-l-none"
+                        items={searchType}
+                        bind:value={selectedSearchType}
+                        placeholder={""}
+                    />
                 </div>
             </div>
         {/if}

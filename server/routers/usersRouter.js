@@ -86,8 +86,18 @@ router.get("/api/users/:id([0-9]+)", async (req, res) => {
 
 router.get("/api/users/:username([a-zA-Z0-9_]+)", async (req, res) => {
     try {
-        const query = "SELECT * FROM users WHERE username = $1";
-        const result = await pgClient.query(query, [req.params.username]);
+        const username = req.params.username;
+
+        const query = `
+            SELECT 
+                u.*, 
+                (SELECT COUNT(*) FROM user_follows WHERE followed_id = u.id) AS followers_count,
+                (SELECT COUNT(*) FROM user_follows WHERE follower_id = u.id) AS following_count
+            FROM users u 
+            WHERE u.username = $1
+        `;
+        
+        const result = await pgClient.query(query, [username]);
         const user = result.rows[0];
 
         if (!user) {
