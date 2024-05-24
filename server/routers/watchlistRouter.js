@@ -4,16 +4,15 @@ import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
-router.get("/api/watchlist/:userId/:movieId?", async (req, res) => {
+router.get("/api/watchlist/:user_id/:movie_id?", async (req, res) => {
     try {
-        const userId = req.params.userId;
-        const movieId = req.params.movieId;
+        const userId = req.params.user_id;
+        const movieId = req.params.movie_id;
 
         let query;
         let queryParams;
 
         if (movieId) {
-            // If a movieId is provided, check if the movie is on the watchlist
             query = `
                 SELECT wm.movie_id, m.title
                 FROM watchlist_movies wm
@@ -22,7 +21,6 @@ router.get("/api/watchlist/:userId/:movieId?", async (req, res) => {
             `;
             queryParams = [userId, movieId];
         } else {
-            // If no movieId is provided, return the entire watchlist
             query = `
                 SELECT wm.movie_id, m.title
                 FROM watchlist_movies wm
@@ -59,9 +57,9 @@ router.get("/api/watchlist/:userId/:movieId?", async (req, res) => {
     }
 });
 
-router.post("/api/watchlist/:userId", async (req, res) => {
+router.post("/api/watchlist/:user_id", async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.params.user_id;
         const { movieId } = req.body;
 
         const query = `
@@ -102,10 +100,10 @@ router.post("/api/watchlist/:userId", async (req, res) => {
     }
 });
 
-router.delete("/api/watchlist/:userId/:movieId", async (req, res) => {
+router.delete("/api/watchlist/:user_id/:movie_id", async (req, res) => {
     try {
-        const userId = req.params.userId;
-        const movieId = req.params.movieId;
+        const userId = req.params.user_id;
+        const movieId = req.params.movie_id;
 
         const query = `
             DELETE FROM watchlist_movies

@@ -14,7 +14,7 @@
                     posterPath={movie.poster_path}
                     alt={movie.title}
                     width={128}
-                    movieId={movie.id}
+                    movieId={movie.movie_id}
                 />
             {/each}
         {:else}

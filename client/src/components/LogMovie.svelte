@@ -47,9 +47,9 @@
         event.preventDefault();
         
         const body = {
-            movie_id: movieId,
-            user_id: $userStore.id,
-            watched_on: watchedOn,
+            movieId: movieId,
+            userId: $userStore.id,
+            watchedOn: watchedOn,
             rating: rating,
             review: review
         }

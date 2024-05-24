@@ -244,7 +244,6 @@ router.get("/api/movies/:id", async (req, res) => {
 
 router.get("/api/movies/:id/similar", async (req, res) => {
     try {
-        // Fetch the genres for the movie
         const pgMovieResult = await pgClient.query(
             `SELECT array_agg(genres.name) as genres
             FROM movies
@@ -260,7 +259,6 @@ router.get("/api/movies/:id/similar", async (req, res) => {
             return res.status(404).send("Movie or genres not found");
         }
 
-        // Fetch other movies that have the same genres
         const similarMoviesResult = await pgClient.query(
             `SELECT movies.id, movies.title, movies.overview, movies.release_date, array_agg(genres.name) as genres
             FROM movies
@@ -275,7 +273,6 @@ router.get("/api/movies/:id/similar", async (req, res) => {
         );
         const similarMovies = similarMoviesResult.rows;
 
-        // Fetch all movies from MongoDB and create a mapping
         const mongoMovies = await mongoClient.movies
             .find({}, { projection: { cast: 0 } })
             .toArray();
@@ -284,7 +281,6 @@ router.get("/api/movies/:id/similar", async (req, res) => {
             return acc;
         }, {});
 
-        // Merge data from PostgreSQL and MongoDB
         let mergedSimilarMovies = similarMovies.map((pgMovie) => {
             const mongoMovie = mongoMap[pgMovie.id.toString()];
             return {
@@ -298,12 +294,10 @@ router.get("/api/movies/:id/similar", async (req, res) => {
             };
         });
 
-        // Filter out movies without a poster_path
         mergedSimilarMovies = mergedSimilarMovies.filter(
             (movie) => movie.poster_path
         );
 
-        // Shuffle the merged movies and take only the first 8 to display
         mergedSimilarMovies = mergedSimilarMovies
             .sort(() => 0.5 - Math.random())
             .slice(0, 8);

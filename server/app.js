@@ -9,8 +9,8 @@ app.use("/images", express.static(imagesDir));
 
 app.use(express.json({ limit: "2mb" }));
 
-import scheduleTMDBPopulation from "./util/tmdb/cronScheduler.js";
-scheduleTMDBPopulation();
+// import scheduleTMDBPopulation from "./util/tmdb/cronScheduler.js";
+// scheduleTMDBPopulation();
 
 import cors from "cors";
 app.use(

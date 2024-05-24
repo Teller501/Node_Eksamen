@@ -6,8 +6,8 @@ import mongoClient from "../database/mongoDBConnection.js";
 const router = Router();
 const recommendationsURL = process.env.RECOMMENDATIONS_URL;
 
-router.get("/api/recommendations/:userId", async (req, res) => {
-    const userId = Number(req.params.userId);
+router.get("/api/recommendations/:user_id", async (req, res) => {
+    const userId = Number(req.params.user_id);
 
     try {
         const recommendations = await mongoClient.recommendations.findOne({

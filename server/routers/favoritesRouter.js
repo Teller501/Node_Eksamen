@@ -22,11 +22,11 @@ router.get("/api/favorites", async (req, res) => {
     }
 });
 
-router.get("/api/favorites/:userId", async (req, res) => {
+router.get("/api/favorites/:user_id", async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.params.user_id;
         const favoritesQuery = `
-            SELECT fm.movie_id, m.title
+            SELECT fm.movie_id, fm.user_id, m.title
             FROM favorite_movies fm
             JOIN movies m ON fm.movie_id = m.id
             WHERE fm.user_id = $1;
@@ -58,12 +58,12 @@ router.get("/api/favorites/:userId", async (req, res) => {
 
 router.post("/api/favorites", async (req, res) => {
     try {
-        const { user_id, movie_id } = req.body;
+        const { userId, movieId } = req.body;
 
         const existsQuery = `
             SELECT * FROM favorite_movies WHERE user_id = $1 AND movie_id = $2;
         `;
-        const existsResult = await pgClient.query(existsQuery, [user_id, movie_id]);
+        const existsResult = await pgClient.query(existsQuery, [userId, movieId]);
         if (existsResult.rowCount > 0) {
             return res.status(400).send({ error: "This movie is already in your favorites." });
         }
@@ -71,7 +71,7 @@ router.post("/api/favorites", async (req, res) => {
         const countQuery = `
             SELECT COUNT(*) FROM favorite_movies WHERE user_id = $1;
         `;
-        const countResult = await pgClient.query(countQuery, [user_id]);
+        const countResult = await pgClient.query(countQuery, [userId]);
         if (parseInt(countResult.rows[0].count, 10) >= 4) {
             return res.status(400).send({ error: "You can only have up to four favorites." });
         }
@@ -79,10 +79,10 @@ router.post("/api/favorites", async (req, res) => {
         const insertQuery = `
             INSERT INTO favorite_movies (user_id, movie_id) VALUES ($1, $2) RETURNING *;
         `;
-        const result = await pgClient.query(insertQuery, [user_id, movie_id]);
+        const result = await pgClient.query(insertQuery, [userId, movieId]);
         const favorite = result.rows[0];
 
-        const mongoData = await mongoClient.movies.findOne({ id: Number(movie_id) });
+        const mongoData = await mongoClient.movies.findOne({ id: Number(movieId) });
 
         favorite.poster_path = mongoData ? mongoData.posterPath : null;
         favorite.title = mongoData ? mongoData.title : null;
@@ -94,13 +94,12 @@ router.post("/api/favorites", async (req, res) => {
     }
 });
 
-router.delete("/api/favorites/:userId/:movieId", async (req, res) => {
+router.delete("/api/favorites/:user_id/:movie_id", async (req, res) => {
     try {
-        const { userId, movieId } = req.params;
+        const userId = req.params.user_id;
+        const movieId = req.params.movie_id;
 
-        const deleteQuery = `
-            DELETE FROM favorite_movies WHERE user_id = $1 AND movie_id = $2 RETURNING *;
-        `;
+        const deleteQuery = `DELETE FROM favorite_movies WHERE user_id = $1 AND movie_id = $2 RETURNING *;`;
         const result = await pgClient.query(deleteQuery, [userId, movieId]);
         const favorite = result.rows[0];
 

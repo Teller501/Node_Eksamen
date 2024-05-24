@@ -77,12 +77,12 @@ router.get("/api/logs/:id", async (req, res) => {
     res.send({ data: log.rows[0] });
 });
 
-router.get("/api/logs/movie/:movieId", async (req, res) => {
+router.get("/api/logs/movie/:movie_id", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const offset = (page - 1) * limit;
 
-    const movieId = req.params.movieId;
+    const movieId = req.params.movie_id;
     const result = await pgClient.query(
         `SELECT watch_logs.*, users.username 
          FROM watch_logs
@@ -123,47 +123,45 @@ router.get("/api/logs/movie/:movieId", async (req, res) => {
     }
 });
 
-router.get("/api/logs/movie/:movieId/aggregated", async (req, res) => {
-    const movieId = req.params.movieId;
-    const result = await pgClient.query(
-        `
-      SELECT
-        wlm.movie_id,
-        COUNT(DISTINCT wlm.user_id) AS total_watchlist_users,
-        COUNT(DISTINCT wl.id) AS total_logs,
-        SUM(CASE WHEN wl.review IS NOT NULL AND wl.review <> '' THEN 1 ELSE 0 END) AS total_reviews,
-        SUM(CASE WHEN wl.rating IS NOT NULL THEN 1 ELSE 0 END) AS total_ratings,
-        ROUND(AVG(CASE WHEN wl.rating IS NOT NULL THEN wl.rating ELSE NULL END), 2) AS average_rating,
-        MAX(wl.rating) AS max_rating,
-        MIN(wl.rating) AS min_rating
-      FROM watchlist_movies wlm
-      LEFT JOIN watch_logs wl ON wlm.movie_id = wl.movie_id AND wlm.user_id = wl.user_id
-      WHERE wlm.movie_id = $1
-      GROUP BY wlm.movie_id;
-      `,
-        [movieId]
-    );
+router.get("/api/logs/movie/:movie_id/aggregated", async (req, res) => {
+    try {
+        const movieId = req.params.movie_id;
 
-    if (result.rows.length === 0) {
-        res.send({
-            data: {
-                movie_id: movieId,
-                total_watchlist_users: 0,
-                total_logs: 0,
-                total_reviews: 0,
-                total_ratings: 0,
-                average_rating: null,
-                max_rating: null,
-                min_rating: null,
-            },
-        });
-    } else {
-        res.send({ data: result.rows[0] });
+        const logsAggregation = await pgClient.query(`
+            SELECT COUNT(DISTINCT user_id) AS total_unique_users,
+                   COUNT(id) AS total_logs,
+                   SUM(CASE WHEN review IS NOT NULL AND review <> '' THEN 1 ELSE 0 END) AS total_reviews,
+                   SUM(CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) AS total_ratings,
+                   ROUND(AVG(rating), 2) AS average_rating,
+                   MAX(rating) AS max_rating,
+                   MIN(rating) AS min_rating
+            FROM watch_logs
+            WHERE movie_id = $1
+        `, [movieId]);
+
+        const watchlistCount = await pgClient.query(`
+            SELECT COUNT(DISTINCT user_id) AS total_watchlist_users
+            FROM watchlist_movies
+            WHERE movie_id = $1
+        `, [movieId]);
+
+        const aggregatedData = {
+            movie_id: movieId,
+           ...logsAggregation.rows[0],
+            total_watchlist_users: watchlistCount.rows[0].total_watchlist_users
+        };
+
+        res.send({ data: aggregatedData });
+    } catch (error) {
+        console.error('Query failed:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
     }
 });
 
-router.get("/api/logs/reviews/:movieId", async (req, res) => {
-    const movieId = req.params.movieId;
+
+
+router.get("/api/logs/reviews/:movie_id", async (req, res) => {
+    const movieId = req.params.movie_id;
     const result = await pgClient.query(
         `SELECT watch_logs.id, users.username, users.profile_picture, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at 
          FROM watch_logs 
@@ -181,8 +179,8 @@ router.get("/api/logs/reviews/:movieId", async (req, res) => {
     }
 });
 
-router.get("/api/logs/user/:userId", async (req, res) => {
-    const userId = req.params.userId;
+router.get("/api/logs/user/:user_id", async (req, res) => {
+    const userId = req.params.user_id;
     const result = await pgClient.query(
         `WITH last_four_movies AS (
             SELECT movies.title, watch_logs.movie_id, watch_logs.rating, watch_logs.watched_on
@@ -232,8 +230,8 @@ router.get("/api/logs/user/:userId", async (req, res) => {
     }
 });
 
-router.get("/api/logs/user/:userId/watched", async (req, res) => {
-    const userId = req.params.userId;
+router.get("/api/logs/user/:user_id/watched", async (req, res) => {
+    const userId = req.params.user_id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -296,8 +294,8 @@ router.get("/api/logs/user/:userId/watched", async (req, res) => {
     }
 });
 
-router.get("/api/logs/user/:userId/reviews", async (req, res) => {
-    const userId = req.params.userId;
+router.get("/api/logs/user/:user_id/reviews", async (req, res) => {
+    const userId = req.params.user_id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -365,37 +363,37 @@ router.get("/api/logs/user/:userId/reviews", async (req, res) => {
 });
 
 router.post("/api/logs", async (req, res) => {
-    const { movie_id, user_id, watched_on, rating, review } = req.body;
+    const { movieId, userId, watchedOn, rating, review } = req.body;
     const currentDate = new Date().toISOString();
 
     try {
         const log = await pgClient.query(
             "INSERT INTO watch_logs (movie_id, user_id, watched_on, rating, review, created_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [movie_id, user_id, watched_on, rating, review, currentDate]
+            [movieId, userId, watchedOn, rating, review, currentDate]
         );
 
         const movieQuery = await pgClient.query(
             `SELECT title FROM movies WHERE id = $1`,
-            [movie_id]
+            [movieId]
         );
         const userQuery = await pgClient.query(
             `SELECT username FROM users WHERE id = $1`,
-            [user_id]
+            [userId]
         );
 
         await mongoClient.activities.insertOne({
-            movieId: movie_id,
+            movieId: movieId,
             username: userQuery.rows[0].username,
             title: movieQuery.rows[0].title,
             activityType: "watched",
-            date: watched_on,
+            date: watchedOn,
             createdAt: currentDate,
         });
 
-        const watchlistQuery = await pgClient.query(`SELECT * FROM watchlist_movies WHERE movie_id = $1 AND user_id = $2`, [movie_id, user_id]);
+        const watchlistQuery = await pgClient.query(`SELECT * FROM watchlist_movies WHERE movie_id = $1 AND user_id = $2`, [movieId, userId]);
 
         if (watchlistQuery.rows.length > 0) {
-            await pgClient.query(`DELETE FROM watchlist_movies WHERE movie_id = $1 AND user_id = $2`, [movie_id, user_id]);
+            await pgClient.query(`DELETE FROM watchlist_movies WHERE movie_id = $1 AND user_id = $2`, [movieId, userId]);
         }
 
         res.send({ data: log.rows[0] });

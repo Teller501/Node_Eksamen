@@ -40,8 +40,8 @@
 
     async function handleAddFavorite(movieId) {
         const body = {
-            user_id: $userStore.id,
-            movie_id: movieId,
+            userId: $userStore.id,
+            movieId: movieId,
         };
         const { data, status } = await fetchPost(`${$BASE_URL}/api/favorites`, body);
 
