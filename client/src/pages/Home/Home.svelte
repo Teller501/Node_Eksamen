@@ -87,7 +87,7 @@
                 {#each Array(5).fill() as _}
                     <ImagePlaceholder
                         imgOnly
-                        class="w-32 rounded-sm mx-2 drop-shadow-md"
+                        class="w-36 rounded-sm mx-2 drop-shadow-md"
                     />
                 {/each}
             {/if}

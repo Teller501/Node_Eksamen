@@ -3,7 +3,7 @@ import pgClient from "../database/pgConnection.js";
 
 const router = Router();
 
-router.get("/api/follows/:user_id", async (req, res) => {
+router.get("/api/follows/:user_id/following", async (req, res) => {
     const userId = req.params.user_id;
 
     try {
@@ -21,6 +21,27 @@ router.get("/api/follows/:user_id", async (req, res) => {
     } catch (error) {
         console.error("Error getting followed users:", error);
         res.status(500).send("Failed to get followed users");
+    }
+});
+
+router.get("/api/follows/:user_id/followers", async (req, res) => {
+    const userId = req.params.user_id;
+
+    try {
+        const query = `
+            SELECT u.id, u.username, u.profile_picture
+            FROM users u
+            JOIN user_follows uf ON u.id = uf.follower_id
+            WHERE uf.followed_id = $1
+        `;
+        const result = await pgClient.query(query, [userId]);
+
+        const users = result.rows;
+
+        res.json({ data: users });
+    } catch (error) {
+        console.error("Error getting followers:", error);
+        res.status(500).send("Failed to get followers");
     }
 });
 
