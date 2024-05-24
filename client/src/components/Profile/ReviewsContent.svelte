@@ -9,7 +9,7 @@
 <h2 class="text-2xl font-bold text-slate-900">Recent Reviews</h2>
 <div class="mt-4 space-y-4 mb-2">
     {#each reviews as review}
-        <div class="flex space-x-4 relative">
+        <div class="flex space-x-4 relative mx-60">
             <Movie
                 posterPath={review.poster_path}
                 alt={review.title}
