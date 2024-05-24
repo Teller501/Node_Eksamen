@@ -10,6 +10,7 @@
         Dropdown,
         DropdownItem,
         DropdownDivider,
+        Select,
     } from "flowbite-svelte";
     import CineMatch from "./assets/CineMatch.png";
     import { Router, Route } from "svelte-routing";
@@ -30,6 +31,11 @@
     import NotFound from "./pages/NotFound/NotFound.svelte";
 
     let searchQuery = "";
+    let selectedSearchType;
+    let searchType = [
+        { value: "movies", name: "Movies" },
+        { value: "users", name: "Users" },
+    ]
 
     function handleLogout(event) {
         event.preventDefault();
@@ -39,7 +45,7 @@
 
     function handleSearch() {
         if (searchQuery.trim()) {
-            window.location.href = `/search/${encodeURIComponent(searchQuery.trim())}`;
+            window.location.href = `/search/${selectedSearchType}/${encodeURIComponent(searchQuery.trim())}`;
         }
     }
 </script>
@@ -52,28 +58,34 @@
         <NavBrand href="/">
             <img src={CineMatch} class="me-1 h-14 sm:h-18" alt="Logo" />
             <span
-                class="self-center whitespace-nowrap text-xl font-semibold dark:text-white"
+                class="self-center whitespace-nowrap text-xl font-semibold text-blue hover:text-blue-700"
                 >CineMatch</span
             >
         </NavBrand>
-        <div class="hidden relative md:block">
-            <div
-                class="flex absolute inset-y-0 start-0 items-center ps-3 pointer-events-none"
-            >
-                <SearchOutline class="w-4 h-4" />
+        {#if $userStore}
+            <div class="hidden relative md:block">
+                <div
+                    class="flex absolute inset-y-0 start-0 items-center ps-3 pointer-events-none"
+                >
+                    <SearchOutline class="w-4 h-4" />
+                </div>
+                <div class="flex items-center">
+                    <Input
+                        bind:value={searchQuery}
+                        on:keydown={(event) => {
+                            if (event.key === "Enter") {
+                                handleSearch();
+                            }
+                        }}
+                        id="search-navbar"
+                        class="ps-10 border border-gray-300 rounded-r-md"
+                        placeholder="Search..."
+                    />
+                    <Select class="w-22" items={searchType} bind:value={selectedSearchType} placeholder={""}/>
+                </div>
             </div>
-            <Input
-                bind:value={searchQuery}
-                on:keydown={(event) => {
-                    if (event.key === "Enter") {
-                        handleSearch();
-                    }
-                }}
-                id="search-navbar"
-                class="ps-10"
-                placeholder="Search..."
-            />
-        </div>
+        {/if}
+
         <div class="flex md:order-2">
             <Button
                 color="none"
@@ -94,7 +106,8 @@
         <NavUl>
             <NavLi href="/home" active={true}>Home</NavLi>
             <NavLi href="/movies">Movies</NavLi>
-            <NavLi href="/recommender" class="text-blue">Recommender (AI)</NavLi>
+            <NavLi href="/recommender" class="text-blue">Recommender (AI)</NavLi
+            >
             {#if $userStore}
                 <NavLi class="cursor-pointer">
                     Profile<ChevronDownOutline
@@ -103,12 +116,12 @@
                 </NavLi>
                 <Dropdown class="w-44 z-20 bg-slate-50 rounded">
                     <DropdownItem href="/home">Home</DropdownItem>
-                    <DropdownItem href={`/${$userStore.username}`}>Profile</DropdownItem>
+                    <DropdownItem href={`/${$userStore.username}`}
+                        >Profile</DropdownItem
+                    >
                     <DropdownItem href="/movies">Movies</DropdownItem>
                     <DropdownItem href="/">Reviews</DropdownItem>
-                    <DropdownItem href="/"
-                        >Settings</DropdownItem
-                    >
+                    <DropdownItem href="/">Settings</DropdownItem>
                     <DropdownDivider />
                     <DropdownItem href="/" on:click={handleLogout}
                         >Sign out</DropdownItem
@@ -134,7 +147,7 @@
         <Route path="*"><Auth /></Route>
         <PrivateRoute path="/home"><Home /></PrivateRoute>
         <PrivateRoute path="/movies"><Movies /></PrivateRoute>
-        <PrivateRoute path="/search/:query" let:params
+        <PrivateRoute path="/search/:type/:query" let:params
             ><Search {params} /></PrivateRoute
         >
         <PrivateRoute path="/moviedetails/:id">

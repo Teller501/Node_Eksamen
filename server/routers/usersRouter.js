@@ -49,6 +49,24 @@ router.get("/api/users", async (req, res) => {
     }
 });
 
+router.get("/api/users/search", async (req, res) => {
+    const q = req.query.q;
+    if (!q) {
+        return res.status(400).send("Missing query parameter 'q'");
+    }
+
+    try {
+        const query = "SELECT username, profile_picture FROM users WHERE username ILIKE $1";
+        const result = await pgClient.query(query, [`%${q}%`]);
+        const users = result.rows;
+
+        res.json({ data: users });
+    } catch (error) {
+        console.error("Error searching users:", error);
+        res.status(500).send("Failed to search users");
+    }
+});
+
 router.get("/api/users/:id([0-9]+)", async (req, res) => {
     try {
         const query = "SELECT * FROM users WHERE id = $1";
