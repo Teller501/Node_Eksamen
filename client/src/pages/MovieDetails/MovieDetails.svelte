@@ -4,7 +4,6 @@
     import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
     import tmdbLogo from "../../assets/tmdb-logo.png";
     import cinematchLogo from "../../assets/CineMatch.png";
-    import Review from "../../components/Review.svelte";
     import LogMovie from "../../components/LogMovie.svelte";
     import Movie from "../../components/Movie.svelte";
     import toast, { Toaster } from "svelte-french-toast";
@@ -19,6 +18,7 @@
     } from "flowbite-svelte";
     import { ClockOutline, EyeOutline } from "flowbite-svelte-icons";
     import { userStore } from "../../stores/authStore";
+    import Reviews from "../../components/Profile/Reviews.svelte";
 
     const movieId = window.location.pathname.split("/").pop();
     let movieDetails;
@@ -100,6 +100,8 @@
             fetchSimilarMovies(movieId),
             checkIfMovieOnWatchlist(),
         ]);
+
+        console.log(reviews);
     });
 </script>
 
@@ -192,18 +194,7 @@
                 <span slot="header">Reviews</span>
                 <div id="review-section">
                     {#if reviews && Array.isArray(reviews)}
-                        {#each reviews as review}
-                            <Review
-                                review={{
-                                    name: review.username,
-                                    reviewDate: review.created_at.split("T")[0],
-                                    rating: review.rating,
-                                    reviewText: review.review,
-                                    imgSrc: `${$BASE_URL}/${review.profile_picture}`,
-                                    title: `${review.review.slice(0, 10)}...`,
-                                }}
-                            />
-                        {/each}
+                        <Reviews reviews={reviews} showMoviePoster={false} showMovieTitle={false} showReleaseDate={false} showUsername={true} showUserAvatar={true} marginX={"0"}/>
                     {:else}
                         <p class="text-gray-500 dark:text-gray-400">
                             No reviews yet.

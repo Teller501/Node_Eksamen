@@ -165,7 +165,7 @@ router.get("/api/logs/movie/:movie_id/aggregated", async (req, res) => {
 router.get("/api/logs/reviews/:movie_id", async (req, res) => {
     const movieId = req.params.movie_id;
     const result = await pgClient.query(
-        `SELECT watch_logs.id, users.username, users.profile_picture, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at,
+        `SELECT watch_logs.id, users.username, users.profile_picture, users.id AS user_id, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at,
                 (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
          FROM watch_logs 
          INNER JOIN users ON watch_logs.user_id = users.id 

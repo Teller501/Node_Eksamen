@@ -1,5 +1,5 @@
 <script>
-    import { Hr, Rating, Button } from "flowbite-svelte";
+    import { Hr, Rating, Button, Avatar } from "flowbite-svelte";
     import { ClockOutline, ThumbsUpSolid } from "flowbite-svelte-icons";
     import { userStore } from "../../stores/authStore.js";
     import { BASE_URL } from "../../stores/generalStore.js";
@@ -7,10 +7,15 @@
     import { fetchGet, fetchPost, fetchDelete } from "../../util/api.js";
 
     export let reviews;
+    export let showMoviePoster = true;
+    export let showMovieTitle = true;
+    export let showReleaseDate = true;
+    export let showUsername = false;
+    export let showUserAvatar = false;
+    export let marginX = "60";
 
     async function checkIfLiked(userId, reviewId) {
         const { data } = await fetchGet(`${$BASE_URL}/api/likes/${userId}/${reviewId}`);
-
         return data;
     }
 
@@ -47,25 +52,48 @@
 <h2 class="text-2xl font-bold text-slate-900">Recent Reviews</h2>
 <div class="mt-4 space-y-4 mb-2">
     {#each reviews as review}
-        <div class="flex space-x-4 mx-60">
-            <Movie
-                posterPath={review.poster_path}
-                alt={review.title}
-                movieId={review.movie_id}
-                width={128}
-            />
-            <div class="w-full">
-                <h3
-                    class={`text-lg font-bold text-slate-900 ${review.title.length > 20 ? "text-sm" : "text-lg"}`}
-                >
-                    <span>{review.title}</span>
-                    <span class="text-gray-500 text-xs font-light"
-                        >({review.release_date.split("T")[0]})</span
+        <div class="flex space-x-4 mx-{marginX}">
+            {#if showMoviePoster}
+                <Movie
+                    posterPath={review.poster_path}
+                    alt={review.title}
+                    movieId={review.movie_id}
+                    width={128}
+                />
+            {/if}
+            <div class="w-full mb-6">
+                {#if showMovieTitle}
+                    <h3
+                        class={`text-lg font-bold text-slate-900 ${review.title.length > 20 ? "text-sm" : "text-lg"}`}
                     >
-                </h3>
-                <div class="text-gray-600 text-sm">
-                    Watched on {review.watched_on.split("T")[0]}
+                        <span>{review.title}</span>
+                        {#if showReleaseDate}
+                            <span class="text-gray-500 text-xs font-light"
+                                >({review.release_date?.split("T")[0]})</span
+                            >
+                        {/if}
+                    </h3>
+                {/if}
+                <div class="flex items-center justify-between">
+                    <div class="text-gray-600 text-sm mr-2">
+                        Watched on {review.watched_on.split("T")[0]}
+                    </div>
+                    {#if showUsername || showUserAvatar}
+                        <div class="flex items-center">
+                            {#if showUserAvatar}
+                                <Avatar
+                                    src={`${$BASE_URL}/${review.profile_picture}`}
+                                    size="xs"
+                                    class="mr-2"
+                                />
+                            {/if}
+                            {#if showUsername}
+                                <span class="text-gray-600 text-sm">by {review.username}</span>
+                            {/if}
+                        </div>
+                    {/if}
                 </div>
+                
                 <Hr
                     hrClass="h-px my-2 bg-primary-300 border-0 dark:bg-primary-700"
                 />
