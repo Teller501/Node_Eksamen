@@ -5,12 +5,15 @@
     import { fetchPost, fetchDelete } from "../../util/api.js";
     import { BASE_URL } from "../../stores/generalStore.js";
     import { userStore } from "../../stores/authStore";
+    import Followers from "../Followers.svelte";
 
     export let user;
     export let isOwner;
     export let following;
     export let profilePicturePath;
     export let userData;
+    export let followers;
+    export let followersCount;
 
     $: isFollowing = following;
 
@@ -92,7 +95,7 @@
                     {user.location}
                 </span>
                 <div class="text-gray-600">
-                    <span>{user.followers_count} followers</span> •
+                    <Followers {followers} {followersCount}/> •
                     <span>{user.following_count} following</span>
                     •
                     <span>{userData?.unique_movies_watched} movies watched</span

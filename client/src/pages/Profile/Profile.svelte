@@ -23,7 +23,9 @@
     let watchedMovies = [];
     let watchList = [];
     let profilePicturePath;
+    let followers = [];
 
+    let followersCount;
     let isOwner = false;
     let following = false;
 
@@ -38,8 +40,10 @@
             fetchWatchedMovies(),
             fetchWatchList(),
             checkIfFollowing(),
+            fetchFollowers(),
         ]);
         profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
+        followersCount = followers.length;
     });
 
     onDestroy(() => {
@@ -130,6 +134,11 @@
 
         following = data;
     }
+
+    async function fetchFollowers() {
+        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/followers`);
+        followers = data;
+    }
 </script>
 
 <ProfileHeader
@@ -138,6 +147,8 @@
     {following}
     {profilePicturePath}
     {userData}
+    {followers}
+    {followersCount}
 />
 
 <div class="container mx-auto px-4 mt-4">
