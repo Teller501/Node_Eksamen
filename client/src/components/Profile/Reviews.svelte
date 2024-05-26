@@ -134,6 +134,13 @@
                                     </span>
                                 {/if}
                             {/await}
+                        {:else}
+                            {#if review.total_likes > 0}
+                                <span class="text-gray-700 text-xs flex items-center">
+                                    <ThumbsUpSolid size="md" class="mr-1" />
+                                    {review.total_likes} likes
+                                </span>
+                            {/if}
                         {/if}
 
                     </div>

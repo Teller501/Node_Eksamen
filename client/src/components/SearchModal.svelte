@@ -5,19 +5,26 @@
         Button,
         DropdownItem,
         Dropdown,
+        SpeedDialButton,
     } from "flowbite-svelte";
-    import { CirclePlusSolid } from "flowbite-svelte-icons";
+    import { CirclePlusSolid, PlusOutline } from "flowbite-svelte-icons";
     import toast, { Toaster } from "svelte-french-toast";
     import { fetchGet, fetchPost } from "../util/api.js";
     import { BASE_URL } from "../stores/generalStore.js";
     import { userStore } from "../stores/authStore.js";
     import { favoritesStore } from "../stores/favoritesStore.js";
+    import LogMovie from './LogMovie.svelte';
+    import { fade } from 'svelte/transition';
+
+    export let mode = "favorite";
 
     let searchModal = false;
     let searchQuery = "";
     let searchResults = [];
     let searchTimeout;
     let dropdownOpen = false;
+    let logMovieModal = false;
+    let selectedMovie = null;
 
     async function fetchSearchResults() {
         const { data } = await fetchGet(
@@ -57,18 +64,35 @@
             dropdownOpen = false;
         }
     }
+
+    function handleDropdownClick(movie) {
+        if (mode === "favorite") {
+            handleAddFavorite(movie.id);
+        } else if (mode === "log") {
+            selectedMovie = movie;
+            logMovieModal = true;
+            searchModal = false;
+        }
+    }
 </script>
+
 <Toaster />
 
-<Button
+{#if mode === "favorite"}
+    <Button
     on:click={() => (searchModal = true)}
     class="bg-transparent hover:bg-transparent active:ring-0 focus:ring-0 hover:cursor-default"
->
+    >
     <CirclePlusSolid
         size="md"
         class="absolute top-0 right-0 fill-green-600 hover:fill-green-800 hover:cursor-pointer"
     />
-</Button>
+    </Button>
+{:else if mode === "log"}
+    <SpeedDialButton name="Log Movie" on:click={() => (searchModal = true)}>
+        <PlusOutline class="w-6 h-6" />
+    </SpeedDialButton>
+{/if}
 
 <Modal
     bind:open={searchModal}
@@ -77,7 +101,7 @@
     class="w-full"
     outsideclose
 >
-    <h1 class="text-lg font-bold">Search Results</h1>
+    <h1 class="text-lg font-bold">Search Movie</h1>
     <Input
         bind:value={searchQuery}
         on:keyup={handleInput}
@@ -90,13 +114,23 @@
         >
             {#each searchResults as result}
                 <DropdownItem
-                    on:click={() => handleAddFavorite(result.id)}
-                    defaultClass="bg-slate-300 mb-1 hover:bg-slate-400"
-                    >{result.title}</DropdownItem
-                >
+                    on:click={() => handleDropdownClick(result)}
+                    defaultClass="bg-slate-300 mb-1 hover:bg-primary-700 hover:text-white rounded-none my-0"
+                >{result.title}</DropdownItem>
             {/each}
         </Dropdown>
     {:else if searchQuery}
         <p>No results found.</p>
     {/if}
 </Modal>
+
+{#if selectedMovie}
+    <div transition:fade={{ delay: 10, duration: 300 }}>
+        <LogMovie
+            bind:open={logMovieModal}
+            movieId={selectedMovie.id}
+            title={selectedMovie.title}
+            posterPath={selectedMovie.poster_path}
+        />
+    </div>
+{/if}

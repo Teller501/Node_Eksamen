@@ -85,7 +85,9 @@
             {/if}
         </div>
 
+        <Label for="with_helper" class="pb-2">Upload file</Label>
         <Fileupload id="profile_picture" on:change={onFileSelected} />
+        <Helper>PNG, JPG, JPEG (MAX. 2MB).</Helper>
 
         <div class="mt-5">
             <p>{$userStore.username}</p>

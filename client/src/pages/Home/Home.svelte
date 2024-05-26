@@ -3,12 +3,13 @@
     import { fetchGet } from "../../util/api";
     import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
     import Movie from "../../components/Movie.svelte";
-    import { ImagePlaceholder, Button, Avatar } from "flowbite-svelte";
-    import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
+    import { ImagePlaceholder, Button, Avatar, SpeedDial, SpeedDialButton } from "flowbite-svelte";
+    import { CaretLeftSolid, CaretRightSolid, PlusOutline } from "flowbite-svelte-icons";
     import { userStore } from "../../stores/authStore";
     import { activityStore } from "../../stores/activityStore.js";
     import io from "socket.io-client";
     import ActivityList from "../../components/ActivityList.svelte";
+    import SearchModal from "../../components/SearchModal.svelte";
 
     let popularMovies = null;
     let page = 1;
@@ -144,3 +145,7 @@
 </div>
 
 <ActivityList />
+
+<SpeedDial defaultClass="absolute end-6 bottom-6">
+    <SearchModal mode={"log"} />
+</SpeedDial>

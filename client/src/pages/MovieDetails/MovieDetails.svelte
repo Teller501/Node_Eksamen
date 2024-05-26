@@ -101,7 +101,6 @@
             checkIfMovieOnWatchlist(),
         ]);
 
-        console.log(reviews);
     });
 </script>
 
