@@ -6,6 +6,7 @@
     import { BASE_URL } from "../../stores/generalStore.js";
     import { userStore } from "../../stores/authStore";
     import Followers from "../Followers.svelte";
+    import Following from "../Following.svelte";
 
     export let user;
     export let isOwner;
@@ -14,6 +15,8 @@
     export let userData;
     export let followers;
     export let followersCount;
+    export let followings;
+    export let followingsCount;
 
     $: isFollowing = following;
 
@@ -96,7 +99,7 @@
                 </span>
                 <div class="text-gray-600">
                     <Followers {followers} {followersCount}/> •
-                    <span>{user.following_count} following</span>
+                    <Following {followings} {followingsCount} />
                     •
                     <span>{userData?.unique_movies_watched} movies watched</span
                     >

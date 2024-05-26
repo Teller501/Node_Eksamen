@@ -23,9 +23,10 @@
     let watchedMovies = [];
     let watchList = [];
     let profilePicturePath;
-    let followers = [];
-
+    let followersList = [];
+    let followingsList = [];
     let followersCount;
+    let followingsCount;
     let isOwner = false;
     let following = false;
 
@@ -41,9 +42,11 @@
             fetchWatchList(),
             checkIfFollowing(),
             fetchFollowers(),
+            fetchFollowings(),
         ]);
         profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
-        followersCount = followers.length;
+        followersCount = followersList.length;
+        followingsCount = followingsList.length;
     });
 
     onDestroy(() => {
@@ -137,7 +140,12 @@
 
     async function fetchFollowers() {
         const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/followers`);
-        followers = data;
+        followersList = data;
+    }
+
+    async function fetchFollowings() {
+        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/following`);
+        followingsList = data;
     }
 </script>
 
@@ -147,8 +155,10 @@
     {following}
     {profilePicturePath}
     {userData}
-    {followers}
+    followers={followersList}
     {followersCount}
+    followings={followingsList}
+    {followingsCount}
 />
 
 <div class="container mx-auto px-4 mt-4">

@@ -8,12 +8,12 @@
     let followersModal = false;
 </script>
 
-<span><A class="hover:no-underline text-gray-500 hover:text-gray-600 font-normal" on:click={() => (followersModal = true)}>{followersCount} followers</A></span>
+<span><A class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal" on:click={() => (followersModal = true)}>{followersCount} followers</A></span>
 
 <Modal bind:open={followersModal} size="md" autoclose={false} class="w-full" outsideclose>
     <div class="flex flex-col items-center">
         <h1 class="text-2xl font-bold mb-4">Followers</h1>
-        {#if followers.length === 0}
+        {#if followersCount === 0}
             <p>No followers yet.</p>
         {:else}
             {#each followers as follower}
