@@ -48,7 +48,8 @@ router.get("/api/logs", async (req, res) => {
 router.get("/api/logs/recent", async (req, res) => {
     try {
         const logs = await pgClient.query(
-            `SELECT watch_logs.*, users.*, movies.title AS movie_title 
+            `SELECT watch_logs.*, users.username, users.profile_picture, movies.title AS movie_title,
+                    (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
              FROM watch_logs
              INNER JOIN users ON watch_logs.user_id = users.id
              INNER JOIN movies ON watch_logs.movie_id = movies.id
@@ -63,6 +64,7 @@ router.get("/api/logs/recent", async (req, res) => {
         });
     }
 });
+
 
 router.get("/api/logs/:id", async (req, res) => {
     const id = req.params.id;
@@ -163,7 +165,8 @@ router.get("/api/logs/movie/:movie_id/aggregated", async (req, res) => {
 router.get("/api/logs/reviews/:movie_id", async (req, res) => {
     const movieId = req.params.movie_id;
     const result = await pgClient.query(
-        `SELECT watch_logs.id, users.username, users.profile_picture, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at 
+        `SELECT watch_logs.id, users.username, users.profile_picture, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at,
+                (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
          FROM watch_logs 
          INNER JOIN users ON watch_logs.user_id = users.id 
          WHERE watch_logs.movie_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''`,
@@ -178,6 +181,7 @@ router.get("/api/logs/reviews/:movie_id", async (req, res) => {
         res.send({ data: result.rows });
     }
 });
+
 
 router.get("/api/logs/user/:user_id", async (req, res) => {
     const userId = req.params.user_id;
@@ -301,7 +305,8 @@ router.get("/api/logs/user/:user_id/reviews", async (req, res) => {
     const offset = (page - 1) * limit;
 
     const reviewsQuery = `
-      SELECT watch_logs.id, movies.title, movies.id AS movie_id, movies.release_date, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at, watch_logs.movie_id
+      SELECT watch_logs.id, movies.title, movies.id AS movie_id, movies.release_date, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at, watch_logs.user_id,
+             (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
       FROM watch_logs
       INNER JOIN movies ON watch_logs.movie_id = movies.id
       WHERE watch_logs.user_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''
@@ -343,6 +348,8 @@ router.get("/api/logs/user/:user_id/reviews", async (req, res) => {
                 review: row.review,
                 created_at: row.created_at,
                 poster_path: movieDoc ? movieDoc.posterPath : null,
+                user_id: row.user_id,
+                total_likes: row.total_likes
             };
         });
 
@@ -361,6 +368,7 @@ router.get("/api/logs/user/:user_id/reviews", async (req, res) => {
         });
     }
 });
+
 
 router.post("/api/logs", async (req, res) => {
     const { movieId, userId, watchedOn, rating, review } = req.body;
