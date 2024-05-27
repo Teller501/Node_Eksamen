@@ -3,12 +3,29 @@
   import { Button, Modal, Popover } from "flowbite-svelte";
   import { CirclePlusSolid, TrashBinSolid } from "flowbite-svelte-icons";
   import { userStore } from "../../stores/authStore";
-  import { fetchPost, fetchDelete } from "../../util/api";
+  import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
+  import Movie from "../Movie.svelte";
+  import SearchModal from "../SearchModal.svelte";
 
   let openCreateListModal = false;
+  let openSeeMoviesModal = false;
+  let selectedList = null;
+  let listWithMovies = {
+    movies: [],
+  };
 
   export let lists = [];
   export let isOwner;
+
+  async function fetchMoviesFromList(listId) {
+    const { data, status } = await fetchGet(
+      `${$BASE_URL}/api/lists/${$userStore.id}/${listId}`
+    );
+    if (status === 404) {
+      return;
+    }
+    listWithMovies = data;
+  }
 
   async function handleCreateList(event) {
     event.preventDefault();
@@ -22,8 +39,8 @@
       payload
     );
     if (response.status === 201) {
-      lists = [...lists, response.data.data]; // Update lists with the new list
-      openCreateListModal = false; // Close the modal after successful creation
+      lists = [...lists, response.data.data];
+      openCreateListModal = false;
     }
   }
 
@@ -49,43 +66,81 @@
 {/if}
 
 {#each lists as list}
-  <div
-    class="flex justify-between bg-white shadow-md rounded-lg p-4 my-4 hover:bg-primary-100 cursor-pointer"
+  <button
+    on:click={() => {
+      selectedList = list;
+      openSeeMoviesModal = true;
+      fetchMoviesFromList(list.id);
+    }}
+    class="w-full"
   >
-    <div class="content">
-      <h3 class="text-slate-900 text-xl">
-        {list.list_name} - <b>{list.username}</b>
-        <img
-          src={`${$BASE_URL}/${list.profile_picture}`}
-          alt="profile pic"
-          class="w-5 h-5 rounded-full inline-block"
-        />
-      </h3>
-      <p class="text-sm">
-        {list.description} - <b>{list.movie_count} movies</b>
-      </p>
-    </div>
-    {#if isOwner}
-      <div class="actions flex flex-col items-end">
-        <button
-          id="addMovies"
-          class="bg-green-800 hover:bg-green-900 text-white rounded-md py-1">
-          <CirclePlusSolid /></button>
-        <Popover class="w-64 text-sm font-light" triggeredBy="#addMovies">
-          Click here to add movies to this list
-        </Popover>
-        <button
-          on:click={() => handleDeleteList(list.id)}
-          id="deleteList"
-          class="bg-red-700 hover:bg-red-800 text-white rounded-md mt-1 py-1">
-          <TrashBinSolid /></button>
-        <Popover class="w-64 text-sm font-light" triggeredBy="#deleteList">
-          Click here to delete this list
-        </Popover>
+    <div
+      class="flex justify-between bg-white shadow-md rounded-lg p-4 hover:bg-primary-100 cursor-pointer"
+    >
+      <div class="content">
+        <h3 class="text-slate-900 text-xl">
+          {list.list_name} - <b>{list.username}</b>
+          <img
+            src={`${$BASE_URL}/${list.profile_picture}`}
+            alt="profile pic"
+            class="w-5 h-5 rounded-full inline-block"
+          />
+        </h3>
+        <p class="text-sm">
+          {list.description} - <b>{list.movie_count} movies</b>
+        </p>
       </div>
-    {/if}
-  </div>
+      {#if isOwner}
+        <div class="actions flex flex-col items-end">
+          <button
+
+            id="addMovies"
+            class="bg-green-800 hover:bg-green-900 text-white rounded-md py-1"
+          >
+            <CirclePlusSolid /></button
+          >
+          <Popover class="w-64 text-sm font-light" triggeredBy="#addMovies">
+            Click here to add movies to this list
+          </Popover>
+          <button
+            on:click={() => handleDeleteList(list.id)}
+            id="deleteList"
+            class="bg-red-700 hover:bg-red-800 text-white rounded-md mt-1 py-1"
+          >
+            <TrashBinSolid /></button
+          >
+          <Popover class="w-64 text-sm font-light" triggeredBy="#deleteList">
+            Click here to delete this list
+          </Popover>
+        </div>
+      {/if}
+    </div>
+  </button>
 {/each}
+
+<Modal
+  title={selectedList
+    ? `${selectedList.list_name} by ${selectedList.username}`
+    : ""}
+  bind:open={openSeeMoviesModal}
+  autoclose={false}
+  class="w-full"
+  outsideclose
+>
+  {#if selectedList}
+  <p>{selectedList.description}</p>
+    <div class="flex flex-wrap justify-center items-center w-full">
+      {#each listWithMovies.movies as movie}
+      <Movie
+      posterPath={movie.poster_path}
+      alt={movie.title}
+      movieId={movie.movie_id}
+      width="180vw"
+      />
+      {/each}
+    </div>
+  {/if}
+</Modal>
 
 <Modal
   title="Create a new list"

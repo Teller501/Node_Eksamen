@@ -64,6 +64,21 @@ router.get("/api/lists/:user_id/:list_id", async (req, res) => {
         const list = listQuery.rows[0];
         list.movies = movieQuery.rows;
 
+        // Fetch poster paths for each movie
+        const enrichedMovies = await Promise.all(
+            list.movies.map(async (movie) => {
+                const mongoData = await mongoClient.movies.findOne({
+                    id: Number(movie.movie_id),
+                });
+                return {
+                    ...movie,
+                    poster_path: mongoData ? mongoData.posterPath : null,
+                };
+            })
+        );
+
+        list.movies = enrichedMovies;
+
         res.json({ data: list });
     } catch (error) {
         console.error("Error getting list details:", error);
