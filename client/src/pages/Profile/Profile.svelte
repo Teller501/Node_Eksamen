@@ -3,6 +3,7 @@
     import Profile from "../../components/Profile/Profile.svelte";
     import Watched from "../../components/Profile/Watched.svelte";
     import WatchList from "../../components/Profile/WatchList.svelte";
+    import List from "../../components/Profile/List.svelte";
     import Reviews from "../../components/Profile/Reviews.svelte";
     import ProfileHeader from "../../components/Profile/ProfileHeader.svelte";
     import { onMount, onDestroy } from "svelte";
@@ -22,6 +23,7 @@
     let favorites = [];
     let watchedMovies = [];
     let watchList = [];
+    let lists = [];
     let profilePicturePath;
     let followersList = [];
     let followingsList = [];
@@ -40,6 +42,7 @@
             fetchUserFavorites(),
             fetchWatchedMovies(),
             fetchWatchList(),
+            fetchLists(),
             checkIfFollowing(),
             fetchFollowers(),
             fetchFollowings(),
@@ -126,6 +129,16 @@
         watchList = data;
     }
 
+    async function fetchLists() {
+        const { data, status } = await fetchGet(
+            `${$BASE_URL}/api/lists/${user.id}`
+        );
+        if (status === 404) {
+            return;
+        }
+        lists = data;
+    }
+
     async function checkIfFollowing() {
         if (isOwner) {
             return;
@@ -208,11 +221,7 @@
             on:click={() => activeTab.set("List")}
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-                <b>Dashboard:</b>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                tempor incididunt ut labore et dolore magna aliqua.
-            </p>
+            <List {lists} {isOwner} />
         </TabItem>
     </Tabs>
 </div>

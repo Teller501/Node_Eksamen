@@ -29,7 +29,7 @@
     <p class="text-slate-900 text-lg text-center">No movies on watchlist...</p>
 {/if}
 
-<div id="popular-movies" class="w-full flex items-center justify-between">
+<div class="w-full flex items-center justify-between">
     <div class="grid grid-cols-5 grid-rows-4">
         {#each watchList as movie}
             <div class="relative mx-4">
