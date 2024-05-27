@@ -117,6 +117,23 @@ const isDeleteMode = process.argv.includes("delete");
             FOREIGN KEY (user_id) REFERENCES users(id)
         );`);
 
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS user_movie_lists (
+            id SERIAL PRIMARY KEY,
+            user_id INT,
+            list_name VARCHAR(255) NOT NULL,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )`);
+        
+        await pgClient.query(`CREATE TABLE IF NOT EXISTS movie_list_items (
+            id SERIAL PRIMARY KEY,
+            list_id INT,
+            movie_id INT,
+            FOREIGN KEY (list_id) REFERENCES user_movie_lists(id),
+            FOREIGN KEY (movie_id) REFERENCES movies(id)
+        )`);
+
         if (isDeleteMode) {
             await pgClient.query(`INSERT INTO users (username, password, email, is_active)
             VALUES

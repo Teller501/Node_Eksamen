@@ -73,6 +73,9 @@ app.use(favoritesRouter);
 import watchlistRouter from "./routers/watchlistRouter.js";
 app.use(watchlistRouter);
 
+import listsRouter from "./routers/listsRouter.js";
+app.use(listsRouter);
+
 import activitiesRouter from "./routers/activitiesRouter.js";
 app.use(activitiesRouter);
 
