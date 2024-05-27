@@ -13,6 +13,7 @@
   let listWithMovies = {
     movies: [],
   };
+  let placement;
 
   export let lists = [];
   export let isOwner;
@@ -54,11 +55,13 @@
   }     
 </script>
 
-<div class="flex items-center">
-  <h2 class="text-slate-900 text-2xl font-bold">Movie lists</h2>
-  <Button class="ml-auto" on:click={() => (openCreateListModal = true)}>
-    New <CirclePlusSolid />
-  </Button>
+<div class="flex items-center px-96">
+  <h2 class="text-slate-900 text-2xl font-bold me-48">Lists</h2>
+  {#if isOwner}
+    <Button on:click={() => (openCreateListModal = true)}>
+      New <CirclePlusSolid />
+    </Button>
+  {/if}
 </div>
 <hr class="my-4 w-full" />
 {#if lists.length === 0}
@@ -101,11 +104,12 @@
               handleDeleteList(list.id);
             }}
             id="deleteList"
+            on:mouseenter={() => (placement = 'left')}
             class="bg-red-700 hover:bg-red-800 text-white rounded-md mt-1 py-1"
           >
             <TrashBinSolid /></button
           >
-          <Popover class="w-64 text-sm font-light" triggeredBy="#deleteList">
+          <Popover class="w-64 text-sm font-light" triggeredBy="#deleteList" {placement}>
             Click here to delete this list
           </Popover>
         </div>
@@ -123,7 +127,11 @@
   outsideclose
 >
   {#if selectedList}
-    <p>{selectedList.description}</p>
+    <p class="text-slate-900 text-lg">
+      {selectedList.description}</p>
+    {#if listWithMovies.movies.length === 0}
+      <p>This list is empty...</p>
+    {/if}
     <div class="flex flex-wrap justify-center items-center w-full">
       {#each listWithMovies.movies as movie}
         <Movie
