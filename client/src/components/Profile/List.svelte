@@ -51,11 +51,11 @@
     if (response.status === 200) {
       lists = lists.filter((list) => list.id !== listId);
     }
-  }
+  }     
 </script>
 
 <div class="flex items-center">
-  <h2 class="text-slate-900 text-2xl font-bold my-4">Movie lists</h2>
+  <h2 class="text-slate-900 text-2xl font-bold">Movie lists</h2>
   <Button class="ml-auto" on:click={() => (openCreateListModal = true)}>
     New <CirclePlusSolid />
   </Button>
@@ -66,6 +66,7 @@
 {/if}
 
 {#each lists as list}
+<div class="flex justify-between">
   <button
     on:click={() => {
       selectedList = list;
@@ -74,10 +75,8 @@
     }}
     class="w-full"
   >
-    <div
-      class="flex justify-between bg-white shadow-md rounded-lg p-4 hover:bg-primary-100 cursor-pointer"
-    >
-      <div class="content">
+
+      <div class="content bg-white shadow-md rounded-lg p-4 hover:bg-primary-100 cursor-pointer">
         <h3 class="text-slate-900 text-xl">
           {list.list_name} - <b>{list.username}</b>
           <img
@@ -90,20 +89,17 @@
           {list.description} - <b>{list.movie_count} movies</b>
         </p>
       </div>
-      {#if isOwner}
-        <div class="actions flex flex-col items-end">
-          <button
 
-            id="addMovies"
-            class="bg-green-800 hover:bg-green-900 text-white rounded-md py-1"
-          >
-            <CirclePlusSolid /></button
-          >
-          <Popover class="w-64 text-sm font-light" triggeredBy="#addMovies">
-            Click here to add movies to this list
-          </Popover>
+    </button>
+      {#if isOwner}
+        <div class="actions flex flex-col items-end mt-4">
+
+          <SearchModal mode={"addToMovieList"} selectedList={list} />
           <button
-            on:click={() => handleDeleteList(list.id)}
+            on:click={(event) => {
+              event.stopPropagation();
+              handleDeleteList(list.id);
+            }}
             id="deleteList"
             class="bg-red-700 hover:bg-red-800 text-white rounded-md mt-1 py-1"
           >
@@ -114,8 +110,7 @@
           </Popover>
         </div>
       {/if}
-    </div>
-  </button>
+      </div>
 {/each}
 
 <Modal
@@ -128,15 +123,15 @@
   outsideclose
 >
   {#if selectedList}
-  <p>{selectedList.description}</p>
+    <p>{selectedList.description}</p>
     <div class="flex flex-wrap justify-center items-center w-full">
       {#each listWithMovies.movies as movie}
-      <Movie
-      posterPath={movie.poster_path}
-      alt={movie.title}
-      movieId={movie.movie_id}
-      width="180vw"
-      />
+        <Movie
+          posterPath={movie.poster_path}
+          alt={movie.title}
+          movieId={movie.movie_id}
+          width="180vw"
+        />
       {/each}
     </div>
   {/if}

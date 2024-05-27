@@ -6,6 +6,7 @@
         DropdownItem,
         Dropdown,
         SpeedDialButton,
+        Popover
     } from "flowbite-svelte";
     import { CirclePlusSolid, PlusOutline } from "flowbite-svelte-icons";
     import toast, { Toaster } from "svelte-french-toast";
@@ -17,6 +18,7 @@
     import { fade } from 'svelte/transition';
 
     export let mode = "favorite";
+    export let selectedList = null;
 
     let searchModal = false;
     let searchQuery = "";
@@ -65,6 +67,20 @@
         }
     }
 
+    async function handleAddMovieToList(movieId) {
+    const body = {
+      movieId: movieId,
+    };
+    const { data, status } = await fetchPost(
+      `${$BASE_URL}/api/lists/${$userStore.id}/${selectedList.id}`, body);
+
+    if (status === 201) {
+        searchModal = false;
+        dropdownOpen = false;
+        toast.success("Movie added to list.");
+        }
+  }
+
     function handleDropdownClick(movie) {
         if (mode === "favorite") {
             handleAddFavorite(movie.id);
@@ -72,6 +88,9 @@
             selectedMovie = movie;
             logMovieModal = true;
             searchModal = false;
+        }
+        else if (mode === "addToMovieList") {
+            handleAddMovieToList(movie.id);
         }
     }
 </script>
@@ -92,6 +111,16 @@
     <SpeedDialButton name="Log Movie" on:click={() => (searchModal = true)}>
         <PlusOutline class="w-6 h-6" />
     </SpeedDialButton>
+{:else if mode === "addToMovieList"}
+    <button
+        on:click={() => (searchModal = true)}
+        id="addMovies"
+        class="bg-green-800 hover:bg-green-900 text-white rounded-md py-1">
+            <CirclePlusSolid />
+    </button>
+    <Popover class="w-64 text-sm font-light" triggeredBy="#addMovies">
+        Click here to add movies to this list
+    </Popover>
 {/if}
 
 <Modal
