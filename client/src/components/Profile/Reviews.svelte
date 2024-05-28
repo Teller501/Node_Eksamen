@@ -69,7 +69,7 @@
                         <span>{review.title}</span>
                         {#if showReleaseDate}
                             <span class="text-gray-500 text-xs font-light"
-                                >({review.release_date?.split("T")[0]})</span
+                                >({review.release_date?.split("-")[0]})</span
                             >
                         {/if}
                     </h3>

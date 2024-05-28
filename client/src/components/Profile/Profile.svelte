@@ -70,7 +70,7 @@
               >
                 <span>{review.title}</span>
                 <span class="text-gray-500 text-xs font-light"
-                  >({review.release_date.split("T")[0]})</span
+                  >({review.release_date.split("-")[0]})</span
                 >
               </h3>
               <div class="text-gray-600 text-sm">

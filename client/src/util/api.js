@@ -15,7 +15,6 @@ export async function fetchGet(url, token) {
         status = response.status;
 
         if (!response.ok) {
-            console.error(`HTTP error! Status: ${status}`);
             return { data, status, pagination };
         }
 
@@ -23,7 +22,7 @@ export async function fetchGet(url, token) {
         data = result.data;
         pagination = result.pagination;
     } catch (error) {
-        console.error(error);
+        return { data, status, error: error.toString() };
     }
 
     return { data, status, pagination };
@@ -47,13 +46,11 @@ export async function fetchPost(url, body, token) {
         data = await response.json();
         
         if (!response.ok) {
-            console.error(`HTTP error! Status: ${status}`);
             return { status, data };
         }
 
         return { status, data };
     } catch (error) {
-        console.error("Fetch error:", error);
         return { status, error: error.toString() };
     }
 }
@@ -81,14 +78,12 @@ export async function fetchPatch(url, body, token) {
         status = response.status;
 
         if (!response.ok) {
-            console.error(`HTTP error Status: ${status}`);
             return { status };
         }
 
         const data = await response.json();
         return { status, data };
     } catch (error) {
-        console.error("Fetch error:", error);
         return { status, error: error.toString() };
     }
 }
@@ -114,7 +109,6 @@ export async function fetchDelete(url, token) {
         const data = await response.json();
         return { status, data };
     } catch (error) {
-        console.error("Fetch error:", error);
         return { status, error: error.toString() };
     }
 }

@@ -122,7 +122,7 @@
         <h5
             class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
         >
-            {movieDetails?.title}
+            {movieDetails?.title} <span class="text-gray-600 font-light text-lg">{movieDetails?.original_title !== movieDetails?.title ? `(${movieDetails?.original_title})` : ""}</span>
         </h5>
         <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
             {movieDetails?.release_date} - {movieDetails?.runtime} minutes
@@ -155,7 +155,7 @@
                 class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"
             />
             <p class="text-sm font-medium text-gray-900 dark:text-white mr-2">
-                out of {movieStats?.total_ratings} ratings
+                out of {movieStats?.total_ratings !== null ? movieStats?.total_ratings : 0} ratings
             </p>
             <Img src={cinematchLogo} alt="Cinematch logo" class="w-6 h-6" />
         </Rating>
