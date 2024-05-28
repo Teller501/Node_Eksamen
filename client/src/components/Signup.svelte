@@ -123,7 +123,7 @@
                         required
                     />
                     {#if errors.username}
-                        <Helper color="red">{errors.username}</Helper>
+                        <Helper class="text-red-700">{errors.username}</Helper>
                     {/if}
                     {#if isUsernameAvailable === null && username}
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -152,7 +152,7 @@
                     required
                 />
                 {#if errors.email}
-                    <Helper color="red">{errors.email}</Helper>
+                    <Helper class="text-red-700">{errors.email}</Helper>
                 {/if}
             </Label>
             <Label class="space-y-2">
@@ -169,7 +169,7 @@
                     <span class={`${strongPassword ? "text-green-700" : "text-red-700"}`}>{strongPassword ? 'Strong Password' : 'Weak Password'}</span>
                 {/if}
                 {#if errors.password}
-                    <Helper color="red">{errors.password}</Helper>
+                    <Helper class="text-red-700">{errors.password}</Helper>
                 {/if}
             </Label>
             <Label class="space-y-2">
@@ -183,7 +183,7 @@
                     required
                 />
                 {#if errors.confirmPassword}
-                    <Helper color="red">{errors.confirmPassword}</Helper>
+                    <Helper class="text-red-700">{errors.confirmPassword}</Helper>
                 {/if}
             </Label>
             <Button type="submit" class="w-full">Sign up</Button>
