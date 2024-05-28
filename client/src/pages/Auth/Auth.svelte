@@ -10,8 +10,8 @@
         currentView = view;
     }
 
-    function handleLoading(loading) {
-        isLoading = loading;
+    function handleLoading(event) {
+        isLoading = event.detail;
     }
 </script>
 

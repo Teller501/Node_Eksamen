@@ -146,6 +146,6 @@
 
 <ActivityList />
 
-<SpeedDial defaultClass="absolute end-6 bottom-6">
+<SpeedDial defaultClass="absolute end-8 bottom-32">
     <SearchModal mode={"log"} />
 </SpeedDial>

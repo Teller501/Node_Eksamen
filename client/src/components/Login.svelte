@@ -1,6 +1,13 @@
 <script>
     import { fade } from "svelte/transition";
-    import { Card, Button, Label, Input, Checkbox, Helper } from "flowbite-svelte";
+    import {
+        Card,
+        Button,
+        Label,
+        Input,
+        Checkbox,
+        Helper,
+    } from "flowbite-svelte";
     import { fetchPost } from "../util/api.js";
     import toast, { Toaster } from "svelte-french-toast";
     import { BASE_URL } from "../stores/generalStore.js";
@@ -12,7 +19,7 @@
     } from "../stores/authStore.js";
     import ForgotPassword from "./ForgotPassword.svelte";
     import { createEventDispatcher } from "svelte";
-    
+
     const dispatch = createEventDispatcher();
 
     export let isLoading = false;
@@ -27,6 +34,9 @@
 
     function validateForm() {
         let valid = true;
+
+        errors.username = "";
+        errors.password = "";
 
         if (!username) {
             errors.username = "Username is required";
@@ -48,7 +58,7 @@
             return;
         }
 
-        dispatch('handleLoading', true);
+        dispatch("handleLoading", true);
         const body = { username, password, rememberMe };
         const { status, data } = await fetchPost(
             `${$BASE_URL}/api/login`,
@@ -74,11 +84,12 @@
             navigate("/home");
         } else {
             const errorMessage =
-                data && data.error ? data.error : "Wrong username or password.";
+                status === 429
+                    ? "Too many attempts, please try again in 15 minutes"
+                    : "Wrong username or password";
             toast.error(errorMessage, { duration: 3000 });
+            dispatch("handleLoading", false);
         }
-
-        dispatch('handleLoading', false);
     }
 </script>
 
@@ -86,7 +97,11 @@
 
 <div in:fade={{ duration: 300 }}>
     <Card class="bg-slate-200">
-        <form class="flex flex-col space-y-6" on:submit={handleLogin} novalidate>
+        <form
+            class="flex flex-col space-y-6"
+            on:submit={handleLogin}
+            novalidate
+        >
             <Label class="space-y-2">
                 <span>Username</span>
                 <Input
@@ -118,7 +133,9 @@
                 {/if}
             </Label>
             <div class="flex items-start">
-                <Checkbox bind:checked={rememberMe} disabled={isLoading}>Remember me</Checkbox>
+                <Checkbox bind:checked={rememberMe} disabled={isLoading}
+                    >Remember me</Checkbox
+                >
                 <ForgotPassword />
             </div>
             <Button type="submit" class="w-full" disabled={isLoading}>
