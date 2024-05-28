@@ -58,7 +58,7 @@
         <NavBrand href="/">
             <img src={CineMatch} class="me-1 h-14 sm:h-18" alt="Logo" />
             <span
-                class="self-center whitespace-nowrap text-xl font-semibold text-blue hover:text-blue-700"
+                class="self-center whitespace-nowrap text-xl font-semibold text-blue hover:text-primary-700"
                 >CineMatch</span
             >
         </NavBrand>

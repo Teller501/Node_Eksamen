@@ -60,5 +60,5 @@
                 </div>
             {/each}
         {/if}
-    </div></Modal
->
+    </div>
+</Modal>

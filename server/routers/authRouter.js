@@ -282,7 +282,7 @@ router.post("/api/remember-me", async (req, res) => {
 
 router.delete("/api/logout/:token", (req, res) => {
     redisClient.del(req.params.token);
-    res.status(204).send({ data: "Logged out" });
+    res.send({ data: "Logged out" });
 });
 
 export default router;

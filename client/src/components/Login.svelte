@@ -1,6 +1,6 @@
 <script>
     import { fade } from "svelte/transition";
-    import { Card, Button, Label, Input, Checkbox } from "flowbite-svelte";
+    import { Card, Button, Label, Input, Checkbox, Spinner } from "flowbite-svelte";
     import { fetchPost } from "../util/api.js";
     import toast, { Toaster } from "svelte-french-toast";
     import { BASE_URL } from "../stores/generalStore.js";
@@ -11,13 +11,18 @@
         refreshTokenStore,
     } from "../stores/authStore.js";
     import ForgotPassword from "./ForgotPassword.svelte";
+    import { createEventDispatcher } from "svelte";
+    
+    const dispatch = createEventDispatcher();
 
+    export let isLoading = false;
     let username = "";
     let password = "";
     let rememberMe = false;
 
     async function handleLogin(event) {
         event.preventDefault();
+        dispatch('handleLoading', true);
         const body = { username, password, rememberMe };
         const { status, data } = await fetchPost(
             `${$BASE_URL}/api/login`,
@@ -46,6 +51,8 @@
                 data && data.error ? data.error : "Wrong username or password.";
             toast.error(errorMessage, { duration: 3000 });
         }
+
+        dispatch('handleLoading', false);
     }
 </script>
 
@@ -63,6 +70,7 @@
                     placeholder="Username"
                     bind:value={username}
                     required
+                    disabled={isLoading}
                 />
             </Label>
             <Label class="space-y-2">
@@ -74,19 +82,18 @@
                     placeholder="•••••"
                     bind:value={password}
                     required
+                    disabled={isLoading}
                 />
             </Label>
             <div class="flex items-start">
-                <Checkbox bind:checked={rememberMe}>Remember me</Checkbox>
+                <Checkbox bind:checked={rememberMe} disabled={isLoading}>Remember me</Checkbox>
                 <ForgotPassword />
-                <!-- <a
-                    href="/"
-                    class="ms-auto text-sm ml-8 text-primary-700 hover:underline dark:text-primary-500"
-                >
-                    Lost password?
-                </a> -->
             </div>
-            <Button type="submit" class="w-full">Login to your account</Button>
+            <Button type="submit" class="w-full" disabled={isLoading}>
+                {#if !isLoading}
+                    Login to your account
+                {/if}
+            </Button>
         </form>
     </Card>
 </div>
