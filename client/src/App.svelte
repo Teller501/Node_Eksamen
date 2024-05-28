@@ -35,6 +35,7 @@
     import Recommender from "./pages/Recommender/Recommender.svelte";
     import Recommendations from "./pages/Recommendations/Recommendations.svelte";
     import NotFound from "./pages/NotFound/NotFound.svelte";
+    import Contact from "./pages/Contact/Contact.svelte";
 
     const currentYear = new Date().getFullYear();
 
@@ -174,23 +175,29 @@
             <PrivateRoute path="/recommendations">
                 <Recommendations />
             </PrivateRoute>
-            <Route path="/:username" let:params>
+            <PrivateRoute path="/:username" let:params>
                 <Profile {params} />
-            </Route>
+            </PrivateRoute>
             <Route path="/404"><NotFound /></Route>
+            <PrivateRoute path="/contact"><Contact /></PrivateRoute>
         </div>
     </Router>
 </main>
 
 <footer>
     <Footer class="bg-slate-50 h-24 shadow-md">
-        <FooterCopyright classSpan="mb-6" href="/" by="CineMatch" year={currentYear} />
+        <FooterCopyright
+            classSpan="mb-6"
+            href="/"
+            by="CineMatch"
+            year={currentYear}
+        />
         <FooterLinkGroup
             ulClass="flex flex-wrap justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400 sm:mt-0"
         >
             <FooterLink href="/">About</FooterLink>
             <FooterLink href="/">Privacy Policy</FooterLink>
-            <FooterLink href="/">Contact</FooterLink>
+            <FooterLink href="/contact">Contact</FooterLink>
         </FooterLinkGroup>
     </Footer>
 </footer>

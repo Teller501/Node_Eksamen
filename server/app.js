@@ -85,6 +85,9 @@ app.use(followsRouter);
 import likesRouter from "./routers/likesRouter.js";
 app.use(likesRouter);
 
+import contactRouter from "./routers/contactRouter.js";
+app.use(contactRouter);
+
 import mongoClient from "./database/mongoDBConnection.js";
 
 const options = { fullDocument: "updateLookup" };
