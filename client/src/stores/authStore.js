@@ -3,8 +3,12 @@ import { writable } from 'svelte/store';
 function createPersistedStore(key, startValue) {
     const { subscribe, set, update } = writable(startValue, () => {
         const json = localStorage.getItem(key);
-        if (json) {
-            set(JSON.parse(json));
+        if (json !== null && json !== "undefined") {
+            try {
+                set(JSON.parse(json));
+            } catch (e) {
+                console.error(`Error parsing JSON from localStorage for key "${key}":`, e);
+            }
         }
 
         return () => localStorage.removeItem(key);
