@@ -84,6 +84,21 @@ router.get("/api/activate/:token", validateToken, async (req, res) => {
     res.send({ data: "User activated" });
 });
 
+router.get("/api/check-username/:username", async (req, res) => {
+    const { username } = req.params;
+    const result = await pgClient.query(
+        `SELECT * FROM users WHERE username = $1`,
+        [username]
+    );
+
+    if (result.rowCount > 0) {
+        return res.status(200).send({ data: false });
+    }
+
+    res.status(200).send({ data: true });
+});
+
+
 router.post("/api/login", validateUserLogin, async (req, res) => {
     try {
         const result = await pgClient.query(
