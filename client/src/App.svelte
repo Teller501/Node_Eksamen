@@ -36,6 +36,7 @@
     import Recommendations from "./pages/Recommendations/Recommendations.svelte";
     import NotFound from "./pages/NotFound/NotFound.svelte";
     import Contact from "./pages/Contact/Contact.svelte";
+    import About from "./pages/About/About.svelte";
 
     const currentYear = new Date().getFullYear();
 
@@ -180,6 +181,7 @@
             </PrivateRoute>
             <Route path="/404"><NotFound /></Route>
             <PrivateRoute path="/contact"><Contact /></PrivateRoute>
+            <PrivateRoute path="/about"><About /></PrivateRoute>
         </div>
     </Router>
 </main>
@@ -195,7 +197,7 @@
         <FooterLinkGroup
             ulClass="flex flex-wrap justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400 sm:mt-0"
         >
-            <FooterLink href="/">About</FooterLink>
+            <FooterLink href="/about">About</FooterLink>
             <FooterLink href="/">Privacy Policy</FooterLink>
             <FooterLink href="/contact">Contact</FooterLink>
         </FooterLinkGroup>
