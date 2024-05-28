@@ -12,7 +12,7 @@
     import toast, { Toaster } from "svelte-french-toast";
     import { fetchGet, fetchPost } from "../util/api.js";
     import { BASE_URL } from "../stores/generalStore.js";
-    import { userStore } from "../stores/authStore.js";
+    import { userStore, tokenStore } from "../stores/authStore.js";
     import { favoritesStore } from "../stores/favoritesStore.js";
     import LogMovie from './LogMovie.svelte';
     import { fade } from 'svelte/transition';
@@ -30,7 +30,8 @@
 
     async function fetchSearchResults() {
         const { data } = await fetchGet(
-            `${$BASE_URL}/api/movies/search?q=${searchQuery}`
+            `${$BASE_URL}/api/movies/search?q=${searchQuery}`,
+            $tokenStore
         );
         searchResults = data;
     }
@@ -52,7 +53,7 @@
             userId: $userStore.id,
             movieId: movieId,
         };
-        const { data, status } = await fetchPost(`${$BASE_URL}/api/favorites`, body);
+        const { data, status } = await fetchPost(`${$BASE_URL}/api/favorites`, body, $tokenStore);
 
         if (status === 200) {
             searchModal = false;
@@ -71,8 +72,8 @@
     const body = {
       movieId: movieId,
     };
-    const { data, status } = await fetchPost(
-      `${$BASE_URL}/api/lists/${$userStore.id}/${selectedList.id}`, body);
+    const { status } = await fetchPost(
+      `${$BASE_URL}/api/lists/${$userStore.id}/${selectedList.id}`, body, $tokenStore);
 
     if (status === 201) {
         searchModal = false;

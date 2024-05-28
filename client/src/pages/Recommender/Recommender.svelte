@@ -2,7 +2,7 @@
     import Recommendation from "../../components/Recommendation.svelte";
     import { fetchGet, fetchPost } from "../../util/api";
     import { BASE_URL } from "../../stores/generalStore";
-    import { userStore } from "../../stores/authStore";
+    import { userStore, tokenStore } from "../../stores/authStore";
     import { recommendationStore } from "../../stores/recommendationStore";
     
     import { onMount } from "svelte";
@@ -11,7 +11,7 @@
     let page = 1;
 
     async function getRecommendationMovie() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/movies/recommender?page=${page}`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/movies/recommender?page=${page}`, $tokenStore);
         movie = data[0];
     }
 
@@ -43,7 +43,7 @@
             user_ratings: $recommendationStore.user_ratings
         };
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/recommendations`, payload);
+        const { status } = await fetchPost(`${$BASE_URL}/api/recommendations`, payload, $tokenStore);
 
         if (status === 200) {
             window.location.href = "/recommendations";

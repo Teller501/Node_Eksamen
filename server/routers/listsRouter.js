@@ -4,7 +4,9 @@ import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
-router.get("/api/lists/:user_id", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/lists/:user_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
 
@@ -29,8 +31,7 @@ router.get("/api/lists/:user_id", async (req, res) => {
     }
 });
 
-// Retrieve a specific list with its movies
-router.get("/api/lists/:user_id/:list_id", async (req, res) => {
+router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;
@@ -64,7 +65,6 @@ router.get("/api/lists/:user_id/:list_id", async (req, res) => {
         const list = listQuery.rows[0];
         list.movies = movieQuery.rows;
 
-        // Fetch poster paths for each movie
         const enrichedMovies = await Promise.all(
             list.movies.map(async (movie) => {
                 const mongoData = await mongoClient.movies.findOne({
@@ -86,8 +86,7 @@ router.get("/api/lists/:user_id/:list_id", async (req, res) => {
     }
 });
 
-// Create a new list
-router.post("/api/lists/:user_id", async (req, res) => {
+router.post("/api/lists/:user_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const { listName, description } = req.body;
@@ -99,6 +98,10 @@ router.post("/api/lists/:user_id", async (req, res) => {
         `;
         const result = await pgClient.query(query, [userId, listName, description]);
 
+        const usernameQuery = await pgClient.query(`SELECT username FROM users WHERE id = $1`, [userId]);
+        result.rows[0].username = usernameQuery.rows[0].username;
+
+
         res.status(201).json({ data: result.rows[0] });
     } catch (error) {
         console.error("Error creating list:", error);
@@ -106,14 +109,12 @@ router.post("/api/lists/:user_id", async (req, res) => {
     }
 });
 
-// Add movie to list
-router.post("/api/lists/:user_id/:list_id", async (req, res) => {
+router.post("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;
         const { movieId } = req.body;
 
-        // Check if the list belongs to the user
         const listQuery = await pgClient.query(
             `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
             [listId, userId]
@@ -137,8 +138,7 @@ router.post("/api/lists/:user_id/:list_id", async (req, res) => {
 });
 
 
-// Delete a list
-router.delete("/api/lists/:user_id/:list_id", async (req, res) => {
+router.delete("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;
@@ -167,8 +167,7 @@ router.delete("/api/lists/:user_id/:list_id", async (req, res) => {
     }
 });
 
-// Delete a specific movie from a specific list
-router.delete("/api/lists/:user_id/:list_id/:movie_id", async (req, res) => {
+router.delete("/api/lists/:user_id/:list_id/:movie_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;

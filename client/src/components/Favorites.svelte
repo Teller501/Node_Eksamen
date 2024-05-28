@@ -6,6 +6,7 @@
     import { fetchDelete } from "../util/api.js";
     import { BASE_URL } from "../stores/generalStore.js";
     import { favoritesStore } from "../stores/favoritesStore.js";
+    import { tokenStore } from "../stores/authStore.js";
     import { get } from 'svelte/store';
 
     export let user;
@@ -20,7 +21,7 @@
     });
 
     async function handleRemoveFavorite(movieId) {
-        await fetchDelete(`${$BASE_URL}/api/favorites/${userId}/${movieId}`);
+        await fetchDelete(`${$BASE_URL}/api/favorites/${userId}/${movieId}`, $tokenStore);
         favoritesStore.update(favorites => favorites.filter(favorite => favorite.movie_id !== movieId));
     }
 </script>

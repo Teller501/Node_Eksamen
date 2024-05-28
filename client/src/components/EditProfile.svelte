@@ -1,7 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import { BASE_URL } from "../stores/generalStore.js";
-    import { userStore } from "../stores/authStore";
+    import { userStore, tokenStore } from "../stores/authStore";
     import { fetchPatch } from "../util/api";
     import toast, { Toaster } from "svelte-french-toast";
     import {
@@ -37,7 +37,8 @@
 
         const response = await fetchPatch(
             `${$BASE_URL}/api/users/${$userStore.id}`,
-            formData
+            formData,
+            $tokenStore
         );
         if (response.status === 200) {
             toast.success("User updated successfully.");

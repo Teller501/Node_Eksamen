@@ -1,11 +1,9 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import mongoClient from "../database/mongoDBConnection.js";
-import NodeCache from "node-cache";
 import { tmdbIds } from "../util/linksCSVParser.js";
 
 const router = Router();
-const cache = new NodeCache({ stdTTL: 600 });
 
 async function getAllMovies(
     page = 1,
@@ -104,7 +102,9 @@ async function getAllMovies(
     }
 }
 
-router.get("/api/movies/popular", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/movies/popular", authenticateToken, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -125,7 +125,7 @@ router.get("/api/movies/popular", async (req, res) => {
     }
 });
 
-router.get("/api/movies", async (req, res) => {
+router.get("/api/movies", authenticateToken, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -146,7 +146,7 @@ router.get("/api/movies", async (req, res) => {
     }
 });
 
-router.get("/api/movies/search", async (req, res) => {
+router.get("/api/movies/search", authenticateToken, async (req, res) => {
     try {
         const searchQuery = req.query.q;
 
@@ -178,7 +178,7 @@ router.get("/api/movies/search", async (req, res) => {
     }
 });
 
-router.get("/api/movies/recommender", async (req, res) => {
+router.get("/api/movies/recommender", authenticateToken, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -206,7 +206,7 @@ router.get("/api/movies/recommender", async (req, res) => {
     }
 });
 
-router.get("/api/movies/:id", async (req, res) => {
+router.get("/api/movies/:id", authenticateToken, async (req, res) => {
     try {
         const pgMovieResult = await pgClient.query(
             `SELECT movies.*, array_agg(genres.name) as genres
@@ -242,7 +242,7 @@ router.get("/api/movies/:id", async (req, res) => {
     }
 });
 
-router.get("/api/movies/:id/similar", async (req, res) => {
+router.get("/api/movies/:id/similar", authenticateToken, async (req, res) => {
     try {
         const pgMovieResult = await pgClient.query(
             `SELECT array_agg(genres.name) as genres

@@ -1,10 +1,10 @@
 <script>
     import { Img, P, Label, Input, Textarea, Button, Helper } from "flowbite-svelte";
-    import { userStore } from "../../stores/authStore.js";
     import waltz from "../../assets/contact/waltz-ringing.png";
     import toast, { Toaster } from "svelte-french-toast";
     import { fetchPost } from "../../util/api.js";
     import { BASE_URL } from "../../stores/generalStore.js";
+    import { userStore, tokenStore } from "../../stores/authStore.js";
 
     let name = $userStore.username ? $userStore.username : "";
     let email = $userStore.email ? $userStore.email : "";
@@ -46,7 +46,7 @@
 
         const body = { name, email, message };
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/contact`, body);
+        const { status } = await fetchPost(`${$BASE_URL}/api/contact`, body, $tokenStore);
 
         if (status === 200) {
             toast.success("Message sent successfully");

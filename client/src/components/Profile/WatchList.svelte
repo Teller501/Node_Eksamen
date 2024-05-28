@@ -2,7 +2,7 @@
     import Movie from "../Movie.svelte";
     import { fetchDelete } from "../../util/api";
     import { BASE_URL } from "../../stores/generalStore.js";
-    import { userStore } from "../../stores/authStore";
+    import { userStore, tokenStore } from "../../stores/authStore";
 
     import toast, { Toaster } from "svelte-french-toast";
 
@@ -13,7 +13,8 @@
 
     async function handleRemoveFromWatchlist(movieId, title) {
         await fetchDelete(
-            `${$BASE_URL}/api/watchlist/${$userStore.id}/${movieId}`
+            `${$BASE_URL}/api/watchlists/${$userStore.id}/${movieId}`,
+            $tokenStore
         );
         watchList = watchList.filter((movie) => movie.movie_id !== movieId);
 

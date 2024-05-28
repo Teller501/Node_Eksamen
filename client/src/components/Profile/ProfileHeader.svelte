@@ -4,7 +4,7 @@
     import EditProfile from "../EditProfile.svelte";
     import { fetchPost, fetchDelete } from "../../util/api.js";
     import { BASE_URL } from "../../stores/generalStore.js";
-    import { userStore } from "../../stores/authStore";
+    import { userStore, tokenStore } from "../../stores/authStore";
     import Followers from "../Followers.svelte";
     import Following from "../Following.svelte";
 
@@ -30,7 +30,7 @@
             followedId: user.id,
         };
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/follows`, body);
+        const { status } = await fetchPost(`${$BASE_URL}/api/follows`, body, $tokenStore);
 
         if (status === 200) {
             isFollowing = !isFollowing;
@@ -49,7 +49,8 @@
         }
 
         const { status } = await fetchDelete(
-            `${$BASE_URL}/api/follows/${$userStore.id}/${user.id}`
+            `${$BASE_URL}/api/follows/${$userStore.id}/${user.id}`,
+            $tokenStore
         );
 
         if (status === 200) {

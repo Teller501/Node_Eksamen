@@ -35,7 +35,9 @@ const upload = multer({
     },
 });
 
-router.get("/api/users", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/users", authenticateToken, async (req, res) => {
     try {
         const query = "SELECT * FROM users";
         const result = await pgClient.query(query);
@@ -49,7 +51,7 @@ router.get("/api/users", async (req, res) => {
     }
 });
 
-router.get("/api/users/search", async (req, res) => {
+router.get("/api/users/search", authenticateToken, async (req, res) => {
     const q = req.query.q;
     if (!q) {
         return res.status(400).send("Missing query parameter 'q'");
@@ -67,7 +69,7 @@ router.get("/api/users/search", async (req, res) => {
     }
 });
 
-router.get("/api/users/:id([0-9]+)", async (req, res) => {
+router.get("/api/users/:id([0-9]+)", authenticateToken, async (req, res) => {
     try {
         const query = "SELECT * FROM users WHERE id = $1";
         const result = await pgClient.query(query, [req.params.id]);
@@ -84,7 +86,7 @@ router.get("/api/users/:id([0-9]+)", async (req, res) => {
     }
 });
 
-router.get("/api/users/:username([a-zA-Z0-9_]+)", async (req, res) => {
+router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req, res) => {
     try {
         const username = req.params.username;
 
@@ -114,6 +116,7 @@ router.get("/api/users/:username([a-zA-Z0-9_]+)", async (req, res) => {
 router.patch(
     "/api/users/:id",
     upload.single("profile_picture"),
+    authenticateToken,
     async (req, res) => {
         try {
             const { full_name, birth_date, location, bio } = req.body;

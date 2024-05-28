@@ -3,7 +3,9 @@ import mongoDBConnection from "../database/mongoDBConnection.js";
 
 const router = Router();
 
-router.get("/api/activities/recent", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/activities/recent", authenticateToken, async (req, res) => {
     try {
         const activities = await mongoDBConnection.activities.find().sort({
             createdAt: -1

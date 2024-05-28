@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import { BASE_URL } from "../../stores/generalStore";
+    import { tokenStore } from "../../stores/authStore.js";
     import { fetchGet } from "../../util/api";
     import Movie from "../../components/Movie.svelte";
     import { Hr, A, Avatar } from "flowbite-svelte";
@@ -11,13 +12,14 @@
 
     let searchResults = [];
 
+
     async function getSearchResults() {
         const endpoint =
             type === "movies"
                 ? `${$BASE_URL}/api/movies/search?q=${searchQuery}`
                 : `${$BASE_URL}/api/users/search?q=${searchQuery}`;
 
-        const { data } = await fetchGet(endpoint);
+        const { data } = await fetchGet(endpoint, $tokenStore);
         searchResults = data;
     }
 

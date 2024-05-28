@@ -1,7 +1,7 @@
 <script>
     import { BASE_URL } from "../../stores/generalStore";
     import { fetchGet } from "../../util/api";
-    import { userStore } from "../../stores/authStore";
+    import { userStore, tokenStore } from "../../stores/authStore";
     import { onMount } from "svelte";
     import Movie from "../../components/Movie.svelte";
 
@@ -9,7 +9,7 @@
     let movieDetails = [];
 
     async function fetchRecommendations() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/recommendations/${$userStore.id}`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/recommendations/${$userStore.id}`, $tokenStore);
         recommendations = data;
 
         for (const id of recommendations) {
@@ -19,7 +19,7 @@
     }
 
     async function fetchMovieDetails(id) {
-        const { data } = await fetchGet(`${$BASE_URL}/api/movies/${id}`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/movies/${id}`, $tokenStore);
         return data;
     }
 

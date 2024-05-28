@@ -1,7 +1,7 @@
 <script>
     import { Hr, Rating, Button, Avatar } from "flowbite-svelte";
     import { ClockOutline, ThumbsUpSolid } from "flowbite-svelte-icons";
-    import { userStore } from "../../stores/authStore.js";
+    import { userStore, tokenStore } from "../../stores/authStore.js";
     import { BASE_URL } from "../../stores/generalStore.js";
     import Movie from "../Movie.svelte";
     import { fetchGet, fetchPost, fetchDelete } from "../../util/api.js";
@@ -15,7 +15,7 @@
     export let marginX = "60";
 
     async function checkIfLiked(userId, reviewId) {
-        const { data } = await fetchGet(`${$BASE_URL}/api/likes/${userId}/${reviewId}`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/likes/${userId}/${reviewId}`, $tokenStore);
         return data;
     }
 
@@ -25,7 +25,7 @@
             reviewId: reviewId,
         };
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/likes`, body);
+        const { status } = await fetchPost(`${$BASE_URL}/api/likes`, body, $tokenStore);
         if (status === 200) {
             reviews = reviews.map(review => {
                 if (review.id === reviewId) {
@@ -37,7 +37,7 @@
     }
 
     async function handleUnlikeReview(userId, reviewId) {
-        const { status } = await fetchDelete(`${$BASE_URL}/api/likes/${userId}/${reviewId}`);
+        const { status } = await fetchDelete(`${$BASE_URL}/api/likes/${userId}/${reviewId}`, $tokenStore);
         if (status === 200) {
             reviews = reviews.map(review => {
                 if (review.id === reviewId) {

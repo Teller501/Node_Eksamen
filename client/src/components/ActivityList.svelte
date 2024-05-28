@@ -1,5 +1,6 @@
 <script>
-    import { activityStore } from "../stores/activityStore.js"; 
+    import { activityStore } from "../stores/activityStore.js";
+    import { tokenStore } from "../stores/authStore.js"; 
     import { fetchGet } from "../util/api.js";
     import { BASE_URL } from "../stores/generalStore.js";
     import { onMount } from "svelte";
@@ -12,7 +13,7 @@
     });
 
     async function fetchInitialActivities() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/activities/recent`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/activities/recent`, $tokenStore);
 
         activityStore.set(data);
     }

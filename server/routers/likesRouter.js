@@ -3,7 +3,9 @@ import pgClient from "../database/pgConnection.js";
 
 const router = Router();
 
-router.get("/api/likes/:review_id", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/likes/:review_id", authenticateToken, async (req, res) => {
     const reviewId = req.params.review_id;
 
     try {
@@ -28,7 +30,7 @@ router.get("/api/likes/:review_id", async (req, res) => {
     }
 });
 
-router.get("/api/likes/:user_id/:review_id", async (req, res) => {
+router.get("/api/likes/:user_id/:review_id", authenticateToken, async (req, res) => {
     const { user_id, review_id } = req.params;
 
     try {
@@ -49,7 +51,7 @@ router.get("/api/likes/:user_id/:review_id", async (req, res) => {
     }
 });
 
-router.post("/api/likes", async (req, res) => {
+router.post("/api/likes", authenticateToken, async (req, res) => {
     const { userId, reviewId } = req.body;
 
     try {
@@ -65,7 +67,7 @@ router.post("/api/likes", async (req, res) => {
     }
 });
 
-router.delete("/api/likes/:user_id/:review_id", async (req, res) => {
+router.delete("/api/likes/:user_id/:review_id", authenticateToken, async (req, res) => {
     const userId = req.params.user_id;
     const reviewId = req.params.review_id;
 

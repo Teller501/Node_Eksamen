@@ -37,7 +37,9 @@ async function getAllLogs(page = 1, limit = 10) {
     }
 }
 
-router.get("/api/logs", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/logs", authenticateToken, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const logs = await getAllLogs(page, limit);
@@ -45,7 +47,7 @@ router.get("/api/logs", async (req, res) => {
     res.send(logs);
 });
 
-router.get("/api/logs/recent", async (req, res) => {
+router.get("/api/logs/recent", authenticateToken, async (req, res) => {
     try {
         const logs = await pgClient.query(
             `SELECT watch_logs.*, users.username, users.profile_picture, movies.title AS movie_title,
@@ -66,7 +68,7 @@ router.get("/api/logs/recent", async (req, res) => {
 });
 
 
-router.get("/api/logs/:id", async (req, res) => {
+router.get("/api/logs/:id", authenticateToken, async (req, res) => {
     const id = req.params.id;
     const log = await pgClient.query("SELECT * FROM watch_logs WHERE id = $1", [
         id,
@@ -79,7 +81,7 @@ router.get("/api/logs/:id", async (req, res) => {
     res.send({ data: log.rows[0] });
 });
 
-router.get("/api/logs/movie/:movie_id", async (req, res) => {
+router.get("/api/logs/movie/:movie_id", authenticateToken, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const offset = (page - 1) * limit;
@@ -125,7 +127,7 @@ router.get("/api/logs/movie/:movie_id", async (req, res) => {
     }
 });
 
-router.get("/api/logs/movie/:movie_id/aggregated", async (req, res) => {
+router.get("/api/logs/movie/:movie_id/aggregated", authenticateToken, async (req, res) => {
     try {
         const movieId = req.params.movie_id;
 
@@ -162,7 +164,7 @@ router.get("/api/logs/movie/:movie_id/aggregated", async (req, res) => {
 
 
 
-router.get("/api/logs/reviews/:movie_id", async (req, res) => {
+router.get("/api/logs/reviews/:movie_id", authenticateToken, async (req, res) => {
     const movieId = req.params.movie_id;
     const result = await pgClient.query(
         `SELECT watch_logs.id, users.username, users.profile_picture, users.id AS user_id, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at,
@@ -183,7 +185,7 @@ router.get("/api/logs/reviews/:movie_id", async (req, res) => {
 });
 
 
-router.get("/api/logs/user/:user_id", async (req, res) => {
+router.get("/api/logs/user/:user_id", authenticateToken, async (req, res) => {
     const userId = req.params.user_id;
     const result = await pgClient.query(
         `WITH last_four_movies AS (
@@ -234,7 +236,7 @@ router.get("/api/logs/user/:user_id", async (req, res) => {
     }
 });
 
-router.get("/api/logs/user/:user_id/watched", async (req, res) => {
+router.get("/api/logs/user/:user_id/watched", authenticateToken, async (req, res) => {
     const userId = req.params.user_id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -298,7 +300,7 @@ router.get("/api/logs/user/:user_id/watched", async (req, res) => {
     }
 });
 
-router.get("/api/logs/user/:user_id/reviews", async (req, res) => {
+router.get("/api/logs/user/:user_id/reviews", authenticateToken, async (req, res) => {
     const userId = req.params.user_id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -370,7 +372,7 @@ router.get("/api/logs/user/:user_id/reviews", async (req, res) => {
 });
 
 
-router.post("/api/logs", async (req, res) => {
+router.post("/api/logs", authenticateToken, async (req, res) => {
     const { movieId, userId, watchedOn, rating, review } = req.body;
     const currentDate = new Date().toISOString();
 
@@ -413,7 +415,7 @@ router.post("/api/logs", async (req, res) => {
     }
 });
 
-router.patch("/api/logs/:id", async (req, res) => {
+router.patch("/api/logs/:id", authenticateToken, async (req, res) => {
     const id = req.params.id;
     const updates = req.body;
 
@@ -456,7 +458,7 @@ router.patch("/api/logs/:id", async (req, res) => {
     }
 });
 
-router.delete("/api/logs/:id", async (req, res) => {
+router.delete("/api/logs/:id", authenticateToken, async (req, res) => {
     const id = req.params.id;
 
     try {

@@ -5,7 +5,7 @@
     import Movie from "../../components/Movie.svelte";
     import { ImagePlaceholder, Button, Avatar, SpeedDial, SpeedDialButton } from "flowbite-svelte";
     import { CaretLeftSolid, CaretRightSolid, PlusOutline } from "flowbite-svelte-icons";
-    import { userStore } from "../../stores/authStore";
+    import { tokenStore, userStore } from "../../stores/authStore";
     import { activityStore } from "../../stores/activityStore.js";
     import io from "socket.io-client";
     import ActivityList from "../../components/ActivityList.svelte";
@@ -30,13 +30,14 @@
 
     async function fetchMovies() {
         const { data } = await fetchGet(
-            `${$BASE_URL}/api/movies/popular?limit=5&page=${page}`
+            `${$BASE_URL}/api/movies/popular?limit=5&page=${page}`,
+            $tokenStore
         );
         popularMovies = data;
     }
 
     async function fetchRecentLogs() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/logs/recent`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/logs/recent`, $tokenStore);
         recentLogs = data;
     }
 

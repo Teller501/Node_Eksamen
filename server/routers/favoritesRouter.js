@@ -4,7 +4,9 @@ import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
-router.get("/api/favorites", async (req, res) => { 
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/favorites", authenticateToken, async (req, res) => { 
     try {
         const query = "SELECT * FROM favorite_movies";
         const result = await pgClient.query(query);
@@ -22,7 +24,7 @@ router.get("/api/favorites", async (req, res) => {
     }
 });
 
-router.get("/api/favorites/:user_id", async (req, res) => {
+router.get("/api/favorites/:user_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const favoritesQuery = `
@@ -56,7 +58,7 @@ router.get("/api/favorites/:user_id", async (req, res) => {
 
 
 
-router.post("/api/favorites", async (req, res) => {
+router.post("/api/favorites", authenticateToken, async (req, res) => {
     try {
         const { userId, movieId } = req.body;
 
@@ -94,7 +96,7 @@ router.post("/api/favorites", async (req, res) => {
     }
 });
 
-router.delete("/api/favorites/:user_id/:movie_id", async (req, res) => {
+router.delete("/api/favorites/:user_id/:movie_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const movieId = req.params.movie_id;

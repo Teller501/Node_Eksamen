@@ -7,9 +7,9 @@
     import Reviews from "../../components/Profile/Reviews.svelte";
     import ProfileHeader from "../../components/Profile/ProfileHeader.svelte";
     import { onMount, onDestroy } from "svelte";
-    import { userStore } from "../../stores/authStore";
+    import { userStore, tokenStore } from "../../stores/authStore";
     import { BASE_URL } from "../../stores/generalStore.js";
-    import { fetchGet, fetchPost, fetchDelete } from "../../util/api.js";
+    import { fetchGet } from "../../util/api.js";
     import { favoritesStore } from "../../stores/favoritesStore.js";
     import { activeTab } from "../../stores/tabStore.js";
 
@@ -59,7 +59,8 @@
     async function fetchUser() {
         if (!isOwner) {
             const { data, status } = await fetchGet(
-                `${$BASE_URL}/api/users/${username}`
+                `${$BASE_URL}/api/users/${username}`,
+                $tokenStore
             );
 
             if (status === 404) {
@@ -69,7 +70,7 @@
 
             user = data;
         } else {
-            const { data } = await fetchGet(`${$BASE_URL}/api/users/${user.username}`);
+            const { data } = await fetchGet(`${$BASE_URL}/api/users/${user.username}`, $tokenStore);
 
             user = data;
             userStore.set(user);
@@ -77,8 +78,9 @@
     }
 
     async function fetchUserData() {
-        const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/logs/user/${user.id}`
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/logs/user/${user.id}`,
+            $tokenStore
         );
 
         userData = data;
@@ -87,7 +89,8 @@
 
     async function fetchUserReviews() {
         const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/logs/user/${user.id}/reviews`
+            `${$BASE_URL}/api/logs/user/${user.id}/reviews`,
+            $tokenStore
         );
         if (status === 404) {
             return;
@@ -97,7 +100,8 @@
 
     async function fetchUserFavorites() {
         const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/favorites/${user.id}`
+            `${$BASE_URL}/api/favorites/${user.id}`,
+            $tokenStore
         );
         if (status === 404) {
             return;
@@ -111,7 +115,8 @@
 
     async function fetchWatchedMovies() {
         const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/logs/user/${user.id}/watched`
+            `${$BASE_URL}/api/logs/user/${user.id}/watched`,
+            $tokenStore
         );
         if (status === 404) {
             return;
@@ -121,7 +126,8 @@
 
     async function fetchWatchList() {
         const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/watchlist/${user.id}`
+            `${$BASE_URL}/api/watchlists/${user.id}`,
+            $tokenStore
         );
         if (status === 404) {
             return;
@@ -131,7 +137,8 @@
 
     async function fetchLists() {
         const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/lists/${user.id}`
+            `${$BASE_URL}/api/lists/${user.id}`,
+            $tokenStore
         );
         if (status === 404) {
             return;
@@ -145,19 +152,20 @@
         }
 
         const { data } = await fetchGet(
-            `${$BASE_URL}/api/follows/${$userStore.id}/${user.id}`
+            `${$BASE_URL}/api/follows/${$userStore.id}/${user.id}`,
+            $tokenStore
         );
 
         following = data;
     }
 
     async function fetchFollowers() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/followers`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/followers`, $tokenStore);
         followersList = data;
     }
 
     async function fetchFollowings() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/following`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/following`, $tokenStore);
         followingsList = data;
     }
 </script>

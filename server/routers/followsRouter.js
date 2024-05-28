@@ -3,7 +3,9 @@ import pgClient from "../database/pgConnection.js";
 
 const router = Router();
 
-router.get("/api/follows/:user_id/following", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/follows/:user_id/following", authenticateToken, async (req, res) => {
     const userId = req.params.user_id;
 
     try {
@@ -24,7 +26,7 @@ router.get("/api/follows/:user_id/following", async (req, res) => {
     }
 });
 
-router.get("/api/follows/:user_id/followers", async (req, res) => {
+router.get("/api/follows/:user_id/followers", authenticateToken, async (req, res) => {
     const userId = req.params.user_id;
 
     try {
@@ -45,7 +47,7 @@ router.get("/api/follows/:user_id/followers", async (req, res) => {
     }
 });
 
-router.get("/api/follows/:follower_id/:followed_id", async (req, res) => {
+router.get("/api/follows/:follower_id/:followed_id", authenticateToken, async (req, res) => {
     const followerId = req.params.follower_id;
     const followedId = req.params.followed_id;
 
@@ -64,7 +66,7 @@ router.get("/api/follows/:follower_id/:followed_id", async (req, res) => {
     }
 });
 
-router.post("/api/follows", async (req, res) => {
+router.post("/api/follows", authenticateToken, async (req, res) => {
     const { followerId, followedId } = req.body;
 
     if (!followerId || !followedId) {
@@ -82,7 +84,7 @@ router.post("/api/follows", async (req, res) => {
     }
 });
 
-router.delete("/api/follows/:follower_id/:followed_id", async (req, res) => {
+router.delete("/api/follows/:follower_id/:followed_id", authenticateToken, async (req, res) => {
     const followerId = req.params.follower_id;
     const followedId = req.params.followed_id;
 

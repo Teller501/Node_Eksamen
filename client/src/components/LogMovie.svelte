@@ -5,13 +5,14 @@
     import toast, { Toaster } from "svelte-french-toast";
     import { BASE_URL } from "../stores/generalStore";
     import { fetchPost } from "../util/api";
-    import { userStore } from "../stores/authStore";
+    import { userStore, tokenStore } from "../stores/authStore";
     import { fade  } from 'svelte/transition';
 
     export let open = false;
     export let posterPath = "";
     export let title = "";
     export let movieId = "";
+    export let showButton = false;
 
     let config = {
         readOnly: false,
@@ -34,7 +35,6 @@
         }
     };
 
-    let formModal = false;
     let currentDate = new Date().toISOString().split("T")[0];
     let watchedOn = currentDate;
     let rating = null;
@@ -55,7 +55,7 @@
             review: review
         };
 
-        const { data, status } = await fetchPost(`${$BASE_URL}/api/logs`, body);
+        const { data, status } = await fetchPost(`${$BASE_URL}/api/logs`, body, $tokenStore);
 
         if (status === 200) {
             toast.success("Movie logged successfully.");
@@ -68,6 +68,11 @@
 </script>
 <Toaster />
 
+{#if showButton}
+    <Button on:click={() => (open = true)}>
+        Log Movie <EditSolid />
+    </Button>
+{/if}
 <div transition:fade={{ delay: 10, duration: 300 }}>
     <Modal bind:open={open} size="md" autoclose={false} class="w-full" outsideclose >
         <div class="flex flex-row">

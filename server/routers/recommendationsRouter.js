@@ -6,7 +6,9 @@ import mongoClient from "../database/mongoDBConnection.js";
 const router = Router();
 const recommendationsURL = process.env.RECOMMENDATIONS_URL;
 
-router.get("/api/recommendations/:user_id", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/recommendations/:user_id", authenticateToken, async (req, res) => {
     const userId = Number(req.params.user_id);
 
     try {
@@ -25,7 +27,7 @@ router.get("/api/recommendations/:user_id", async (req, res) => {
     }
 });
 
-router.post("/api/recommendations", async (req, res) => {
+router.post("/api/recommendations", authenticateToken, async (req, res) => {
     const body = req.body
     
     const payload = {

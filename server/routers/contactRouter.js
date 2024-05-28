@@ -4,8 +4,9 @@ const router = Router();
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+import authenticateToken from "../util/authenticateToken.js";
 
-router.post("/api/contact", async (req, res) => {
+router.post("/api/contact", authenticateToken, async (req, res) => {
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {

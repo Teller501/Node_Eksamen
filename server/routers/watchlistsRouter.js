@@ -4,7 +4,9 @@ import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
-router.get("/api/watchlist/:user_id/:movie_id?", async (req, res) => {
+import authenticateToken from "../util/authenticateToken.js";
+
+router.get("/api/watchlists/:user_id/:movie_id?", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const movieId = req.params.movie_id;
@@ -57,7 +59,7 @@ router.get("/api/watchlist/:user_id/:movie_id?", async (req, res) => {
     }
 });
 
-router.post("/api/watchlist/:user_id", async (req, res) => {
+router.post("/api/watchlists/:user_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const { movieId } = req.body;
@@ -100,7 +102,7 @@ router.post("/api/watchlist/:user_id", async (req, res) => {
     }
 });
 
-router.delete("/api/watchlist/:user_id/:movie_id", async (req, res) => {
+router.delete("/api/watchlists/:user_id/:movie_id", authenticateToken, async (req, res) => {
     try {
         const userId = req.params.user_id;
         const movieId = req.params.movie_id;

@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import { BASE_URL } from "../../stores/generalStore";
+    import { userStore, tokenStore } from "../../stores/authStore";
     import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
     import tmdbLogo from "../../assets/tmdb-logo.png";
     import cinematchLogo from "../../assets/CineMatch.png";
@@ -17,7 +18,6 @@
         Spinner,
     } from "flowbite-svelte";
     import { ClockOutline, EyeOutline } from "flowbite-svelte-icons";
-    import { userStore } from "../../stores/authStore";
     import Reviews from "../../components/Profile/Reviews.svelte";
 
     const movieId = window.location.pathname.split("/").pop();
@@ -27,9 +27,10 @@
     let similarMovies;
     let isOnWatchlist = false;
     let loadingSimilarMovies = true;
+    let logMovieModal = false;
 
     async function fetchMovie() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/movies/${movieId}`);
+        const { data } = await fetchGet(`${$BASE_URL}/api/movies/${movieId}`, $tokenStore);
         movieDetails = data;
 
         const showOnlyYear = movieDetails.release_date;
@@ -38,7 +39,8 @@
 
     async function fetchReview(movieId) {
         const { data, status } = await fetchGet(
-            `${$BASE_URL}/api/logs/reviews/${movieId}`
+            `${$BASE_URL}/api/logs/reviews/${movieId}`,
+            $tokenStore
         );
         if (status === 404) {
             return;
@@ -48,14 +50,16 @@
 
     async function fetchStats(movieId) {
         const { data } = await fetchGet(
-            `${$BASE_URL}/api/logs/movie/${movieId}/aggregated`
+            `${$BASE_URL}/api/logs/movie/${movieId}/aggregated`,
+            $tokenStore
         );
         movieStats = data;
     }
 
     async function fetchSimilarMovies(movieId) {
         const { data } = await fetchGet(
-            `${$BASE_URL}/api/movies/${movieId}/similar`
+            `${$BASE_URL}/api/movies/${movieId}/similar`,
+            $tokenStore
         );
         similarMovies = data;
         loadingSimilarMovies = false;
@@ -64,15 +68,17 @@
     async function toggleMovieOnWatchlist() {
         if (isOnWatchlist) {
             const { status } = await fetchDelete(
-                `${$BASE_URL}/api/watchlist/${$userStore.id}/${movieId}`
+                `${$BASE_URL}/api/watchlists/${$userStore.id}/${movieId}`,
+                $tokenStore
             );
             if (status === 200) {
                 isOnWatchlist = false;
             }
         } else {
             const response = await fetchPost(
-                `${$BASE_URL}/api/watchlist/${$userStore.id}`,
-                { movieId: movieId }
+                `${$BASE_URL}/api/watchlists/${$userStore.id}`,
+                { movieId: movieId },
+                $tokenStore
             );
 
             if (response.status === 201) {
@@ -84,7 +90,8 @@
 
     async function checkIfMovieOnWatchlist() {
         const { data } = await fetchGet(
-            `${$BASE_URL}/api/watchlist/${$userStore.id}/${movieId}`
+            `${$BASE_URL}/api/watchlists/${$userStore.id}/${movieId}`,
+            $tokenStore
         );
 
         isOnWatchlist = data
@@ -174,9 +181,11 @@
 
         <div class="justify-center flex items-center">
             <LogMovie
+                bind:open={logMovieModal}
                 posterPath={movieDetails?.poster_path}
                 title={movieDetails?.title}
                 movieId={movieDetails?.id}
+                showButton={true}
             />
             <Button class="ms-10" on:click={toggleMovieOnWatchlist}>
                 {#if isOnWatchlist}

@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { fetchGet } from "../../util/api";
     import { BASE_URL } from "../../stores/generalStore";
+    import { tokenStore } from "../../stores/authStore.js";
     import Movie from "../../components/Movie.svelte";
     import {
         ImagePlaceholder,
@@ -85,7 +86,8 @@
         ]);
 
         const { data, pagination } = await fetchGet(
-            `${$BASE_URL}/api/movies/popular?${queryParams.toString()}`
+            `${$BASE_URL}/api/movies/popular?${queryParams.toString()}`,
+            $tokenStore
         );
         movies = data;
 
