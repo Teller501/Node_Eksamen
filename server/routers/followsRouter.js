@@ -8,7 +8,7 @@ router.get("/api/follows/:user_id/following", async (req, res) => {
 
     try {
         const query = `
-            SELECT u.id, u.username, u.profile_picture
+            SELECT u.id, u.username, u.profile_picture, u.location
             FROM users u
             JOIN user_follows uf ON u.id = uf.followed_id
             WHERE uf.follower_id = $1
