@@ -92,17 +92,19 @@
                         {/if}
                     {/if}
                 </div>
-                <span
-                    class="text-slate-900 text-left text-xs flex items-center"
-                >
-                    <MapPinSolid size="xs" class="mr-1 fill-primary-600" />
-                    {user.location}
-                </span>
+                {#if user.location}
+                    <span
+                        class="text-slate-900 text-left text-xs flex items-center"
+                    >
+                        <MapPinSolid size="xs" class="mr-1 fill-primary-600" />
+                        {user.location}
+                    </span>
+                {/if}
                 <div class="text-gray-600">
                     <Followers {followers} {followersCount}/> •
                     <Following {followings} {followingsCount} />
                     •
-                    <span>{userData?.unique_movies_watched} movies watched</span
+                    <span>{userData?.unique_movies_watched ? userData?.unique_movies_watched : 0} movies watched</span
                     >
                 </div>
             </div>

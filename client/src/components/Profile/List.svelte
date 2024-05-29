@@ -68,7 +68,7 @@
 </div>
 <hr class="my-4 w-full" />
 {#if lists.length === 0}
-    <p class="text-slate-900 text-lg text-center">You have no lists...</p>
+    <p class="text-slate-900 text-lg text-center">No lists to find here!</p>
 {/if}
 
 {#each lists as list}
