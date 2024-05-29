@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Router } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -17,7 +18,8 @@ const router = Router();
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const users = [];
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
 const saltRounds = 14;
 
 function generateAccessToken(user, rememberMe = false) {
@@ -27,7 +29,7 @@ function generateAccessToken(user, rememberMe = false) {
 }
 
 async function sendActivationEmail(email, activationToken) {
-    const activationLink = `http://localhost:5173/activate/${activationToken}`;
+    const activationLink = `${FRONTEND_URL}/activate/${activationToken}`;
     const message = {
         from: `Admin <noreply@${process.env.MAIL_DOMAIN}>`,
         to: email,
@@ -36,7 +38,7 @@ async function sendActivationEmail(email, activationToken) {
         <a href="${activationLink}">Activate account</a>`,
     };
 
-    const { data, error } = await resend.emails.send(message);
+    const { error } = await resend.emails.send(message);
 
     if (error) {
         console.error(error);
@@ -44,7 +46,7 @@ async function sendActivationEmail(email, activationToken) {
 }
 
 async function sendResetEmail(email, resetToken) {
-    const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetLink = `${FRONTEND_URL}/reset-password/${resetToken}`;
     const message = {
         from: `Admin <noreply@${process.env.MAIL_DOMAIN}>`,
         to: email,
@@ -53,7 +55,7 @@ async function sendResetEmail(email, resetToken) {
         <a href="${resetLink}">Reset password</a>`,
     };
 
-    const { data, error } = await resend.emails.send(message);
+    const { error } = await resend.emails.send(message);
 
     if (error) {
         console.error(error);
