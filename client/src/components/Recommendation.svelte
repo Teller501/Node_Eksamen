@@ -1,10 +1,13 @@
 <script>
     import { Card, Button, Img } from "flowbite-svelte";
+    import { CheckOutline } from "flowbite-svelte-icons";
     import StarRating from "@ernane/svelte-star-rating";
 
     export let onRateMovie;
     export let onSkipMovie;
+    export let onAddToWatchlist;
     export let movie;
+    export let isOnWatchlist = false;
 
     let config = {
         readOnly: false,
@@ -42,7 +45,11 @@
         </div>
         <div class="flex flex-row items-center">
             <Button class="mr-4" on:click={() => onSkipMovie()}>Skip</Button>
-            <Button>Add to watchlist</Button>
+            {#if !isOnWatchlist}
+                <Button on:click={() => onAddToWatchlist()}>Add to Watchlist</Button>
+            {:else}
+                <Button disabled><CheckOutline /></Button>
+            {/if}
         </div>
     </div>
     </Card>
