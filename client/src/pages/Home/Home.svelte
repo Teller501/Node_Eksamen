@@ -3,8 +3,14 @@
     import { fetchGet } from "../../util/api";
     import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
     import Movie from "../../components/Movie.svelte";
-    import { ImagePlaceholder, Button, Avatar, SpeedDial, SpeedDialButton } from "flowbite-svelte";
-    import { CaretLeftSolid, CaretRightSolid, PlusOutline } from "flowbite-svelte-icons";
+    import {
+        ImagePlaceholder,
+        Button,
+        Avatar,
+        SpeedDial,
+        A,
+    } from "flowbite-svelte";
+    import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
     import { tokenStore, userStore } from "../../stores/authStore";
     import { activityStore } from "../../stores/activityStore.js";
     import io from "socket.io-client";
@@ -15,7 +21,7 @@
     let page = 1;
     let recentLogs = null;
 
-	const user = $userStore;
+    const user = $userStore;
 
     const socket = io($SOCKET_URL);
 
@@ -37,12 +43,15 @@
     }
 
     async function fetchRecentLogs() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/logs/recent`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/logs/recent`,
+            $tokenStore
+        );
         recentLogs = data;
     }
 
     onMount(async () => {
-		await Promise.all([fetchMovies(), fetchRecentLogs()]);
+        await Promise.all([fetchMovies(), fetchRecentLogs()]);
     });
 
     function handleNextPopularMoviePage() {
@@ -59,8 +68,12 @@
     }
 </script>
 
-<h1 class="text-slate-900 text-3xl font-bold">Welcome back to CineMatch, {user.username}!</h1>
-<p class="text-slate-900 font-light mb-16">Here are some of the latest goods within the wonderful movie world, enjoy!</p>
+<h1 class="text-slate-900 text-3xl font-bold">
+    Welcome back to CineMatch, {user.username}!
+</h1>
+<p class="text-slate-900 font-light mb-16">
+    Here are some of the latest goods within the wonderful movie world, enjoy!
+</p>
 
 <div class="shadow bg-white rounded-lg p-4 border">
     <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
@@ -116,12 +129,16 @@
                 <div class="flex space-x-4">
                     <div class="w-full">
                         <div class="flex items-center w-full">
-                            <h3 class="text-slate-900 font-bold me-1">
+                            <A
+                                href={`/${log.username}`}
+                                class="text-slate-900 font-bold me-1 hover:no-underline"
+                            >
                                 {log.username}
-                            </h3>
+                            </A>
                             <Avatar
                                 src={`${$BASE_URL}/${log.profile_picture}` ??
                                     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                href={`/${log.username}`}
                                 alt="Profile Picture"
                                 class="w-5 h-5"
                             />
@@ -147,6 +164,8 @@
 
 <ActivityList />
 
-<SpeedDial defaultClass="absolute end-8 bottom-32">
-    <SearchModal mode={"log"} />
-</SpeedDial>
+<div class="fixed bottom-0 right-0 z-50 p-4">
+    <SpeedDial defaultClass="absolute end-8 bottom-32">
+        <SearchModal mode={"log"} />
+    </SpeedDial>
+</div>

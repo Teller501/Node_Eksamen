@@ -18,7 +18,7 @@
         Spinner,
     } from "flowbite-svelte";
     import { ClockOutline, EyeOutline } from "flowbite-svelte-icons";
-    import Reviews from "../../components/Profile/Reviews.svelte";
+    import Reviews from "../../components/Reviews.svelte";
 
     const movieId = window.location.pathname.split("/").pop();
     let movieDetails;

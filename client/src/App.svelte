@@ -37,6 +37,7 @@
     import NotFound from "./pages/NotFound/NotFound.svelte";
     import Contact from "./pages/Contact/Contact.svelte";
     import About from "./pages/About/About.svelte";
+    import Reviews from "./pages/Reviews/Reviews.svelte";
 
     const currentYear = new Date().getFullYear();
 
@@ -132,12 +133,18 @@
                         />
                     </NavLi>
                     <Dropdown class="w-44 z-20 bg-slate-50 rounded">
+                        <div slot="header" class="px-4 py-2">
+                            <span
+                                class="block text-sm text-gray-900 dark:text-white"
+                                >{$userStore.username}</span
+                            >
+                        </div>
                         <DropdownItem href="/home">Home</DropdownItem>
                         <DropdownItem href={`/${$userStore.username}`}
                             >Profile</DropdownItem
                         >
                         <DropdownItem href="/movies">Movies</DropdownItem>
-                        <DropdownItem href="/">Reviews</DropdownItem>
+                        <DropdownItem href="/reviews">Reviews</DropdownItem>
                         <DropdownItem href="/">Settings</DropdownItem>
                         <DropdownDivider />
                         <DropdownItem href="/" on:click={handleLogout}
@@ -164,6 +171,7 @@
             <Route path="*"><Auth /></Route>
             <PrivateRoute path="/home"><Home /></PrivateRoute>
             <PrivateRoute path="/movies"><Movies /></PrivateRoute>
+            <PrivateRoute path="/reviews"><Reviews /></PrivateRoute>
             <PrivateRoute path="/search/:type/:query" let:params
                 ><Search {params} /></PrivateRoute
             >

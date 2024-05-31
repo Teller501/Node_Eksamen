@@ -97,7 +97,7 @@
         About {user?.username}
       </h3>
       <p class="text-gray-700 mt-2">
-        {user?.bio ? user.bio : ""}
+        {user?.bio ?? ""}
       </p>
     </div>
     <div class="bg-white p-4 rounded-md shadow-md mt-4">

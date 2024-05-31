@@ -4,7 +4,7 @@
     import Watched from "../../components/Profile/Watched.svelte";
     import WatchList from "../../components/Profile/WatchList.svelte";
     import List from "../../components/Profile/List.svelte";
-    import Reviews from "../../components/Profile/Reviews.svelte";
+    import Reviews from "../../components/Reviews.svelte";
     import ProfileHeader from "../../components/Profile/ProfileHeader.svelte";
     import { onMount, onDestroy } from "svelte";
     import { userStore, tokenStore } from "../../stores/authStore";

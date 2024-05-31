@@ -11,7 +11,7 @@
 <span
     ><A
         class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
-        on:click={() => (followingsModal = true)}>{followingsCount ? followingsCount : 0} following</A
+        on:click={() => (followingsModal = true)}>{followingsCount ?? 0} following</A
     ></span
 >
 

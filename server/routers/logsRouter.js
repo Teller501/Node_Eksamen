@@ -162,6 +162,65 @@ router.get("/api/logs/movie/:movie_id/aggregated", authenticateToken, async (req
     }
 });
 
+router.get("/api/logs/reviews/recent", authenticateToken, async (req, res) => {
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = parseInt(req.query.offset) || 0;
+
+    try {
+        const result = await pgClient.query(
+            `SELECT watch_logs.*, users.username, users.id AS user_id, movies.title AS title, movies.release_date,
+                    (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
+             FROM watch_logs
+             INNER JOIN users ON watch_logs.user_id = users.id
+             INNER JOIN movies ON watch_logs.movie_id = movies.id
+             WHERE review IS NOT NULL AND review <> ''
+             ORDER BY watch_logs.id DESC
+             LIMIT $1 OFFSET $2`, [limit, offset]
+        );
+
+        const total_reviews = await pgClient.query(`SELECT COUNT(*) FROM watch_logs WHERE review IS NOT NULL AND review <> ''`);
+        const total_pages = Math.ceil(total_reviews.rows[0].count / limit);
+
+        if (result.rows.length === 0) {
+            return res.status(404).send({ message: "No reviews found" });
+        } else {
+            const mongoResponse = await Promise.all(result.rows.map(async (row) => {
+                const movieId = Number(row.movie_id);
+                const movieDoc = await mongoClient.movies.findOne({ id: movieId });
+                return {
+                    id: row.id,
+                    user_id: row.user_id,
+                    movie_id: row.movie_id,
+                    title: row.title,
+                    watched_on: row.watched_on,
+                    release_date: row.release_date,
+                    rating: row.rating,
+                    review: row.review,
+                    created_at: row.created_at,
+                    username: row.username,
+                    profile_picture: row.profile_picture,
+                    poster_path: movieDoc ? movieDoc.posterPath : null,
+                    total_likes: row.total_likes
+                };
+            }));
+
+            res.send({
+                data: mongoResponse,
+                pagination: {
+                    total_reviews: total_reviews.rows[0].count,
+                    total_pages: total_pages,
+                    current_page: Math.floor(offset / limit) + 1
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Failed to get recent reviews:", error);
+        res.status(500).send({
+            error: "An error occurred while fetching recent reviews.",
+        });
+    }
+});
+
 
 
 router.get("/api/logs/reviews/:movie_id", authenticateToken, async (req, res) => {

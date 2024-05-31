@@ -104,7 +104,7 @@
                     <Followers {followers} {followersCount}/> •
                     <Following {followings} {followingsCount} />
                     •
-                    <span>{userData?.unique_movies_watched ? userData?.unique_movies_watched : 0} movies watched</span
+                    <span>{userData?.unique_movies_watched ?? 0} movies watched</span
                     >
                 </div>
             </div>
