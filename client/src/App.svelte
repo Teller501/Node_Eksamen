@@ -12,19 +12,27 @@
         DropdownDivider,
         Select,
         Footer,
-        FooterBrand,
         FooterCopyright,
-        FooterIcon,
         FooterLink,
         FooterLinkGroup,
+        Indicator,
+        Avatar,
     } from "flowbite-svelte";
+    import {
+        SearchOutline,
+        ChevronDownOutline,
+        BellOutline,
+    } from "flowbite-svelte-icons";
     import CineMatch from "./assets/CineMatch.png";
     import { Router, Route } from "svelte-routing";
     import Auth from "./pages/Auth/Auth.svelte";
     import Activation from "./components/Activation.svelte";
     import ResetPassword from "./pages/ResetPassword/ResetPassword.svelte";
-    import { SearchOutline, ChevronDownOutline } from "flowbite-svelte-icons";
     import { userStore, tokenStore } from "./stores/authStore";
+    import { SOCKET_URL, BASE_URL } from "./stores/generalStore.js";
+    import { fetchGet } from "./util/api.js";
+    import { onMount } from "svelte";
+    import { notificationStore } from "./stores/notificationStore.js";
     import { logoutUser } from "./util/auth.js";
     import PrivateRoute from "./components/PrivateRoute.svelte";
     import Home from "./pages/Home/Home.svelte";
@@ -38,6 +46,8 @@
     import Contact from "./pages/Contact/Contact.svelte";
     import About from "./pages/About/About.svelte";
     import Reviews from "./pages/Reviews/Reviews.svelte";
+    import Notifications from "./components/Notifications.svelte";
+    import io from "socket.io-client";
 
     const currentYear = new Date().getFullYear();
 
@@ -47,6 +57,54 @@
         { value: "movies", name: "Movies" },
         { value: "users", name: "Users" },
     ];
+
+    const socket = io($SOCKET_URL);
+
+    let unreadNotifications = 0;
+
+    $: unreadNotifications = $notificationStore.filter(
+        (notification) => !notification.read
+    ).length;
+
+    notificationStore.subscribe((notifications) => {
+        unreadNotifications = notifications.filter(
+            (notification) => !notification.read
+        ).length;
+    });
+
+    $: if ($userStore && $userStore.id) {
+        socket.on("activityDeleted", (data) => {
+            const { _id } = data;
+            notificationStore.update((notificationListArray) => {
+                return notificationListArray.filter((n) => n._id !== _id);
+            });
+        });
+        
+        socket.on(`notification:${$userStore.id}`, (data) => {
+            const notification = data.data;
+
+            notificationStore.update((notificationListArray) => {
+                if (
+                    !notificationListArray.some(
+                        (n) => n._id === notification._id
+                    )
+                ) {
+                    return [notification, ...notificationListArray];
+                }
+                return notificationListArray;
+            });
+        });
+
+        fetchInitialNotifications();
+    }
+
+    async function fetchInitialNotifications() {
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/activities/unread/${$userStore.id}`,
+            $tokenStore
+        );
+        notificationStore.set(data);
+    }
 
     function handleLogout(event) {
         event.preventDefault();
@@ -126,6 +184,33 @@
                 <NavLi href="/recommender" class="text-blue"
                     >Recommender (AI)</NavLi
                 >
+                {#if $userStore}
+                    <Button
+                        id="notificationBell"
+                        class="relative bottom-2"
+                        size="sm"
+                    >
+                        <BellOutline class="text-white dark:text-white" />
+                        <span class="sr-only">Notifications</span>
+                        {#if unreadNotifications > 0}
+                            <Indicator
+                                color="dark"
+                                border
+                                size="xl"
+                                placement="bottom-right"
+                                class="text-xs font-bold"
+                                >{unreadNotifications}
+                            </Indicator>
+                        {/if}
+                    </Button>
+
+                    <Dropdown triggeredBy="#notificationBell">
+                        <div slot="header" class="text-center py-2 font-bold">
+                            Notifications
+                        </div>
+                        <Notifications />
+                    </Dropdown>
+                {/if}
                 {#if $userStore}
                     <NavLi class="cursor-pointer">
                         Profile<ChevronDownOutline

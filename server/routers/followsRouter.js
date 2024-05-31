@@ -1,5 +1,6 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
+import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
@@ -77,6 +78,21 @@ router.post("/api/follows", authenticateToken, async (req, res) => {
         const query = "INSERT INTO user_follows (follower_id, followed_id) VALUES ($1, $2)";
         await pgClient.query(query, [followerId, followedId]);
 
+        const followerQuery = await pgClient.query("SELECT username, profile_picture FROM users WHERE id = $1", [followerId]);
+        const follower = followerQuery.rows[0];
+
+        await mongoClient.activities.insertOne({
+            userId: followedId,
+            follower: {
+                id: followerId,
+                username: follower.username,
+                profile_picture: follower.profile_picture,
+            },
+            activityType: "follow",
+            date: new Date().toISOString(),
+            read: false,
+        });
+
         res.send({ data: "Followed successfully" });
     } catch (error) {
         console.error("Error following user:", error);
@@ -95,6 +111,12 @@ router.delete("/api/follows/:follower_id/:followed_id", authenticateToken, async
     try {
         const query = "DELETE FROM user_follows WHERE follower_id = $1 AND followed_id = $2";
         await pgClient.query(query, [followerId, followedId]);
+
+        await mongoClient.activities.deleteOne({
+            userId: followedId,
+            "follower.id": followerId,
+            activityType: "follow",
+        });
 
         res.send({ data: "Unfollowed successfully" });
     } catch (error) {

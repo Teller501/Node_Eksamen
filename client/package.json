@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@ernane/svelte-star-rating": "^1.1.7",
+    "date-fns": "^3.6.0",
     "jwt-decode": "^4.0.0",
     "socket.io-client": "^4.7.5",
     "svelte-french-toast": "^1.2.0",

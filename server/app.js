@@ -31,9 +31,25 @@ Object.values(routes).forEach((router) => app.use(router));
 import mongoClient from "./database/mongoDBConnection.js";
 const options = { fullDocument: "updateLookup" };
 const changeStream = mongoClient.activities.watch([], options);
-changeStream.on("change", (next) => {
-  io.emit("activityLogUpdate", { data: next.fullDocument });
-});
+changeStream.on("change", async (next) => {
+  const operationType = next.operationType;
 
+  if (operationType === "insert" || operationType === "update") {
+    const activity = next.fullDocument;
+
+    if (activity.activityType === "watchlist" || activity.activityType === "watched") {
+      io.emit("activityLogUpdate", { data: activity });
+    }
+
+    if (activity.activityType === "follow" || activity.activityType === "like") {
+      io.emit(`notification:${activity.userId}`, { data: activity });
+    }
+  }
+
+  if (operationType === "delete") {
+    const deletedDocumentId = next.documentKey._id;
+    io.emit("activityDeleted", { _id: deletedDocumentId });
+  }
+});
 const PORT = process.env.PORT ?? 8080;
 server.listen(PORT, () => console.log("Server is running on port", PORT));

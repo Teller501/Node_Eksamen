@@ -1,5 +1,6 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
+import mongoClient from "../database/mongoDBConnection.js";
 
 const router = Router();
 
@@ -59,6 +60,28 @@ router.post("/api/likes", authenticateToken, async (req, res) => {
             "INSERT INTO review_likes (user_id, review_id) VALUES ($1, $2)",
             [userId, reviewId]
         );
+        const reviewOwnerQuery = await pgClient.query(`SELECT user_id FROM watch_logs WHERE id = $1`, [reviewId]);
+        const reviewOwnerId = reviewOwnerQuery.rows[0].user_id;
+
+        const likerQuery = await pgClient.query(`SELECT username, profile_picture FROM users WHERE id = $1`, [userId]);
+        const liker = likerQuery.rows[0];
+
+        const movieQuery = await pgClient.query(`SELECT movies.title FROM movies JOIN watch_logs ON movies.id = watch_logs.movie_id WHERE watch_logs.id = $1`, [reviewId]);
+        const movieTitle = movieQuery.rows[0].title;
+
+        await mongoClient.activities.insertOne({
+            userId: reviewOwnerId,
+            activityType: "like",
+            reviewId: reviewId,
+            date: new Date().toISOString(),
+            liker: {
+                id: userId,
+                username: liker.username,
+                profile_picture: liker.profile_picture,
+            },
+            movieTitle: movieTitle,
+            read: false,
+        });
 
         res.send({ data: "Like added" });
     } catch (error) {
@@ -76,6 +99,8 @@ router.delete("/api/likes/:user_id/:review_id", authenticateToken, async (req, r
             "DELETE FROM review_likes WHERE user_id = $1 AND review_id = $2",
             [userId, reviewId]
         );
+
+        await mongoClient.activities.deleteOne({ "liker.id": userId, reviewId: reviewId, activityType: "like" });
 
         res.send({ data: "Like removed" });
     } catch (error) {
