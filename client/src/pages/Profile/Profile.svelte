@@ -36,6 +36,7 @@
 
     onMount(async () => {
         await fetchUser();
+
         await Promise.all([
             fetchUserData(),
             fetchUserReviews(),
@@ -47,7 +48,6 @@
             fetchFollowers(),
             fetchFollowings(),
         ]);
-        profilePicturePath = `${$BASE_URL}/${user.profile_picture}`;
         followersCount = followersList.length;
         followingsCount = followingsList.length;
     });
@@ -174,7 +174,7 @@
     {user}
     {isOwner}
     {following}
-    {profilePicturePath}
+    profilePicturePath={`${$BASE_URL}/${user.profile_picture}`}
     {userData}
     followers={followersList}
     {followersCount}
