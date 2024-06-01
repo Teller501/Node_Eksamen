@@ -1,12 +1,13 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import mongoClient from "../database/mongoDBConnection.js";
+import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
 
 const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
 
-router.get("/api/likes/:review_id", authenticateToken, async (req, res) => {
+router.get("/api/likes/:review_id", authenticateToken, async (req, res, next) => {
     const reviewId = req.params.review_id;
 
     try {
@@ -21,17 +22,17 @@ router.get("/api/likes/:review_id", authenticateToken, async (req, res) => {
         const users = result.rows;
 
         if (users.length === 0) {
-            return res.status(404).send({ message: "No likes found for this review." });
+            return next(NotFoundError("No likes found for this review"));
         }
 
         res.json({ data: users });
     } catch (error) {
         console.error("Error getting likes for review:", error);
-        res.status(500).send("Failed to get likes for review");
+        next(InternalServerError("Failed to get likes for review"));
     }
 });
 
-router.get("/api/likes/:user_id/:review_id", authenticateToken, async (req, res) => {
+router.get("/api/likes/:user_id/:review_id", authenticateToken, async (req, res, next) => {
     const { user_id, review_id } = req.params;
 
     try {
@@ -48,15 +49,15 @@ router.get("/api/likes/:user_id/:review_id", authenticateToken, async (req, res)
         }
     } catch (error) {
         console.error("Error checking like:", error);
-        res.status(500).send("Failed to check like");
+        next(InternalServerError("Failed to check like"));
     }
 });
 
-router.post("/api/likes", authenticateToken, async (req, res) => {
+router.post("/api/likes", authenticateToken, async (req, res, next) => {
     const { userId, reviewId } = req.body;
 
     try {
-        await pgClient.query(
+    await pgClient.query(
             "INSERT INTO review_likes (user_id, review_id) VALUES ($1, $2)",
             [userId, reviewId]
         );
@@ -86,11 +87,11 @@ router.post("/api/likes", authenticateToken, async (req, res) => {
         res.send({ data: "Like added" });
     } catch (error) {
         console.error("Error adding like:", error);
-        res.status(500).send({ error: "Failed to add like" });
+        next(InternalServerError("Failed to add like"));
     }
 });
 
-router.delete("/api/likes/:user_id/:review_id", authenticateToken, async (req, res) => {
+router.delete("/api/likes/:user_id/:review_id", authenticateToken, async (req, res, next) => {
     const userId = req.params.user_id;
     const reviewId = req.params.review_id;
 
@@ -105,7 +106,7 @@ router.delete("/api/likes/:user_id/:review_id", authenticateToken, async (req, r
         res.send({ data: "Like removed" });
     } catch (error) {
         console.error("Error removing like:", error);
-        res.status(500).send({ error: "Failed to remove like" });
+        next(InternalServerError("Failed to remove like"));
     }
 });
 

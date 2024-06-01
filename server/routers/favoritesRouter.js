@@ -1,12 +1,13 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import mongoClient from "../database/mongoDBConnection.js";
+import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
 
 const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
 
-router.get("/api/favorites", authenticateToken, async (req, res) => { 
+router.get("/api/favorites", authenticateToken, async (req, res, next) => { 
     try {
         const query = "SELECT * FROM favorite_movies";
         const result = await pgClient.query(query);
@@ -14,17 +15,17 @@ router.get("/api/favorites", authenticateToken, async (req, res) => {
         const favorites = result.rows;
 
         if (favorites.length === 0) {
-            return res.status(404).send({ data: "No favorites found" });
+            return next(NotFoundError("No favorites found"));
         }
 
         res.json({ data: favorites });
     } catch (error) {
         console.error("Error getting favorites:", error);
-        res.status(500).send("Failed to get favorites");
+        next(InternalServerError("Failed to get favorites"));
     }
 });
 
-router.get("/api/favorites/:user_id", authenticateToken, async (req, res) => {
+router.get("/api/favorites/:user_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const favoritesQuery = `
@@ -38,7 +39,7 @@ router.get("/api/favorites/:user_id", authenticateToken, async (req, res) => {
         const favorites = favoritesResult.rows;
 
         if (favorites.length === 0) {
-            return res.status(404).send("No favorites found");
+            return next(NotFoundError("No favorites found"));
         }
 
         const enrichedFavorites = await Promise.all(favorites.map(async (favorite) => {
@@ -52,13 +53,13 @@ router.get("/api/favorites/:user_id", authenticateToken, async (req, res) => {
         res.json({ data: enrichedFavorites });
     } catch (error) {
         console.error("Error getting favorites:", error);
-        res.status(500).send("Failed to get favorites");
+        next(InternalServerError("Failed to get favorites"));
     }
 });
 
 
 
-router.post("/api/favorites", authenticateToken, async (req, res) => {
+router.post("/api/favorites", authenticateToken, async (req, res, next) => {
     try {
         const { userId, movieId } = req.body;
 
@@ -67,7 +68,7 @@ router.post("/api/favorites", authenticateToken, async (req, res) => {
         `;
         const existsResult = await pgClient.query(existsQuery, [userId, movieId]);
         if (existsResult.rowCount > 0) {
-            return res.status(400).send({ error: "This movie is already in your favorites." });
+            return next(BadRequestError("Movie is already in favorites"));
         }
 
         const countQuery = `
@@ -75,7 +76,7 @@ router.post("/api/favorites", authenticateToken, async (req, res) => {
         `;
         const countResult = await pgClient.query(countQuery, [userId]);
         if (parseInt(countResult.rows[0].count, 10) >= 4) {
-            return res.status(400).send({ error: "You can only have up to four favorites." });
+            return next(BadRequestError("User already has 4 favorites"));
         }
 
         const insertQuery = `
@@ -92,11 +93,11 @@ router.post("/api/favorites", authenticateToken, async (req, res) => {
         res.json({ data: favorite });
     } catch (error) {
         console.error("Error adding favorite:", error);
-        res.status(500).send("Failed to add favorite");
+        next(InternalServerError("Failed to add favorite"));
     }
 });
 
-router.delete("/api/favorites/:user_id/:movie_id", authenticateToken, async (req, res) => {
+router.delete("/api/favorites/:user_id/:movie_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const movieId = req.params.movie_id;
@@ -106,13 +107,13 @@ router.delete("/api/favorites/:user_id/:movie_id", authenticateToken, async (req
         const favorite = result.rows[0];
 
         if (!favorite) {
-            return res.status(404).send({ error: "Favorite not found" });
+            return next(NotFoundError("Favorite not found"));
         }
 
         res.json({ data: favorite });
     } catch (error) {
         console.error("Error deleting favorite:", error);
-        res.status(500).send("Failed to delete favorite");
+        next(InternalServerError("Failed to delete favorite"));
     }
 });
 

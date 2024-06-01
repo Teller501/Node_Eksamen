@@ -2,13 +2,14 @@ import { Router } from "express";
 import axios from "axios";
 import "dotenv/config";
 import mongoClient from "../database/mongoDBConnection.js";
+import { NotFoundError, BadRequestError, InternalServerError, } from "../util/errors.js";
 
 const router = Router();
 const recommendationsURL = process.env.RECOMMENDATIONS_URL;
 
 import authenticateToken from "../util/authenticateToken.js";
 
-router.get("/api/recommendations/:user_id", authenticateToken, async (req, res) => {
+router.get("/api/recommendations/:user_id", authenticateToken, async (req, res, next) => {
     const userId = Number(req.params.user_id);
 
     try {
@@ -17,17 +18,17 @@ router.get("/api/recommendations/:user_id", authenticateToken, async (req, res) 
         });
 
         if (!recommendations) {
-            return res.json({ data: [] });
+            return next(NotFoundError("No recommendations found"));
         }
 
         res.json({ data: recommendations.recommendations });
     } catch (error) {
         console.error("Failed to fetch recommendations:", error);
-        res.status(500).json({ error: "Failed to fetch recommendations" });
+        return next(InternalServerError("Failed to fetch recommendations"));
     }
 });
 
-router.post("/api/recommendations", authenticateToken, async (req, res) => {
+router.post("/api/recommendations", authenticateToken, async (req, res, next) => {
     const body = req.body
     
     const payload = {
@@ -57,7 +58,7 @@ router.post("/api/recommendations", authenticateToken, async (req, res) => {
         res.json({ data: response.data});
     } catch (error) {
         console.error("Failed to fetch recommendations:", error);
-        res.status(500).json({ error: "Failed to fetch recommendations" });
+        return next(InternalServerError("Failed to fetch recommendations"));
     }
 });
 

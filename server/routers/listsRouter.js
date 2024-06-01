@@ -1,12 +1,13 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import mongoClient from "../database/mongoDBConnection.js";
+import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
 
 const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
 
-router.get("/api/lists/:user_id", authenticateToken, async (req, res) => {
+router.get("/api/lists/:user_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
 
@@ -21,17 +22,17 @@ router.get("/api/lists/:user_id", authenticateToken, async (req, res) => {
         const result = await pgClient.query(query, [userId]);
 
         if (result.rows.length === 0) {
-            return res.status(404).send("No lists found");
+            return next(NotFoundError("No lists found"));
         }
 
-        res.json({ data: result.rows });
+        res.send({ data: result.rows });
     } catch (error) {
         console.error("Error getting lists:", error);
-        res.status(500).send("Failed to get lists");
+        next(InternalServerError("Failed to get lists"));
     }
 });
 
-router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) => {
+router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;
@@ -49,7 +50,7 @@ router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) =
         );
 
         if (listQuery.rows.length === 0) {
-            return res.status(404).send("List not found");
+            return next(NotFoundError("List not found"));
         }
 
         const movieQuery = await pgClient.query(
@@ -79,14 +80,14 @@ router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) =
 
         list.movies = enrichedMovies;
 
-        res.json({ data: list });
+        res.send({ data: list });
     } catch (error) {
         console.error("Error getting list details:", error);
-        res.status(500).send("Failed to get list details");
+        next(InternalServerError("Failed to get list details"));
     }
 });
 
-router.post("/api/lists/:user_id", authenticateToken, async (req, res) => {
+router.post("/api/lists/:user_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const { listName, description } = req.body;
@@ -102,14 +103,14 @@ router.post("/api/lists/:user_id", authenticateToken, async (req, res) => {
         result.rows[0].username = usernameQuery.rows[0].username;
 
 
-        res.status(201).json({ data: result.rows[0] });
+        res.status(201).send({ data: result.rows[0] });
     } catch (error) {
         console.error("Error creating list:", error);
-        res.status(500).send("Failed to create list");
+        next(InternalServerError("Failed to create list"));
     }
 });
 
-router.post("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) => {
+router.post("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;
@@ -130,15 +131,15 @@ router.post("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) 
         `;
         const result = await pgClient.query(query, [listId, movieId]);
 
-        res.status(201).json({ data: result.rows[0] });
+        res.status(201).send({ data: result.rows[0] });
     } catch (error) {
         console.error("Error adding movie to list:", error);
-        res.status(500).send("Failed to add movie to list");
+        next(InternalServerError("Failed to add movie to list"));
     }
 });
 
 
-router.delete("/api/lists/:user_id/:list_id", authenticateToken, async (req, res) => {
+router.delete("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;
@@ -157,23 +158,22 @@ router.delete("/api/lists/:user_id/:list_id", authenticateToken, async (req, res
         const result = await pgClient.query(deleteListQuery, [listId, userId]);
 
         if (result.rows.length === 0) {
-            return res.status(404).send("List not found");
+            return next(NotFoundError("List not found"));
         }
 
-        res.json({ data: result.rows[0] });
+        res.send({ data: result.rows[0] });
     } catch (error) {
         console.error("Error deleting list:", error);
-        res.status(500).send("Failed to delete list");
+        next(InternalServerError("Failed to delete list"));
     }
 });
 
-router.delete("/api/lists/:user_id/:list_id/:movie_id", authenticateToken, async (req, res) => {
+router.delete("/api/lists/:user_id/:list_id/:movie_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const listId = req.params.list_id;
         const movieId = req.params.movie_id;
 
-        // Check if the list belongs to the user
         const listQuery = await pgClient.query(
             `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
             [listId, userId]
@@ -190,13 +190,13 @@ router.delete("/api/lists/:user_id/:list_id/:movie_id", authenticateToken, async
         const result = await pgClient.query(query, [listId, movieId]);
 
         if (result.rows.length === 0) {
-            return res.status(404).send("Movie not found in the list");
+            return next(NotFoundError("Movie not found in list"));
         }
 
-        res.json({ data: result.rows[0] });
+        res.send({ data: result.rows[0] });
     } catch (error) {
         console.error("Error deleting movie from list:", error);
-        res.status(500).send("Failed to delete movie from list");
+        next(InternalServerError("Failed to delete movie from list"));
     }
 });
 

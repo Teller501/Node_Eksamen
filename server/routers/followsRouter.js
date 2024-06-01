@@ -1,12 +1,13 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import mongoClient from "../database/mongoDBConnection.js";
+import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
 
 const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
 
-router.get("/api/follows/:user_id/following", authenticateToken, async (req, res) => {
+router.get("/api/follows/:user_id/following", authenticateToken, async (req, res, next) => {
     const userId = req.params.user_id;
 
     try {
@@ -20,14 +21,18 @@ router.get("/api/follows/:user_id/following", authenticateToken, async (req, res
 
         const users = result.rows;
 
+        if (users.length === 0) {
+            return next(NotFoundError("No followed users found"));
+        }
+
         res.json({ data: users });
     } catch (error) {
         console.error("Error getting followed users:", error);
-        res.status(500).send("Failed to get followed users");
+        next(InternalServerError("Failed to get followed users"));
     }
 });
 
-router.get("/api/follows/:user_id/followers", authenticateToken, async (req, res) => {
+router.get("/api/follows/:user_id/followers", authenticateToken, async (req, res, next) => {
     const userId = req.params.user_id;
 
     try {
@@ -41,14 +46,18 @@ router.get("/api/follows/:user_id/followers", authenticateToken, async (req, res
 
         const users = result.rows;
 
+        if (users.length === 0) {
+            return next(NotFoundError("No followers found"));
+        }
+
         res.json({ data: users });
     } catch (error) {
         console.error("Error getting followers:", error);
-        res.status(500).send("Failed to get followers");
+        return next(InternalServerError("Failed to get followers"));
     }
 });
 
-router.get("/api/follows/:follower_id/:followed_id", authenticateToken, async (req, res) => {
+router.get("/api/follows/:follower_id/:followed_id", authenticateToken, async (req, res, next) => {
     const followerId = req.params.follower_id;
     const followedId = req.params.followed_id;
 
@@ -63,15 +72,15 @@ router.get("/api/follows/:follower_id/:followed_id", authenticateToken, async (r
         }
     } catch (error) {
         console.error("Error checking follow status:", error);
-        res.status(500).send("Failed to check follow status");
+        next(InternalServerError("Failed to check follow status"));
     }
 });
 
-router.post("/api/follows", authenticateToken, async (req, res) => {
+router.post("/api/follows", authenticateToken, async (req, res, next) => {
     const { followerId, followedId } = req.body;
 
     if (!followerId || !followedId) {
-        return res.status(400).send("Missing required fields");
+        return next(BadRequestError("Missing required fields"));
     }
 
     try {
@@ -96,16 +105,16 @@ router.post("/api/follows", authenticateToken, async (req, res) => {
         res.send({ data: "Followed successfully" });
     } catch (error) {
         console.error("Error following user:", error);
-        res.status(500).send({ data: "Failed to follow user" });
+        next(InternalServerError("Failed to follow user"));
     }
 });
 
-router.delete("/api/follows/:follower_id/:followed_id", authenticateToken, async (req, res) => {
+router.delete("/api/follows/:follower_id/:followed_id", authenticateToken, async (req, res, next) => {
     const followerId = req.params.follower_id;
     const followedId = req.params.followed_id;
 
     if (!followerId || !followedId) {
-        return res.status(400).send("Missing required fields");
+        return next(BadRequestError("Missing required fields"));
     }
 
     try {
@@ -121,7 +130,7 @@ router.delete("/api/follows/:follower_id/:followed_id", authenticateToken, async
         res.send({ data: "Unfollowed successfully" });
     } catch (error) {
         console.error("Error unfollowing user:", error);
-        res.status(500).send({ data: "Failed to unfollow user" });
+        next(InternalServerError("Failed to unfollow user"));
     }
 });
 

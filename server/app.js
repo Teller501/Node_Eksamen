@@ -28,6 +28,9 @@ app.use(['/api/login', '/api/signup'], authRateLimiter);
 import routes from "./routes.js";
 Object.values(routes).forEach((router) => app.use(router));
 
+import { errorHandler } from "./middleware/errorHandler.js";
+app.use(errorHandler);
+
 import mongoClient from "./database/mongoDBConnection.js";
 const options = { fullDocument: "updateLookup" };
 const changeStream = mongoClient.activities.watch([], options);
