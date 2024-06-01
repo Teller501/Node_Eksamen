@@ -12,6 +12,7 @@
     import { fetchGet } from "../../util/api.js";
     import { favoritesStore } from "../../stores/favoritesStore.js";
     import { activeTab } from "../../stores/tabStore.js";
+    import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     export let params;
     const username = params.username;
@@ -174,7 +175,7 @@
     {user}
     {isOwner}
     {following}
-    profilePicturePath={`${$BASE_URL}/${user.profile_picture}`}
+    profilePicturePath={user.profile_picture !== null ? `${$BASE_URL}/${user.profile_picture}` : blankProfilePic}
     {userData}
     followers={followersList}
     {followersCount}

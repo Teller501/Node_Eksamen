@@ -5,6 +5,7 @@
     import { fetchGet } from "../../util/api";
     import Movie from "../../components/Movie.svelte";
     import { Hr, A, Avatar } from "flowbite-svelte";
+    import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     export let params;
     const searchQuery = params.query;
@@ -55,7 +56,7 @@
                 {#each searchResults as user, index}
                     <div class="flex flex-row items-center p-4 {index % 2 === 1 ? 'bg-slate-200' : 'bg-slate-50'} rounded-lg shadow-sm w-full">
                         <Avatar
-                            src={`${$BASE_URL}/${user.profile_picture}`}
+                            src={user.profile_picture !== null ? `${$BASE_URL}/${user.profile_picture}` : blankProfilePic}
                             alt={user.username}
                             class="w-12 h-12 rounded-full"
                             href={`/${user.username}`}

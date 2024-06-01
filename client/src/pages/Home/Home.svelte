@@ -16,6 +16,7 @@
     import io from "socket.io-client";
     import ActivityList from "../../components/ActivityList.svelte";
     import SearchModal from "../../components/SearchModal.svelte";
+    import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     let popularMovies = null;
     let page = 1;
@@ -136,8 +137,7 @@
                                 {log.username}
                             </A>
                             <Avatar
-                                src={`${$BASE_URL}/${log.profile_picture}` ??
-                                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                src={log.profile_picture !== null ? `${$BASE_URL}/${log.profile_picture}` : blankProfilePic}
                                 href={`/${log.username}`}
                                 alt="Profile Picture"
                                 class="w-5 h-5"

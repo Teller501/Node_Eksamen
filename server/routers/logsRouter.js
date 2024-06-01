@@ -174,7 +174,7 @@ router.get("/api/logs/reviews/recent", authenticateToken, async (req, res) => {
              INNER JOIN users ON watch_logs.user_id = users.id
              INNER JOIN movies ON watch_logs.movie_id = movies.id
              WHERE review IS NOT NULL AND review <> ''
-             ORDER BY watch_logs.id DESC
+             ORDER BY total_likes DESC, watch_logs.id DESC
              LIMIT $1 OFFSET $2`, [limit, offset]
         );
 
@@ -220,8 +220,6 @@ router.get("/api/logs/reviews/recent", authenticateToken, async (req, res) => {
         });
     }
 });
-
-
 
 router.get("/api/logs/reviews/:movie_id", authenticateToken, async (req, res) => {
     const movieId = req.params.movie_id;

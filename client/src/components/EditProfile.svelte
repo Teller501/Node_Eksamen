@@ -15,9 +15,11 @@
         Button,
     } from "flowbite-svelte";
     import { EditSolid } from "flowbite-svelte-icons";
+    import blankProfilePic from "../assets/blank-profile-pic.png";
 
     let location = $userStore.location ?? "";
     let editProfileModal = false;
+    let birthDate = $userStore.birth_date.split("T")[0];
     const profilePicturePath = `${$BASE_URL}/${$userStore.profile_picture}`;
     let selectedImage = null;
 
@@ -79,7 +81,7 @@
                 />
             {:else}
                 <img
-                    src={profilePicturePath ?? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                    src={profilePicturePath ?? blankProfilePic}
                     alt="profile-pic"
                     class="rounded-full me-4 w-48 h-48 border shadow"
                 />
@@ -106,11 +108,7 @@
         </div>
         <div class="mb-6">
             <Label for="birth_date" class="mb-2">Birthday</Label>
-            <Input
-                type="date"
-                id="birth_date"
-                bind:value={$userStore.birthday}
-            />
+            <Input type="date" id="birth_date" bind:value={birthDate} />
         </div>
         <div class="mb-6">
             <Label for="location" class="mb-2">Location</Label>

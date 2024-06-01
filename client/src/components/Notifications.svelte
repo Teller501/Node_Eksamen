@@ -5,7 +5,7 @@
     import { userStore, tokenStore } from "../stores/authStore.js";
     import { fetchGet, fetchPost } from "../util/api.js";
     import { formatDistanceToNow } from "date-fns";
-    import { onMount } from "svelte";
+    import blankProfilePic from "../assets/blank-profile-pic.png";
 
     let notifications = [];
 
@@ -48,9 +48,9 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={`${BASE_URL}/${notification.follower.profile_picture} ?? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"`}
-                    dot={{ color: "bg-gray-300" }}
-                    rounded
+                    src={notification.profile_picture !== null ? `${$BASE_URL}/${notification.profile_picture}` : blankProfilePic}
+                    alt="Profile Picture"
+                    border
                 />
                 <div class="ps-3 w-full">
                     <div
@@ -75,9 +75,9 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={`${BASE_URL}/${notification.liker.profile_picture} ?? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"`}
-                    dot={{ color: "bg-gray-300" }}
-                    rounded
+                    src={notification.profile_picture !== null ? `${$BASE_URL}/${notification.profile_picture}` : blankProfilePic}
+                    alt="Profile Picture"
+                    border
                 />
                 <div class="ps-3 w-full">
                     <div

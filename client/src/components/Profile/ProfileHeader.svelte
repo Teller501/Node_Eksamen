@@ -7,6 +7,7 @@
     import { userStore, tokenStore } from "../../stores/authStore";
     import Followers from "../Followers.svelte";
     import Following from "../Following.svelte";
+    import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     export let user;
     export let isOwner;
@@ -63,14 +64,14 @@
             }
         }
     }
+
 </script>
 
 <div class="container mx-auto p-4">
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
             <Avatar
-                src={profilePicturePath ??
-                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                src={profilePicturePath ?? blankProfilePic}
                 alt="Profile Picture"
                 class="w-20 h-20"
                 border
