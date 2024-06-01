@@ -9,6 +9,7 @@
     import { onMount, onDestroy } from "svelte";
     import { userStore, tokenStore } from "../../stores/authStore";
     import { BASE_URL } from "../../stores/generalStore.js";
+    import { listsStore } from "../../stores/listsStore.js";
     import { fetchGet } from "../../util/api.js";
     import { favoritesStore } from "../../stores/favoritesStore.js";
     import { activeTab } from "../../stores/tabStore.js";
@@ -25,7 +26,6 @@
     let watchedMovies = [];
     let watchList = [];
     let lists = [];
-    let profilePicturePath;
     let followersList = [];
     let followingsList = [];
     let followersCount;
@@ -34,6 +34,10 @@
     let following = false;
 
     $: isOwner = username === $userStore.username;
+
+    listsStore.subscribe((value) => {
+        lists = value;
+    });
 
     onMount(async () => {
         await fetchUser();
@@ -145,6 +149,8 @@
             return;
         }
         lists = data;
+
+        listsStore.set(lists);
     }
 
     async function checkIfFollowing() {

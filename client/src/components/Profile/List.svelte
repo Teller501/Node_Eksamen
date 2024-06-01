@@ -3,6 +3,7 @@
     import { Button, Modal, Popover } from "flowbite-svelte";
     import { CirclePlusSolid, TrashBinSolid } from "flowbite-svelte-icons";
     import { userStore, tokenStore } from "../../stores/authStore";
+    import { listsStore } from "../../stores/listsStore.js";
     import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
     import Movie from "../Movie.svelte";
     import SearchModal from "../SearchModal.svelte";
@@ -19,6 +20,10 @@
 
     export let lists = [];
     export let isOwner;
+
+    listsStore.subscribe((value) => {
+        lists = value;
+    });
 
     async function fetchMoviesFromList(listId) {
         const { data, status } = await fetchGet(
@@ -42,7 +47,7 @@
         );
 
         if (status === 201) {
-            lists = [...lists, data.data];
+            listsStore.update((value) => [...value, data.data]);
             openCreateListModal = false;
         }
     }
@@ -53,7 +58,7 @@
             $tokenStore
         );
         if (status === 200) {
-            lists = lists.filter((list) => list.id !== listId);
+            listsStore.update((value) => value.filter((list) => list.id !== listId));
         }
     }
 </script>
@@ -73,16 +78,16 @@
 
 {#each lists as list}
     <div class="flex justify-between">
-        <button
+        <Button
             on:click={() => {
                 selectedList = list;
                 openSeeMoviesModal = true;
                 fetchMoviesFromList(list.id);
             }}
-            class="w-full"
+            class="w-full bg-transparent hover:bg-transparent focus:ring-0"
         >
             <div
-                class="content bg-white shadow-md rounded-lg p-4 hover:bg-primary-100 cursor-pointer"
+                class="content bg-white shadow-md rounded-lg p-4 hover:bg-primary-100 cursor-pointer w-full"
             >
                 <h3 class="text-slate-900 text-xl">
                     {list.list_name} - <b>{list.username}</b>
@@ -92,12 +97,13 @@
                         class="w-5 h-5 rounded-full inline-block"
                     />
                 </h3>
-                <p class="text-sm text-slate-700">
-                    {list.description} -
-                    <b>{list.movie_count ? list.movie_count : 0} movies</b>
+                <p class="text-xs text-gray-700 font-light">
+                    {#if list.description}
+                        {list.description}
+                    {/if}
                 </p>
             </div>
-        </button>
+        </Button>
         {#if isOwner}
             <div class="actions flex flex-col items-end mt-4">
                 <SearchModal mode={"addToMovieList"} selectedList={list} />
