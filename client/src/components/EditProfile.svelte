@@ -27,7 +27,7 @@
         event.preventDefault();
         const formData = new FormData();
         formData.append("full_name", $userStore.full_name);
-        formData.append("birth_date", $userStore.birthday.split("T")[0]);
+        formData.append("birth_date", birthDate);
         formData.append("location", location);
         formData.append("bio", $userStore.bio);
 
