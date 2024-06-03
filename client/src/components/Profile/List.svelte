@@ -1,7 +1,8 @@
 <script>
     import { BASE_URL } from "../../stores/generalStore.js";
     import { Button, Modal, Popover } from "flowbite-svelte";
-    import { CirclePlusSolid, TrashBinSolid } from "flowbite-svelte-icons";
+    import { CirclePlusSolid, TrashBinSolid, CloseCircleSolid } from "flowbite-svelte-icons";
+    import toast, { Toaster } from "svelte-french-toast";
     import { userStore, tokenStore } from "../../stores/authStore";
     import { listsStore } from "../../stores/listsStore.js";
     import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
@@ -59,6 +60,19 @@
         );
         if (status === 200) {
             listsStore.update((value) => value.filter((list) => list.id !== listId));
+        }
+    }
+
+    async function handleRemoveMovieFromList(movieId, title) {
+        const { status } = await fetchDelete(
+            `${$BASE_URL}/api/lists/${$userStore.id}/${selectedList.id}/${movieId}`,
+            $tokenStore
+        );
+        if (status === 200) {
+            listWithMovies.movies = listWithMovies.movies.filter(
+                (movie) => movie.movie_id !== movieId
+            );
+            toast.success(`'${title}' removed from list`);
         }
     }
 </script>
@@ -143,17 +157,37 @@
         <p class="text-slate-900 text-lg">
             {selectedList.description}
         </p>
+        <p class="text-slate-600 mt-1">Created {selectedList.created_at.split("T")[0]}
+            - <b>({listWithMovies.movies.length} movies)</b>
+        </p>
         {#if listWithMovies.movies.length === 0}
             <p>This list is empty...</p>
         {/if}
         <div class="flex flex-wrap justify-center items-center w-full">
             {#each listWithMovies.movies as movie}
+            <div class="relative">
+                {#if isOwner}
+                    <button
+                        on:click={() =>
+                            handleRemoveMovieFromList(
+                                movie.movie_id,
+                                movie.title
+                            )}
+                        class="absolute top-0 right-2 z-10 p-0"
+                    >
+                        <CloseCircleSolid
+                            size="md"
+                            class="text-red-500 hover:text-red-800 z-50"
+                        />
+                    </button>
+                {/if}
                 <Movie
                     posterPath={movie.poster_path}
                     alt={movie.title}
                     movieId={movie.movie_id}
                     width="180vw"
                 />
+            </div>
             {/each}
         </div>
     {/if}
