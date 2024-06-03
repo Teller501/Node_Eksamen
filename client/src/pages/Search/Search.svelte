@@ -13,12 +13,13 @@
 
     let searchResults = [];
 
-
     async function getSearchResults() {
-        const endpoint =
-            type === "movies"
+        const endpoint = 
+            type === "movies" 
                 ? `${$BASE_URL}/api/movies/search?q=${searchQuery}`
-                : `${$BASE_URL}/api/users/search?q=${searchQuery}`;
+                : type === "users"
+                ? `${$BASE_URL}/api/users/search?q=${searchQuery}`
+                : `${$BASE_URL}/api/lists/search?q=${searchQuery}`;
 
         const { data } = await fetchGet(endpoint, $tokenStore);
         searchResults = data;
@@ -51,7 +52,7 @@
                     {/if}
                 {/each}
             </div>
-        {:else}
+        {:else if type === "users"}
             <div id="search-results" class="w-full min-w-full flex flex-col space-y-4">
                 {#each searchResults as user, index}
                     <div class="flex flex-row items-center p-4 {index % 2 === 1 ? 'bg-slate-200' : 'bg-slate-50'} rounded-lg shadow-sm w-full">
@@ -63,6 +64,19 @@
                         />
                         <h3 class="text-slate-900 ml-4 text-lg font-medium flex-grow">
                             <A class="hover:no-underline" href={`/${user.username}`}>{user.username}</A>
+                        </h3>
+                    </div>
+                    {#if index < searchResults.length - 1}
+                        <Hr hrClass="my-4 border-t-0 border-slate-300 w-full" />
+                    {/if}
+                {/each}
+            </div>
+        {:else}
+            <div id="search-results" class="w-full min-w-full flex flex-col space-y-4">
+                {#each searchResults as list, index}
+                    <div class="flex flex-row items-center p-4 {index % 2 === 1 ? 'bg-slate-200' : 'bg-slate-50'} rounded-lg shadow-sm w-full">
+                        <h3 class="text-slate-900 ml-4 text-lg font-medium flex-grow">
+                            <A class="hover:no-underline" href={`/lists/${list.id}`}>{list.name}</A>
                         </h3>
                     </div>
                     {#if index < searchResults.length - 1}

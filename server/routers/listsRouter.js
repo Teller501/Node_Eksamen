@@ -7,6 +7,34 @@ const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
 
+router.get("/api/lists/search", authenticateToken, async (req, res, next) => {
+    const q = req.query.q;
+    if (!q) {
+        return next(BadRequestError("Missing query parameter 'q'"));
+    }
+
+    try {
+        const query = `
+            SELECT uml.*, u.username, u.profile_picture, COUNT(mli.movie_id) as movie_count
+            FROM user_movie_lists uml
+            JOIN users u ON uml.user_id = u.id
+            LEFT JOIN movie_list_items mli ON uml.id = mli.list_id
+            WHERE uml.list_name ILIKE $1
+            GROUP BY uml.id, u.id;
+        `;
+        const result = await pgClient.query(query, [`%${q}%`]);
+
+        if (result.rows.length === 0) {
+            return next(NotFoundError("No lists found"));
+        }
+
+        res.send({ data: result.rows });
+    } catch (error) {
+        console.error("Error searching lists:", error);
+        next(InternalServerError("Failed to search lists"));
+    }
+});
+
 router.get("/api/lists/:user_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;

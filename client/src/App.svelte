@@ -16,7 +16,6 @@
         FooterLink,
         FooterLinkGroup,
         Indicator,
-        Avatar,
     } from "flowbite-svelte";
     import {
         SearchOutline,
@@ -56,6 +55,7 @@
     let searchType = [
         { value: "movies", name: "Movies" },
         { value: "users", name: "Users" },
+        { value: "lists", name: "Lists" }
     ];
 
     const socket = io($SOCKET_URL);
