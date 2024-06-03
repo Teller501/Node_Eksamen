@@ -4,12 +4,22 @@
     import { tokenStore } from "../../stores/authStore.js";
     import { fetchGet } from "../../util/api";
     import Movie from "../../components/Movie.svelte";
-    import { Hr, A, Avatar } from "flowbite-svelte";
+    import { Hr, A, Avatar, Modal } from "flowbite-svelte";
     import blankProfilePic from "../../assets/blank-profile-pic.png";
+    import { listsStore } from "../../stores/listsStore";
 
     export let params;
     const searchQuery = params.query;
     const type = params.type;
+
+    let lists = [];
+    let selectedList = null;
+    let listWithMovies = { movies: [] };
+    let openSeeMoviesModal = false;
+
+    listsStore.subscribe((value) => {
+        lists = value;
+    });
 
     let searchResults = [];
 
@@ -23,6 +33,14 @@
 
         const { data } = await fetchGet(endpoint, $tokenStore);
         searchResults = data;
+    }
+
+    async function fetchListMovies(list) {
+        const endpoint = `${$BASE_URL}/api/lists/${list.user_id}/${list.id}`;
+        const { data } = await fetchGet(endpoint, $tokenStore);
+        listWithMovies = data;
+        selectedList = list;
+        openSeeMoviesModal = true;
     }
 
     onMount(() => {
@@ -76,7 +94,10 @@
                 {#each searchResults as list, index}
                     <div class="flex flex-row items-center p-4 {index % 2 === 1 ? 'bg-slate-200' : 'bg-slate-50'} rounded-lg shadow-sm w-full">
                         <h3 class="text-slate-900 ml-4 text-lg font-medium flex-grow">
-                            <A class="hover:no-underline" href={`/lists/${list.id}`}>{list.name}</A>
+                            <button type="button" on:click={() => fetchListMovies(list)} class="cursor-pointer text-blue-600 focus:outline-none">
+                                {list.list_name}
+                            </button>
+                            <A class="hover:no-underline" href={`/${list.username}`}>{list.username}</A>
                         </h3>
                     </div>
                     {#if index < searchResults.length - 1}
@@ -91,3 +112,33 @@
         </h2>
     {/if}
 </div>
+
+<Modal
+  title={selectedList ? `${selectedList.list_name} by ${selectedList.username}` : ""}
+  bind:open={openSeeMoviesModal}
+  autoclose={false}
+  class="w-full"
+  outsideclose
+>
+  {#if selectedList}
+    <p class="text-slate-900 text-lg">
+      {selectedList.description}
+    </p>
+    <p class="text-slate-600 mt-1">
+      Created {selectedList.created_at.split("T")[0]} - <b>({listWithMovies.movies.length} movies)</b>
+    </p>
+    {#if listWithMovies.movies.length === 0}
+      <p>This list is empty...</p>
+    {/if}
+    <div class="flex flex-wrap justify-center items-center w-full">
+      {#each listWithMovies.movies as movie}
+          <Movie
+            posterPath={movie.poster_path}
+            alt={movie.title}
+            movieId={movie.movie_id}
+            width="180vw"
+          />
+      {/each}
+    </div>
+  {/if}
+</Modal>
