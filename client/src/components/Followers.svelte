@@ -1,4 +1,5 @@
 <script>
+    import { onMount } from "svelte";
     import { Modal, A, Avatar } from "flowbite-svelte";
     import { MapPinSolid } from "flowbite-svelte-icons";
     import { BASE_URL } from "../stores/generalStore.js";
@@ -10,21 +11,28 @@
 
     let followersModal = false;
 
-    $: followers.forEach((follower) => {
-        getProfilePicture(`${$BASE_URL}/${follower.profile_picture}`, blankProfilePic)
-            .then(imgUrl => {
-                follower.imgUrl = imgUrl;
-            })
-            .catch(error => {
-                console.error("Failed to load profile picture:", error);
+    $: {
+        if (Array.isArray(followers)) {
+            followers.forEach(async (follower) => {
+                try {
+                    const imgUrl = await getProfilePicture(
+                        `${$BASE_URL}/${follower.profile_picture}`,
+                        blankProfilePic
+                    );
+                    follower.imgUrl = imgUrl;
+                } catch (error) {
+                    console.error("Failed to load profile picture:", error);
+                }
             });
-    });
+        }
+    }
 </script>
 
 <span
     ><A
         class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
-        on:click={() => (followersModal = true)}>{followersCount ?? 0} followers</A
+        on:click={() => (followersModal = true)}
+        >{followersCount ?? 0} followers</A
     ></span
 >
 

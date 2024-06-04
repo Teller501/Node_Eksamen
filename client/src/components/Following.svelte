@@ -10,21 +10,28 @@
 
     let followingsModal = false;
 
-    $: followings.forEach((following) => {
-        getProfilePicture(`${$BASE_URL}/${following.profile_picture}`, blankProfilePic)
-           .then(imgUrl => {
-                following.imgUrl = imgUrl;
-            })
-           .catch(error => {
-                console.error("Failed to load profile picture:", error);
+    $: {
+        if (Array.isArray(followings)) {
+            followings.forEach(async (following) => {
+                try {
+                    const imgUrl = await getProfilePicture(
+                        `${$BASE_URL}/${following.profile_picture}`,
+                        blankProfilePic
+                    );
+                    following.imgUrl = imgUrl;
+                } catch (error) {
+                    console.error("Failed to load profile picture:", error);
+                }
             });
-    });
+        }
+    }
 </script>
 
 <span
     ><A
         class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
-        on:click={() => (followingsModal = true)}>{followingsCount ?? 0} following</A
+        on:click={() => (followingsModal = true)}
+        >{followingsCount ?? 0} following</A
     ></span
 >
 
