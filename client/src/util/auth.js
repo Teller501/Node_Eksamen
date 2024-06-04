@@ -43,11 +43,7 @@ export async function refreshToken(refreshToken, token) {
 export async function logoutUser(token) {
     await fetchDelete(`http://localhost:8080/api/logout/${token}`, token);
 
-    const rememberMe = localStorage.getItem("rememberMe") === "true";
-
-    if (!rememberMe) {
-        tokenStore.set(null);
-        refreshTokenStore.set(null);
-        userStore.set(null);
-    }
+    tokenStore.set(null);
+    refreshTokenStore.set(null);
+    userStore.set(null);
 }

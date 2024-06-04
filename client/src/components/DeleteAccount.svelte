@@ -3,7 +3,6 @@
     import { userStore, tokenStore } from "../stores/authStore.js";
     import { BASE_URL } from "../stores/generalStore.js";
     import { fetchDelete } from "../util/api.js";
-    import { logoutUser } from "../util/auth.js";
     import { navigate } from "svelte-routing";
     import { Toaster, toast } from "svelte-french-toast";
 
@@ -13,8 +12,15 @@
         const { status } = await fetchDelete(`${$BASE_URL}/api/users/${$userStore.id}`, $tokenStore);
 
         if (status === 200) {
-            logoutUser();
-            navigate("/");
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+
+            toast.success("Account deleted successfully, Goodbye!");
+
+            setTimeout(() => {
+                navigate("/");
+            }, 1000);
         } else {
             toast.error("Failed to delete account");
         }
