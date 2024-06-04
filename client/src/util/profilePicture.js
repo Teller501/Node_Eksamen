@@ -5,7 +5,9 @@ export function getProfilePicture(profilePictureUrl, fallbackUrl) {
 
     onMount(async () => {
         try {
-          const response = await fetch(profilePictureUrl);
+          const response = await fetch(profilePictureUrl, {
+            credentials: "include",
+          });
           if (response.status !== 404) {
             imgUrl = profilePictureUrl;
           } else {
