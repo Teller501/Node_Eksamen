@@ -3,9 +3,9 @@
     import { userStore } from "../../stores/authStore.js";
     import { BASE_URL } from "../../stores/generalStore.js";
     import ForgotPassword from "../../components/ForgotPassword.svelte";
+    import DeleteAccount from "../../components/DeleteAccount.svelte";
     import { fetchPost } from "../../util/api.js";
     import { Toaster, toast } from "svelte-french-toast";
-    import DeleteAccount from "../../components/DeleteAccount.svelte";
 
     let newPassword = "";
     let currentPassword = "";

@@ -54,6 +54,7 @@
     if (status === 201) {
       listsStore.update((value) => [...value, data.data]);
       openCreateListModal = false;
+      toast.success("List created");
     }
   }
 
@@ -64,6 +65,7 @@
     );
     if (status === 200) {
       listsStore.update((value) => value.filter((list) => list.id !== listId));
+      toast.success("List deleted");
     }
   }
 
@@ -80,6 +82,8 @@
     }
   }
 </script>
+
+<Toaster />
 
 <div class="flex items-center px-96">
   <h2 class="text-slate-900 text-2xl font-bold me-48">Lists</h2>
@@ -109,11 +113,6 @@
       >
         <h3 class="text-slate-900 text-xl">
           {list.list_name} - <b>{list.username}</b>
-          <img
-            src={`${$BASE_URL}/${list.profile_picture}`}
-            alt="profile pic"
-            class="w-5 h-5 rounded-full inline-block"
-          />
         </h3>
         <p class="text-xs text-gray-700 font-light">
           {#if list.description}

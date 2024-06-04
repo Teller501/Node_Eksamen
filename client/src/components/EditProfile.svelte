@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { BASE_URL } from "../stores/generalStore.js";
     import { userStore, tokenStore } from "../stores/authStore";
     import { fetchPatch } from "../util/api";
@@ -10,7 +9,6 @@
         Textarea,
         Fileupload,
         Helper,
-        Select,
         Modal,
         Button,
     } from "flowbite-svelte";
@@ -19,7 +17,7 @@
 
     let location = $userStore.location ?? "";
     let editProfileModal = false;
-    let birthDate = $userStore.birth_date.split("T")[0];
+    let birthDate = $userStore.birth_date ? $userStore.birth_date.split("T")[0] : "";
     const profilePicturePath = `${$BASE_URL}/${$userStore.profile_picture}`;
     let selectedImage = null;
 
@@ -81,7 +79,7 @@
                 />
             {:else}
                 <img
-                    src={profilePicturePath ?? blankProfilePic}
+                    src={blankProfilePic}
                     alt="profile-pic"
                     class="rounded-full me-4 w-48 h-48 border shadow"
                 />

@@ -24,17 +24,13 @@
     } from "flowbite-svelte-icons";
     import CineMatch from "./assets/CineMatch.png";
     import { Router, Route } from "svelte-routing";
-    import Auth from "./pages/Auth/Auth.svelte";
-    import Activation from "./components/Activation.svelte";
-    import ResetPassword from "./pages/ResetPassword/ResetPassword.svelte";
     import { userStore, tokenStore } from "./stores/authStore";
     import { SOCKET_URL, BASE_URL } from "./stores/generalStore.js";
-    import { fetchGet } from "./util/api.js";
-    import { onMount } from "svelte";
     import { notificationStore } from "./stores/notificationStore.js";
+    import { fetchGet } from "./util/api.js";
     import { logoutUser } from "./util/auth.js";
-    import PrivateRoute from "./components/PrivateRoute.svelte";
     import Home from "./pages/Home/Home.svelte";
+    import Auth from "./pages/Auth/Auth.svelte";
     import MovieDetails from "./pages/MovieDetails/MovieDetails.svelte";
     import Movies from "./pages/Movies/Movies.svelte";
     import Search from "./pages/Search/Search.svelte";
@@ -46,9 +42,14 @@
     import About from "./pages/About/About.svelte";
     import Terms from "./pages/Terms/Terms.svelte";
     import Reviews from "./pages/Reviews/Reviews.svelte";
-    import Notifications from "./components/Notifications.svelte";
-    import io from "socket.io-client";
     import Settings from "./pages/Settings/Settings.svelte";
+    import ResetPassword from "./pages/ResetPassword/ResetPassword.svelte";
+    import PrivateRoute from "./components/PrivateRoute.svelte";
+    import Notifications from "./components/Notifications.svelte";
+    import Activation from "./components/Activation.svelte";
+    
+    import io from "socket.io-client";
+    const socket = io($SOCKET_URL);
 
     const currentYear = new Date().getFullYear();
 
@@ -60,7 +61,6 @@
         { value: "lists", name: "Lists" }
     ];
 
-    const socket = io($SOCKET_URL);
 
     let unreadNotifications = 0;
 

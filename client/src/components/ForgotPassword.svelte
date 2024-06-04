@@ -1,5 +1,5 @@
 <script>
-    import { Button, Modal, Label, Input, Checkbox } from "flowbite-svelte";
+    import { Button, Modal, Label, Input } from "flowbite-svelte";
     import toast, { Toaster } from "svelte-french-toast";
     import { BASE_URL } from "../stores/generalStore";
     import { fetchPost } from "../util/api";

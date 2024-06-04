@@ -1,4 +1,5 @@
 <script>
+    import { onMount, onDestroy } from "svelte";
     import { Tabs, TabItem } from "flowbite-svelte";
     import Profile from "../../components/Profile/Profile.svelte";
     import Watched from "../../components/Profile/Watched.svelte";
@@ -6,15 +7,14 @@
     import List from "../../components/Profile/List.svelte";
     import Reviews from "../../components/Reviews.svelte";
     import ProfileHeader from "../../components/Profile/ProfileHeader.svelte";
-    import { onMount, onDestroy } from "svelte";
     import { userStore, tokenStore } from "../../stores/authStore";
     import { BASE_URL } from "../../stores/generalStore.js";
     import { listsStore } from "../../stores/listsStore.js";
-    import { fetchGet } from "../../util/api.js";
     import { favoritesStore } from "../../stores/favoritesStore.js";
     import { activeTab } from "../../stores/tabStore.js";
-    import blankProfilePic from "../../assets/blank-profile-pic.png";
+    import { fetchGet } from "../../util/api.js";
     import { getProfilePicture } from "../../util/profilePicture.js";
+    import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     export let params;
     const username = params.username;
@@ -236,7 +236,7 @@
         </TabItem>
         <TabItem
             open={$activeTab === "List"}
-            title="List"
+            title="Lists"
             on:click={() => activeTab.set("List")}
             inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         >

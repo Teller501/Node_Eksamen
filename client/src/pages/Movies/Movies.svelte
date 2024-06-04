@@ -22,7 +22,6 @@
     let selectedGenre = "";
     let genreDropdownOpen = false;
     let yearDropdownOpen = false;
-    let ratingDropdownOpen = false;
     
     const genres = [
         "Adventure",

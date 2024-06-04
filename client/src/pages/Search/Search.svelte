@@ -1,13 +1,13 @@
 <script>
     import { onMount } from "svelte";
+    import { Hr, A, Avatar, Modal } from "flowbite-svelte";
     import { BASE_URL } from "../../stores/generalStore";
     import { tokenStore } from "../../stores/authStore.js";
-    import { fetchGet } from "../../util/api";
-    import Movie from "../../components/Movie.svelte";
-    import { Hr, A, Avatar, Modal } from "flowbite-svelte";
-    import blankProfilePic from "../../assets/blank-profile-pic.png";
     import { listsStore } from "../../stores/listsStore";
+    import Movie from "../../components/Movie.svelte";
+    import { fetchGet } from "../../util/api";
     import { getProfilePicture } from "../../util/profilePicture.js";
+    import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     export let params;
     const searchQuery = params.query;

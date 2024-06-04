@@ -1,5 +1,5 @@
 <script>
-    import { Card, ImagePlaceholder, Skeleton, TextPlaceholder } from "flowbite-svelte";
+    import { Card, ImagePlaceholder, TextPlaceholder } from "flowbite-svelte";
     import Recommendation from "../../components/Recommendation.svelte";
     import { fetchGet, fetchPost } from "../../util/api";
     import { BASE_URL } from "../../stores/generalStore";

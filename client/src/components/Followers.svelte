@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { Modal, A, Avatar } from "flowbite-svelte";
     import { MapPinSolid } from "flowbite-svelte-icons";
     import { BASE_URL } from "../stores/generalStore.js";
@@ -28,13 +27,12 @@
     }
 </script>
 
-<span
-    ><A
-        class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
-        on:click={() => (followersModal = true)}
-        >{followersCount ?? 0} followers</A
-    ></span
->
+<span>
+    <A class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
+      on:click={() => (followersModal = true)}>
+      {followersCount ?? 0} followers
+    </A>
+</span>
 
 <Modal
     bind:open={followersModal}

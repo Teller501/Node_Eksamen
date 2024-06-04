@@ -118,3 +118,8 @@
         {/if}
     {/each}
 {/if}
+{#if notifications.length === 0}
+    <p class="p-4">
+        No new notifications.
+    </p>
+{/if}

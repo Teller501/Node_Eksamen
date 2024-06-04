@@ -18,7 +18,7 @@
     });
 
     async function fetchRecentLogs() {
-        loading = true;  // Start loading
+        loading = true;
         const response = await fetchGet(
             `${$BASE_URL}/api/logs/reviews/recent?limit=${limit}&offset=${offset}`,
             $tokenStore

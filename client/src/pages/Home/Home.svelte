@@ -1,8 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { fetchGet } from "../../util/api";
-    import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
-    import Movie from "../../components/Movie.svelte";
+    import io from "socket.io-client";
     import {
         ImagePlaceholder,
         Button,
@@ -12,13 +10,15 @@
         Skeleton,
     } from "flowbite-svelte";
     import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
+    import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
     import { tokenStore, userStore } from "../../stores/authStore";
     import { activityStore } from "../../stores/activityStore.js";
-    import io from "socket.io-client";
+    import Movie from "../../components/Movie.svelte";
     import ActivityList from "../../components/ActivityList.svelte";
     import SearchModal from "../../components/SearchModal.svelte";
-    import blankProfilePic from "../../assets/blank-profile-pic.png";
+    import { fetchGet } from "../../util/api";
     import { getProfilePicture } from "../../util/profilePicture.js";
+    import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     let popularMovies = null;
     let page = 1;

@@ -7,6 +7,7 @@
     import cinematchLogo from "../../assets/CineMatch.png";
     import LogMovie from "../../components/LogMovie.svelte";
     import Movie from "../../components/Movie.svelte";
+    import Reviews from "../../components/Reviews.svelte";
     import toast, { Toaster } from "svelte-french-toast";
     import {
         Rating,
@@ -20,7 +21,6 @@
         Skeleton,
     } from "flowbite-svelte";
     import { ClockOutline, EyeOutline } from "flowbite-svelte-icons";
-    import Reviews from "../../components/Reviews.svelte";
 
     const movieId = window.location.pathname.split("/").pop();
     let movieDetails;
