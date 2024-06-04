@@ -47,6 +47,18 @@
     onMount(() => {
         getSearchResults();
     });
+
+    $: searchResults.forEach((result) => {
+        if (result.profile_picture) {
+            getProfilePicture(`${$BASE_URL}/${result.profile_picture}`, blankProfilePic)
+                .then((imgUrl) => {
+                    result.profile_picture = imgUrl;
+                })
+                .catch((error) => {
+                    console.error("Failed to load profile picture:", error);
+                });
+        }
+    });
 </script>
 
 <div class="w-full min-w-full p-4 bg-white shadow-md rounded-lg">
@@ -76,7 +88,7 @@
                 {#each searchResults as user, index}
                     <div class="flex flex-row items-center p-4 {index % 2 === 1 ? 'bg-slate-200' : 'bg-slate-50'} rounded-lg shadow-sm w-full">
                         <Avatar
-                            src={getProfilePicture(`${$BASE_URL}/${user.profile_picture}`, blankProfilePic)}
+                            src={user.profile_picture}
                             alt={user.username}
                             class="w-12 h-12 rounded-full"
                             href={`/${user.username}`}

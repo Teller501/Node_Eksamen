@@ -9,6 +9,16 @@
     export let followingsCount;
 
     let followingsModal = false;
+
+    $: followings.forEach((following) => {
+        getProfilePicture(`${$BASE_URL}/${following.profile_picture}`, blankProfilePic)
+           .then(imgUrl => {
+                following.imgUrl = imgUrl;
+            })
+           .catch(error => {
+                console.error("Failed to load profile picture:", error);
+            });
+    });
 </script>
 
 <span
@@ -36,7 +46,7 @@
                 >
                     <div class="flex items-center">
                         <Avatar
-                            src={getProfilePicture(`${$BASE_URL}/${following.profile_picture}`, blankProfilePic)}
+                            src={following.imgUrl}
                             alt="Profile Picture"
                             class="w-12 h-12"
                             border

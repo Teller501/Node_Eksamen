@@ -67,6 +67,16 @@
             });
         }
     }
+
+    $: reviews.forEach((review) => {
+        getProfilePicture(`${$BASE_URL}/${review.profile_picture}`, blankProfilePic)
+            .then((imgUrl) => {
+                review.profile_picture = imgUrl;
+            })
+            .catch((error) => {
+                console.error("Failed to load profile picture:", error);
+            });
+    });
 </script>
 
 <h2 class="text-2xl font-bold text-slate-900">Recent Reviews</h2>
@@ -105,10 +115,11 @@
                             <div class="flex items-center">
                                 {#if showUserAvatar}
                                     <Avatar
-                                        src={getProfilePicture(`${$BASE_URL}/${review.profile_picture}`, blankProfilePic)}
+                                        src={review.profile_picture}
                                         href={`/${review.username}`}
                                         size="xs"
-                                        class="mr-2"
+                                        class="mr-2 h-8 w-8"
+                                        border
                                     />
                                 {/if}
                                 {#if showUsername}

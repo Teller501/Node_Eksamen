@@ -26,7 +26,7 @@
 
     const user = $userStore;
     const profilePictureUrl = `${$BASE_URL}/${user.profile_picture}`;
-    const avatarUrl = getProfilePicture(profilePictureUrl, blankProfilePic);
+    let avatarUrl;
 
 
     const socket = io($SOCKET_URL);
@@ -58,6 +58,7 @@
 
     onMount(async () => {
         await Promise.all([fetchMovies(), fetchRecentLogs()]);
+        avatarUrl = await getProfilePicture(profilePictureUrl, blankProfilePic);        
     });
 
     function handleNextPopularMoviePage() {

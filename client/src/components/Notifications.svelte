@@ -39,6 +39,16 @@
     function formatTime(date) {
         return formatDistanceToNow(new Date(date), { addSuffix: true });
     }
+
+    $: notifications.forEach((notification) => {
+        getProfilePicture(`${$BASE_URL}/${notification.profile_picture}`, blankProfilePic)
+            .then(imgUrl => {
+                notification.imgUrl = imgUrl;
+            })
+            .catch(error => {
+                console.error("Failed to load profile picture:", error);
+            });
+    });
 </script>
 
 {#if notifications.length > 0}
@@ -50,7 +60,7 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={getProfilePicture(`${$BASE_URL}/${notification.profile_picture}`, blankProfilePic)}
+                    src={notification.imgUrl}
                     alt="Profile Picture"
                     class="w-8 h-8"
                     border
@@ -78,7 +88,7 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={getProfilePicture(`${$BASE_URL}/${notification.profile_picture}`, blankProfilePic)}
+                    src={notification.imgUrl}
                     alt="Profile Picture"
                     class="w-8 h-8"
                     border

@@ -1,14 +1,9 @@
 import "dotenv/config";
 import express from "express";
 const app = express();
-import path from "path";
-const imagesDir = path.resolve("./images");
-app.use("/images", express.static(imagesDir));
-app.use(express.json({ limit: "2mb" }));
+
 // import scheduleTMDBPopulation from "./util/tmdb/cronScheduler.js";
 // scheduleTMDBPopulation();
-import corsMiddleware from './middleware/cors.js';
-app.use(corsMiddleware);
 
 import http from "http";
 const server = http.createServer(app);
@@ -20,6 +15,14 @@ const io = new Server(server, {
   },
 });
 export { io };
+
+import corsMiddleware from './middleware/cors.js';
+app.use(corsMiddleware);
+
+import path from "path";
+const imagesDir = path.resolve("./images");
+app.use("/images", express.static(imagesDir));
+app.use(express.json({ limit: "2mb" }));
 
 import { limiter, authRateLimiter } from './middleware/rateLimit.js';
 app.use(limiter);

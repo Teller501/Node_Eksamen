@@ -33,6 +33,7 @@
     let followingsCount;
     let isOwner = false;
     let following = false;
+    let profilePicturePath;
 
     $: isOwner = username === $userStore.username;
 
@@ -54,6 +55,8 @@
             fetchFollowers(),
             fetchFollowings(),
         ]);
+
+        profilePicturePath = await getProfilePicture(`${$BASE_URL}/${user.profile_picture}`, blankProfilePic)
     });
 
     onDestroy(() => {
@@ -182,7 +185,7 @@
     {user}
     {isOwner}
     {following}
-    profilePicturePath={getProfilePicture(`${$BASE_URL}/${user.profile_picture}`, blankProfilePic)}
+    profilePicturePath={profilePicturePath}
     {userData}
     followers={followersList}
     {followersCount}
