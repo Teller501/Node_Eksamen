@@ -3,9 +3,10 @@
     import { DropdownItem, Avatar } from "flowbite-svelte";
     import { BASE_URL } from "../stores/generalStore.js";
     import { userStore, tokenStore } from "../stores/authStore.js";
-    import { fetchGet, fetchPost } from "../util/api.js";
+    import { fetchPost } from "../util/api.js";
     import { formatDistanceToNow } from "date-fns";
     import blankProfilePic from "../assets/blank-profile-pic.png";
+    import { getProfilePicture } from "../util/profilePicture.js";
 
     let notifications = [];
 
@@ -48,8 +49,9 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={notification.profile_picture !== null ? `${$BASE_URL}/${notification.profile_picture}` : blankProfilePic}
+                    src={getProfilePicture(`${$BASE_URL}/${notification.profile_picture}`, blankProfilePic)}
                     alt="Profile Picture"
+                    class="w-8 h-8"
                     border
                 />
                 <div class="ps-3 w-full">
@@ -75,8 +77,9 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={notification.profile_picture !== null ? `${$BASE_URL}/${notification.profile_picture}` : blankProfilePic}
+                    src={getProfilePicture(`${$BASE_URL}/${notification.profile_picture}`, blankProfilePic)}
                     alt="Profile Picture"
+                    class="w-8 h-8"
                     border
                 />
                 <div class="ps-3 w-full">

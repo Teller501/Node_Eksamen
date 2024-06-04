@@ -17,12 +17,16 @@
     import ActivityList from "../../components/ActivityList.svelte";
     import SearchModal from "../../components/SearchModal.svelte";
     import blankProfilePic from "../../assets/blank-profile-pic.png";
+    import { getProfilePicture } from "../../util/profilePicture.js";
 
     let popularMovies = null;
     let page = 1;
     let recentLogs = null;
 
     const user = $userStore;
+    const profilePictureUrl = `${$BASE_URL}/${user.profile_picture}`;
+    const avatarUrl = getProfilePicture(profilePictureUrl);
+
 
     const socket = io($SOCKET_URL);
 
@@ -137,10 +141,10 @@
                                 {log.username}
                             </A>
                             <Avatar
-                                src={log.profile_picture !== null ? `${$BASE_URL}/${log.profile_picture}` : blankProfilePic}
+                                src={avatarUrl}
                                 href={`/${log.username}`}
                                 alt="Profile Picture"
-                                class="w-5 h-5"
+                                class="w-4 h-4"
                             />
                         </div>
                         <div class="text-gray-600 text-sm">

@@ -6,6 +6,7 @@
     import Movie from "./Movie.svelte";
     import { fetchGet, fetchPost, fetchDelete } from "../util/api.js";
     import blankProfilePic from "../assets/blank-profile-pic.png";
+    import { getProfilePicture } from "../util/profilePicture.js";
 
     export let reviews;
     export let showMoviePoster = true;
@@ -104,7 +105,7 @@
                             <div class="flex items-center">
                                 {#if showUserAvatar}
                                     <Avatar
-                                        src={review.profile_picture !== null ? `${$BASE_URL}/${review.profile_picture}` : blankProfilePic}
+                                        src={getProfilePicture(`${$BASE_URL}/${review.profile_picture}`, blankProfilePic)}
                                         href={`/${review.username}`}
                                         size="xs"
                                         class="mr-2"

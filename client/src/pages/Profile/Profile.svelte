@@ -14,6 +14,7 @@
     import { favoritesStore } from "../../stores/favoritesStore.js";
     import { activeTab } from "../../stores/tabStore.js";
     import blankProfilePic from "../../assets/blank-profile-pic.png";
+    import { getProfilePicture } from "../../util/profilePicture.js";
 
     export let params;
     const username = params.username;
@@ -181,7 +182,7 @@
     {user}
     {isOwner}
     {following}
-    profilePicturePath={user.profile_picture !== null ? `${$BASE_URL}/${user.profile_picture}` : blankProfilePic}
+    profilePicturePath={getProfilePicture(`${$BASE_URL}/${user.profile_picture}`, blankProfilePic)}
     {userData}
     followers={followersList}
     {followersCount}
