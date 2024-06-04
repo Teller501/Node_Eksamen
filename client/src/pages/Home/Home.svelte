@@ -9,7 +9,7 @@
         Avatar,
         SpeedDial,
         A,
-        Skeleton
+        Skeleton,
     } from "flowbite-svelte";
     import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
     import { tokenStore, userStore } from "../../stores/authStore";
@@ -25,9 +25,6 @@
     let recentLogs = null;
 
     const user = $userStore;
-    const profilePictureUrl = `${$BASE_URL}/${user.profile_picture}`;
-    let avatarUrl;
-
 
     const socket = io($SOCKET_URL);
 
@@ -58,7 +55,6 @@
 
     onMount(async () => {
         await Promise.all([fetchMovies(), fetchRecentLogs()]);
-        avatarUrl = await getProfilePicture(profilePictureUrl, blankProfilePic);        
     });
 
     function handleNextPopularMoviePage() {
@@ -72,6 +68,23 @@
         popularMovies = null;
         page--;
         fetchMovies();
+    }
+
+    $: {
+        if (Array.isArray(recentLogs)) {
+            recentLogs.forEach((log) => {
+                getProfilePicture(
+                    `${$BASE_URL}/${log.profile_picture}`,
+                    blankProfilePic
+                )
+                    .then((imgUrl) => {
+                        log.imgUrl = imgUrl;
+                    })
+                    .catch((error) => {
+                        console.error("Failed to load profile picture:", error);
+                    });
+            });
+        }
     }
 </script>
 
@@ -143,7 +156,7 @@
                                 {log.username}
                             </A>
                             <Avatar
-                                src={avatarUrl}
+                                src={log.imgUrl}
                                 href={`/${log.username}`}
                                 alt="Profile Picture"
                                 class="w-4 h-4"
