@@ -1,12 +1,13 @@
 <script>
     import { fade } from "svelte/transition";
-    import { Card, Button, Label, Input, Spinner, Helper } from "flowbite-svelte";
+    import { Card, Button, Label, Input, Spinner, Helper, Checkbox, A, Modal } from "flowbite-svelte";
     import { CheckOutline, CloseOutline } from "flowbite-svelte-icons";
     import toast, { Toaster } from "svelte-french-toast";
     import { BASE_URL } from "../stores/generalStore.js";
     import { fetchPost, fetchGet } from "../util/api.js";
     import { navigate } from "svelte-routing";
     import z from "zxcvbn"
+    import DataProtectionPolicy from "./DataProtectionPolicy.svelte";
 
     let username = "";
     let email = "";
@@ -14,6 +15,8 @@
     let confirmPassword = "";
     let isUsernameAvailable;
     let usernameTimeout;
+    let confirmDataProtectionPolicy = false;
+    let dataProtectionModal = false;
 
     $: strongPassword = z(password).score > 3;
 
@@ -56,6 +59,10 @@
         }
         if (!strongPassword) {
             errors.password = 'Password is too weak';
+            valid = false;
+        }
+        if (!confirmDataProtectionPolicy) {
+            toast.error('Please agree to the Data Protection Policy', { duration: 3000 });
             valid = false;
         }
 
@@ -186,7 +193,18 @@
                     <Helper class="text-red-700">{errors.confirmPassword}</Helper>
                 {/if}
             </Label>
-            <Button type="submit" class="w-full">Sign up</Button>
+            <Checkbox bind:checked={confirmDataProtectionPolicy}>I agree to the <A class="ml-1" on:click={() => dataProtectionModal = true}>Data Protection Policy</A></Checkbox>
+            <Button type="submit" class="w-full">Sign up</Button> 
         </form>
     </Card>
 </div>
+
+<Modal
+    bind:open={dataProtectionModal}
+    size="md"
+    autoclose={false}
+    class="w-full"
+    outsideclose
+>
+    <DataProtectionPolicy />
+</Modal>

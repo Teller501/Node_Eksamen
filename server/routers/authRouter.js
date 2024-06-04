@@ -12,6 +12,11 @@ import {
     validateForgotPassword,
     validateResetPassword,
 } from "../middleware/userValidation.js";
+import {
+    NotFoundError,
+    BadRequestError,
+    InternalServerError,
+} from "../util/errors.js";
 
 const router = Router();
 
@@ -62,19 +67,19 @@ async function sendResetEmail(email, resetToken) {
     }
 }
 
-router.get("/api/activate/:token", validateToken, async (req, res) => {
+router.get("/api/activate/:token", validateToken, async (req, res, next) => {
     const token = req.params.token;
     const username = await redisClient.get(token);
 
     if (!username) {
-        return res.status(400).send({ error: "Invalid activation token" });
+        return next(NotFoundError("Invalid or expired token"));
     }
 
     const user = pgClient.query(`SELECT * FROM users WHERE username = $1`, [
         username,
     ]);
     if (!user) {
-        return res.status(400).send({ error: "User not found" });
+        return next(NotFoundError("User not found"));
     }
 
     await pgClient.query(
@@ -100,8 +105,7 @@ router.get("/api/check-username/:username", async (req, res) => {
     res.status(200).send({ data: true });
 });
 
-
-router.post("/api/login", validateUserLogin, async (req, res) => {
+router.post("/api/login", validateUserLogin, async (req, res, next) => {
     try {
         const result = await pgClient.query(
             `SELECT * FROM users WHERE username = $1`,
@@ -109,14 +113,14 @@ router.post("/api/login", validateUserLogin, async (req, res) => {
         );
 
         if (result.rowCount === 0) {
-            return res.status(400).send({ error: "User not found" });
+            return next(NotFoundError("User not found"));
         }
 
         const user = result.rows[0];
         const rememberMe = req.body.rememberMe;
 
         if (!user.is_active) {
-            return res.status(400).send({ error: "User not activated" });
+            return next(BadRequestError("User not activated"));
         }
 
         if (await bcrypt.compare(req.body.password, user.password)) {
@@ -125,32 +129,42 @@ router.post("/api/login", validateUserLogin, async (req, res) => {
                     (SELECT COUNT(*) FROM user_follows WHERE followed_id = $1) AS followers_count,
                     (SELECT COUNT(*) FROM user_follows WHERE follower_id = $1) AS following_count
             `;
-            const followCountsResult = await pgClient.query(followCountsQuery, [user.id]);
-            const { followers_count, following_count } = followCountsResult.rows[0];
+            const followCountsResult = await pgClient.query(followCountsQuery, [
+                user.id,
+            ]);
+            const { followers_count, following_count } =
+                followCountsResult.rows[0];
 
             user.followers_count = followers_count;
             user.following_count = following_count;
 
             const token = generateAccessToken(user, rememberMe);
-            const refreshToken = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_REFRESH_SECRET);
+            const refreshToken = jwt.sign(
+                { id: user.id, username: user.username },
+                process.env.JWT_REFRESH_SECRET
+            );
 
             if (rememberMe) {
-                await redisClient.set(refreshToken, user.username, { EX: 604800 });
+                await redisClient.set(refreshToken, user.username, {
+                    EX: 604800,
+                });
             } else {
-                await redisClient.set(refreshToken, user.username, { EX: 1800 });
+                await redisClient.set(refreshToken, user.username, {
+                    EX: 1800,
+                });
             }
 
             res.send({ token, refreshToken, user });
         } else {
-            res.status(400).send({ error: "Invalid password" });
+            return next(BadRequestError("Invalid password"));
         }
     } catch (error) {
         console.error("Error during login:", error);
-        res.status(500).send({ error: "An error occurred during login" });
+        next(InternalServerError("An error occurred during login"));
     }
 });
 
-router.post("/api/signup", validateUserSignup, async (req, res) => {
+router.post("/api/signup", validateUserSignup, async (req, res, next) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
         const user = {
@@ -161,7 +175,7 @@ router.post("/api/signup", validateUserSignup, async (req, res) => {
         };
         const activationToken = crypto.randomBytes(32).toString("hex");
 
-        const result = await pgClient.query(
+        await pgClient.query(
             `INSERT INTO users (username, email, password, is_active) VALUES ($1, $2, $3, $4) `,
             [user.username, user.email, user.password, user.isActive]
         );
@@ -172,47 +186,54 @@ router.post("/api/signup", validateUserSignup, async (req, res) => {
         res.status(201).send({ data: "User created" });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ error: "An error creating the user" });
+        next(InternalServerError("An error occurred during signup"));
     }
 });
 
-router.post("/api/token", validateToken, async (req, res) => {
+router.post("/api/token", validateToken, async (req, res, next) => {
     const refreshToken = req.body.token;
-    if (!refreshToken) return res.sendStatus(401);
-  
-    const foundToken = await redisClient.get(refreshToken);
-    if (!foundToken) return res.sendStatus(403);
-  
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
-      if (err) return res.sendStatus(403);
-  
-      pgClient.query(`SELECT is_active FROM users WHERE username = $1`, [user.username])
-        .then(async (result) => {
-          const isActive = result.rows[0].is_active;
-          const rememberMeFlag = await redisClient.get(`${refreshToken}:rememberMe`);
-  
-          if (!isActive) {
-            return res.status(403).send({ error: "User not activated" });
-          }
-  
-          const newToken = generateAccessToken({ username: user.username });
-  
-          const expirationTime = rememberMeFlag === "true" ? 604800 : 1800; 
-          await redisClient.set(refreshToken, user.username, { EX: expirationTime });
-  
-          res.json({ token: newToken });
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).send({ error: "An error occurred" });
-        });
-    });
-  });
+    if (!refreshToken) return next(BadRequestError("No token provided"));
 
-router.post(
-    "/api/forgot-password",
-    validateForgotPassword,
-    async (req, res) => {
+    const foundToken = await redisClient.get(refreshToken);
+    if (!foundToken) return next(NotFoundError("Token not found"));
+
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
+        if (err) return next(BadRequestError("Invalid token"));
+
+        pgClient
+            .query(`SELECT is_active FROM users WHERE username = $1`, [
+                user.username,
+            ])
+            .then(async (result) => {
+                const isActive = result.rows[0].is_active;
+                const rememberMeFlag = await redisClient.get(
+                    `${refreshToken}:rememberMe`
+                );
+
+                if (!isActive) {
+                    return next(BadRequestError("User not activated"));
+                }
+
+                const newToken = generateAccessToken({
+                    username: user.username,
+                });
+
+                const expirationTime =
+                    rememberMeFlag === "true" ? 604800 : 1800;
+                await redisClient.set(refreshToken, user.username, {
+                    EX: expirationTime,
+                });
+
+                res.json({ token: newToken });
+            })
+            .catch((err) => {
+                console.error(err);
+                next(InternalServerError("An error occurred"));
+            });
+    });
+});
+
+router.post("/api/forgot-password", validateForgotPassword, async (req, res, next) => {
         const { email } = req.body;
         const result = await pgClient.query(
             `SELECT * FROM users WHERE email = $1`,
@@ -222,7 +243,7 @@ router.post(
         const user = result.rows[0];
 
         if (!user) {
-            return res.status(400).send({ error: "User not found" });
+            return next(NotFoundError("User not found"));
         }
 
         const resetToken = crypto.randomBytes(32).toString("hex");
@@ -235,16 +256,13 @@ router.post(
     }
 );
 
-router.post(
-    "/api/reset-password/:token",
-    validateResetPassword,
-    async (req, res) => {
+router.post("/api/reset-password/:token", validateResetPassword, async (req, res, next) => {
         const { token } = req.params;
         const { newPassword } = req.body;
 
         const username = await redisClient.get(token);
         if (!username) {
-            return res.status(400).send({ error: "Invalid or expired token" });
+            return next(NotFoundError("Invalid or expired token"));
         }
 
         const result = await pgClient.query(
@@ -255,7 +273,7 @@ router.post(
         const user = result.rows[0];
 
         if (!user) {
-            return res.status(400).send({ error: "User not found" });
+            return next(NotFoundError("User not found"));
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
@@ -270,30 +288,63 @@ router.post(
     }
 );
 
-router.post("/api/validate-token", async (req, res) => {
+router.post("/api/validate-token", async (req, res, next) => {
     const token = req.body.token;
 
     const validToken = await redisClient.get(token);
 
     if (!validToken) {
-        return res.status(400).send({ error: "Invalid or expired token" });
+        return next(NotFoundError("Invalid or expired token"));
     }
 
     res.send({ data: "Token is valid" });
 });
 
-router.post("/api/remember-me", async (req, res) => {
+router.post("/api/remember-me", async (req, res, next) => {
     const { refreshToken, rememberMe } = req.body;
 
     try {
         await redisClient.set(
             `${refreshToken}:rememberMe`,
-            rememberMe.toString(), { EX: 604800 }
+            rememberMe.toString(),
+            { EX: 604800 }
         );
         res.status(200).send({ data: "Remember me set" });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ error: "An error occurred" });
+        next(InternalServerError("An error occurred"));
+    }
+});
+
+router.post("/api/change-password", async (req, res, next) => {
+    const { username, currentPassword, newPassword } = req.body;
+
+    try {
+        const result = await pgClient.query(
+            `SELECT * FROM users WHERE username = $1`,
+            [username]
+        );
+
+        const user = result.rows[0];
+
+        if (!user) {
+            return next(NotFoundError("User not found"));
+        }
+
+        if (await bcrypt.compare(currentPassword, user.password)) {
+            const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+            await pgClient.query(
+                `UPDATE users SET password = $1 WHERE username = $2`,
+                [hashedPassword, username]
+            );
+
+            res.send({ data: "Password changed" });
+        } else {
+            return next(BadRequestError("Invalid password"));
+        }
+    } catch (error) {
+        console.error(error);
+        next(InternalServerError("An error occurred"));
     }
 });
 

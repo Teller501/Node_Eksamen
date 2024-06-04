@@ -5,12 +5,13 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 import authenticateToken from "../util/authenticateToken.js";
+import { BadRequestError, InternalServerError } from "../util/errors.js";
 
-router.post("/api/contact", authenticateToken, async (req, res) => {
+router.post("/api/contact", authenticateToken, async (req, res, next) => {
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
-        return res.status(400).send("Missing required fields");
+        return next(BadRequestError("Missing required fields"));
     }
 
     const emailMessage = {
@@ -26,13 +27,13 @@ router.post("/api/contact", authenticateToken, async (req, res) => {
 
         if (error) {
             console.error(error);
-            return res.status(500).send("Failed to send message");
+            return next(InternalServerError("Failed to send message"));
         }
 
         res.send({ data: "Message sent successfully" });
     } catch (error) {
         console.error(error);
-        res.status(500).send("Failed to send message");
+        next(InternalServerError("Failed to send message"));
     }
 });
 

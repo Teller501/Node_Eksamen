@@ -44,9 +44,11 @@
     import NotFound from "./pages/NotFound/NotFound.svelte";
     import Contact from "./pages/Contact/Contact.svelte";
     import About from "./pages/About/About.svelte";
+    import Terms from "./pages/Terms/Terms.svelte";
     import Reviews from "./pages/Reviews/Reviews.svelte";
     import Notifications from "./components/Notifications.svelte";
     import io from "socket.io-client";
+    import Settings from "./pages/Settings/Settings.svelte";
 
     const currentYear = new Date().getFullYear();
 
@@ -230,7 +232,7 @@
                         >
                         <DropdownItem href="/movies">Movies</DropdownItem>
                         <DropdownItem href="/reviews">Reviews</DropdownItem>
-                        <DropdownItem href="/">Settings</DropdownItem>
+                        <DropdownItem href="/settings">Settings</DropdownItem>
                         <DropdownDivider />
                         <DropdownItem href="/" on:click={handleLogout}
                             >Sign out</DropdownItem
@@ -272,9 +274,11 @@
             <PrivateRoute path="/:username" let:params>
                 <Profile {params} />
             </PrivateRoute>
+            <PrivateRoute path="/settings"><Settings /></PrivateRoute>
             <Route path="/404"><NotFound /></Route>
             <PrivateRoute path="/contact"><Contact /></PrivateRoute>
             <PrivateRoute path="/about"><About /></PrivateRoute>
+            <PrivateRoute path="/terms"><Terms /></PrivateRoute>
         </div>
     </Router>
 </main>
@@ -291,7 +295,7 @@
             ulClass="flex flex-wrap justify-center items-center mt-3 text-sm text-gray-500 dark:text-gray-400 sm:mt-0"
         >
             <FooterLink href="/about">About</FooterLink>
-            <FooterLink href="/">Privacy Policy</FooterLink>
+            <FooterLink href="/terms">Terms</FooterLink>
             <FooterLink href="/contact">Contact</FooterLink>
         </FooterLinkGroup>
     </Footer>

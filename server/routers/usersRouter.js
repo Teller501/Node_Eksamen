@@ -113,11 +113,7 @@ router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req,
     }
 });
 
-router.patch(
-    "/api/users/:id",
-    upload.single("profile_picture"),
-    authenticateToken,
-    async (req, res) => {
+router.patch("/api/users/:id", upload.single("profile_picture"), authenticateToken, async (req, res) => {
         try {
             const { full_name, birth_date, location, bio } = req.body;
 
@@ -157,5 +153,17 @@ router.patch(
         }
     }
 );
+
+router.delete("/api/users/:id", authenticateToken, async (req, res, next) => {
+    try {
+        const query = "DELETE FROM users WHERE id = $1";
+        await pgClient.query(query, [req.params.id]);
+
+        res.send("User deleted successfully");
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        next(InternalServerError("Failed to delete user"));
+    }
+});
 
 export default router;
