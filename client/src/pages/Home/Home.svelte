@@ -50,7 +50,15 @@
             `${$BASE_URL}/api/logs/recent`,
             $tokenStore
         );
-        recentLogs = data;
+        recentLogs = await Promise.all(
+            data.map(async (log) => {
+                const imgUrl = await getProfilePicture(
+                    `${$BASE_URL}/${log.profile_picture}`,
+                    blankProfilePic
+                );
+                return { ...log, imgUrl };
+            })
+        );
     }
 
     onMount(async () => {
@@ -68,23 +76,6 @@
         popularMovies = null;
         page--;
         fetchMovies();
-    }
-
-    $: {
-        if (Array.isArray(recentLogs)) {
-            recentLogs.forEach((log) => {
-                getProfilePicture(
-                    `${$BASE_URL}/${log.profile_picture}`,
-                    blankProfilePic
-                )
-                    .then((imgUrl) => {
-                        log.imgUrl = imgUrl;
-                    })
-                    .catch((error) => {
-                        console.error("Failed to load profile picture:", error);
-                    });
-            });
-        }
     }
 </script>
 
