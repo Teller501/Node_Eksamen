@@ -118,7 +118,7 @@
 <Img
     src={`https://image.tmdb.org/t/p/original${movieDetails?.backdrop_path}`}
     alt="Movie backdrop"
-    class="w-full absolute z-[-1] inset-0"
+    class="w-full absolute z-[-1] inset-0 blur-sm"
 />
 <div class="container mx-auto mt-20 text-left">
     <Card size="md">

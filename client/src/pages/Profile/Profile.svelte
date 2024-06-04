@@ -54,8 +54,6 @@
             fetchFollowers(),
             fetchFollowings(),
         ]);
-        followersCount = followersList.length;
-        followingsCount = followingsList.length;
     });
 
     onDestroy(() => {
@@ -170,11 +168,13 @@
     async function fetchFollowers() {
         const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/followers`, $tokenStore);
         followersList = data;
+        followersCount = followersList ? followersList.length : 0;
     }
 
     async function fetchFollowings() {
         const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/following`, $tokenStore);
         followingsList = data;
+        followingsCount = followingsList ? followingsList.length : 0;
     }
 </script>
 

@@ -169,19 +169,6 @@
                 >
             {/each}
         </Dropdown>
-
-        <Button class="h-8 focus-within:ring-0"
-            >Rating<ChevronDownOutline
-                class="w-4 h-4 ms-2 text-white dark:text-white"
-            /></Button
-        >
-        <Dropdown bind:open={ratingDropdownOpen}  class="w-44 z-20 bg-slate-50 rounded">
-            <DropdownItem class="bg-slate-50">1</DropdownItem>
-            <DropdownItem class="bg-slate-50">2</DropdownItem>
-            <DropdownItem class="bg-slate-50">3</DropdownItem>
-            <DropdownItem class="bg-slate-50">4</DropdownItem>
-            <DropdownItem class="bg-slate-50">5</DropdownItem>
-        </Dropdown>
     </div>
 </div>
 

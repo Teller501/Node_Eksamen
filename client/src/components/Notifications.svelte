@@ -46,6 +46,7 @@
         {#if notification.activityType === "follow"}
             <DropdownItem
                 on:click={() => markNotificationAsRead(notification._id)}
+                href={`/${notification.follower.username}`}
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar

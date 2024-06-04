@@ -4,7 +4,6 @@
     import { BASE_URL } from "../stores/generalStore.js";
     import blankProfilePic from "../assets/blank-profile-pic.png";
     import { getProfilePicture } from "../util/profilePicture.js";
-    import { get } from "svelte/store";
 
     export let followers;
     export let followersCount;
