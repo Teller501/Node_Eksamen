@@ -16,6 +16,8 @@
         Accordion,
         Img,
         Spinner,
+        ImagePlaceholder,
+        Skeleton,
     } from "flowbite-svelte";
     import { ClockOutline, EyeOutline } from "flowbite-svelte-icons";
     import Reviews from "../../components/Reviews.svelte";
@@ -115,69 +117,80 @@
 
 <Img
     src={`https://image.tmdb.org/t/p/original${movieDetails?.backdrop_path}`}
-    alt="Movie poster"
+    alt="Movie backdrop"
     class="w-full absolute z-[-1] inset-0"
 />
 <div class="container mx-auto mt-20 text-left">
     <Card size="md">
-        <Img
-            src={`https://image.tmdb.org/t/p/original${movieDetails?.poster_path}`}
-            alt="Movie picture"
-            class="rounded-sm mx-2 w-2/5"
-            aria-hidden="true"
-        />
-        <h5
-            class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
-        >
-            {movieDetails?.title} <span class="text-gray-600 font-light text-lg">{movieDetails?.original_title !== movieDetails?.title ? `(${movieDetails?.original_title})` : ""}</span>
-        </h5>
-        <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
-            {movieDetails?.release_date} - {movieDetails?.runtime} minutes
-        </p>
-        <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
-            {movieDetails?.genres}
-        </p>
-        <hr class="my-4 border-gray-200 dark:border-gray-700" />
-        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
-            {movieDetails?.overview}
-        </p>
-        <Rating count rating={movieDetails?.vote_average}>
-            <span class="font-normal text-black">/10</span>
-            <span
-                class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"
-            />
-            <p class="text-sm font-medium text-gray-900 dark:text-white mr-2">
-                out of {movieDetails?.vote_count} ratings
-            </p>
+        {#if movieDetails}
             <Img
-                src={tmdbLogo}
-                alt="TMDB logo"
-                class="w-6 h-6 border rounded p-1 shadow"
+                src={`https://image.tmdb.org/t/p/original${movieDetails?.poster_path}`}
+                alt="Movie poster"
+                class="w-48 h-72 rounded shadow-lg"
             />
-        </Rating>
-
-        <Rating count rating={movieStats?.average_rating ?? 0}>
-            <span class="font-normal text-black">/5</span>
-            <span
-                class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"
-            />
-            <p class="text-sm font-medium text-gray-900 dark:text-white mr-2">
-                out of {movieStats?.total_ratings !== null ? movieStats?.total_ratings : 0} ratings
+            <h5
+                class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
+            >
+                {movieDetails?.title} <span class="text-gray-600 font-light text-lg">{movieDetails?.original_title !== movieDetails?.title ? `(${movieDetails?.original_title})` : ""}</span>
+            </h5>
+            <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
+                {movieDetails?.release_date} - {movieDetails?.runtime} minutes
             </p>
-            <Img src={cinematchLogo} alt="Cinematch logo" class="w-6 h-6" />
-        </Rating>
-
-        <p class="text-gray-700 inline-flex items-center">
-            {movieStats?.total_logs}
-            <EyeOutline />
-        </p>
-
-        <p class="text-gray-700 inline-flex items-center">
-            {movieStats?.total_watchlist_users}
-            <ClockOutline />
-        </p>
-
-        <hr class="my-4 border-gray-200 dark:border-gray-700" />
+            <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
+                {movieDetails?.genres}
+            </p>
+            <hr class="my-4 border-gray-200 dark:border-gray-700" />
+            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+                {movieDetails?.overview}
+            </p>
+            <Rating count rating={movieDetails?.vote_average}>
+                <span class="font-normal text-black">/10</span>
+                <span
+                    class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"
+                />
+                <p class="text-sm font-medium text-gray-900 dark:text-white mr-2">
+                    out of {movieDetails?.vote_count} ratings
+                </p>
+                <Img
+                    src={tmdbLogo}
+                    alt="TMDB logo"
+                    class="w-6 h-6 border rounded p-1 shadow"
+                />
+            </Rating>
+    
+            <Rating count rating={movieStats?.average_rating ?? 0}>
+                <span class="font-normal text-black">/5</span>
+                <span
+                    class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"
+                />
+                <p class="text-sm font-medium text-gray-900 dark:text-white mr-2">
+                    out of {movieStats?.total_ratings !== null ? movieStats?.total_ratings : 0} ratings
+                </p>
+                <Img src={cinematchLogo} alt="Cinematch logo" class="w-6 h-6" />
+            </Rating>
+    
+            <p class="text-gray-700 inline-flex items-center">
+                {movieStats?.total_logs}
+                <EyeOutline />
+            </p>
+    
+            <p class="text-gray-700 inline-flex items-center">
+                {movieStats?.total_watchlist_users}
+                <ClockOutline />
+            </p>
+    
+            <hr class="my-4 border-gray-200 dark:border-gray-700" />
+        {:else}
+            <ImagePlaceholder
+                imgOnly
+                imgHeight="72"
+                class="w-48 h-72 rounded shadow-lg"
+            />
+            <Skeleton size="md" class="my-8" />
+            <hr class="my-4 border-gray-200 dark:border-gray-700" />
+            <Skeleton size="md" class="my-8" />
+            <hr class="my-4 border-gray-200 dark:border-gray-700" />
+        {/if}
 
         <div class="justify-center flex items-center">
             <LogMovie

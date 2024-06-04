@@ -9,6 +9,7 @@
         Avatar,
         SpeedDial,
         A,
+        Skeleton
     } from "flowbite-svelte";
     import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
     import { tokenStore, userStore } from "../../stores/authStore";
@@ -25,7 +26,7 @@
 
     const user = $userStore;
     const profilePictureUrl = `${$BASE_URL}/${user.profile_picture}`;
-    const avatarUrl = getProfilePicture(profilePictureUrl);
+    const avatarUrl = getProfilePicture(profilePictureUrl, blankProfilePic);
 
 
     const socket = io($SOCKET_URL);
@@ -160,6 +161,12 @@
                             {log.review}
                         </p>
                     </div>
+                </div>
+            {/each}
+        {:else}
+            {#each Array(4).fill() as _}
+                <div class="w-full">
+                    <Skeleton size="sm" />
                 </div>
             {/each}
         {/if}

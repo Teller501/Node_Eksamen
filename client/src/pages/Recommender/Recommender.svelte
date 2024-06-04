@@ -1,4 +1,5 @@
 <script>
+    import { Card, ImagePlaceholder, Skeleton, TextPlaceholder } from "flowbite-svelte";
     import Recommendation from "../../components/Recommendation.svelte";
     import { fetchGet, fetchPost } from "../../util/api";
     import { BASE_URL } from "../../stores/generalStore";
@@ -12,6 +13,7 @@
     let isOnWatchlist = false;
 
     async function getRecommendationMovie() {
+        movie = null;
         const { data } = await fetchGet(
             `${$BASE_URL}/api/movies/recommender?page=${page}`,
             $tokenStore
@@ -46,7 +48,7 @@
         const payload = {
             user_id: $recommendationStore.user_id,
             user_ratings: $recommendationStore.user_ratings,
-        };
+    };
 
         const { status } = await fetchPost(
             `${$BASE_URL}/api/recommendations`,
@@ -109,5 +111,12 @@
             onAddToWatchlist={handleAddToWatchlist}
             {isOnWatchlist}
         />
+    {:else}
+        <Card size="sm">
+            <div class="flex flex-col items-center">
+                <ImagePlaceholder imgOnly class="w-36"/>
+                <TextPlaceholder size="md" class="mt-8" />
+            </div>
+        </Card>
     {/if}
 </div>

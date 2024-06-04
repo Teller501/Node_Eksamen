@@ -52,4 +52,4 @@
             {/if}
         </div>
     </div>
-    </Card>
+</Card>
