@@ -3,28 +3,11 @@
     import { MapPinSolid } from "flowbite-svelte-icons";
     import { BASE_URL } from "../stores/generalStore.js";
     import blankProfilePic from "../assets/blank-profile-pic.png";
-    import { getProfilePicture } from "../util/profilePicture.js";
 
     export let followers;
     export let followersCount;
 
     let followersModal = false;
-
-    $: {
-        if (Array.isArray(followers)) {
-            followers.forEach(async (follower) => {
-                try {
-                    const imgUrl = await getProfilePicture(
-                        `${$BASE_URL}/${follower.profile_picture}`,
-                        blankProfilePic
-                    );
-                    follower.imgUrl = imgUrl;
-                } catch (error) {
-                    console.error("Failed to load profile picture:", error);
-                }
-            });
-        }
-    }
 </script>
 
 <span>
@@ -52,7 +35,7 @@
                 >
                     <div class="flex items-center">
                         <Avatar
-                            src={follower.imgUrl}
+                            src={follower.profile_picture? `${$BASE_URL}/${follower.profile_picture}` : blankProfilePic}
                             alt="Profile Picture"
                             class="w-12 h-12"
                             border

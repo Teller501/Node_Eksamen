@@ -6,7 +6,6 @@
     import { listsStore } from "../../stores/listsStore";
     import Movie from "../../components/Movie.svelte";
     import { fetchGet } from "../../util/api";
-    import { getProfilePicture } from "../../util/profilePicture.js";
     import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     export let params;
@@ -47,18 +46,6 @@
     onMount(() => {
         getSearchResults();
     });
-
-    $: searchResults.forEach((result) => {
-        if (result.profile_picture) {
-            getProfilePicture(`${$BASE_URL}/${result.profile_picture}`, blankProfilePic)
-                .then((imgUrl) => {
-                    result.profile_picture = imgUrl;
-                })
-                .catch((error) => {
-                    console.error("Failed to load profile picture:", error);
-                });
-        }
-    });
 </script>
 
 <div class="w-full min-w-full p-4 bg-white shadow-md rounded-lg">
@@ -88,7 +75,7 @@
                 {#each searchResults as user, index}
                     <div class="flex flex-row items-center p-4 {index % 2 === 1 ? 'bg-slate-200' : 'bg-slate-50'} rounded-lg shadow-sm w-full">
                         <Avatar
-                            src={user.profile_picture}
+                            src={user.profile_picture? `${BASE_URL}/${user.profile_picture}` : blankProfilePic}
                             alt={user.username}
                             class="w-12 h-12 rounded-full"
                             href={`/${user.username}`}

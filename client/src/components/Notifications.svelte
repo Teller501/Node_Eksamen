@@ -6,7 +6,6 @@
     import { fetchPost } from "../util/api.js";
     import { formatDistanceToNow } from "date-fns";
     import blankProfilePic from "../assets/blank-profile-pic.png";
-    import { getProfilePicture } from "../util/profilePicture.js";
 
     let notifications = [];
 
@@ -40,15 +39,6 @@
         return formatDistanceToNow(new Date(date), { addSuffix: true });
     }
 
-    $: notifications.forEach((notification) => {
-        getProfilePicture(`${$BASE_URL}/${notification.profile_picture}`, blankProfilePic)
-            .then(imgUrl => {
-                notification.imgUrl = imgUrl;
-            })
-            .catch(error => {
-                console.error("Failed to load profile picture:", error);
-            });
-    });
 </script>
 
 {#if notifications.length > 0}
@@ -60,7 +50,7 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={notification.imgUrl}
+                    src={notification.follower.profile_picture? `${$BASE_URL}/${notification.follower.profile_picture}` : blankProfilePic}
                     alt="Profile Picture"
                     class="w-8 h-8"
                     border
@@ -88,7 +78,7 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={notification.imgUrl}
+                    src={notification.liker.profile_picture? `${$BASE_URL}/${notification.liker.profile_picture}` : blankProfilePic}
                     alt="Profile Picture"
                     class="w-8 h-8"
                     border

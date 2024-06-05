@@ -13,7 +13,6 @@
     import { favoritesStore } from "../../stores/favoritesStore.js";
     import { activeTab } from "../../stores/tabStore.js";
     import { fetchGet } from "../../util/api.js";
-    import { getProfilePicture } from "../../util/profilePicture.js";
     import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     export let params;
@@ -56,7 +55,7 @@
             fetchFollowings(),
         ]);
 
-        profilePicturePath = await getProfilePicture(`${$BASE_URL}/${user.profile_picture}`, blankProfilePic)
+        profilePicturePath = user.profile_picture? `${$BASE_URL}/${user.profile_picture}` : blankProfilePic;
     });
 
     onDestroy(() => {

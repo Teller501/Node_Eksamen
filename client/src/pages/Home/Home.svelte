@@ -17,7 +17,6 @@
     import ActivityList from "../../components/ActivityList.svelte";
     import SearchModal from "../../components/SearchModal.svelte";
     import { fetchGet } from "../../util/api";
-    import { getProfilePicture } from "../../util/profilePicture.js";
     import blankProfilePic from "../../assets/blank-profile-pic.png";
 
     let popularMovies = null;
@@ -50,15 +49,7 @@
             `${$BASE_URL}/api/logs/recent`,
             $tokenStore
         );
-        recentLogs = await Promise.all(
-            data.map(async (log) => {
-                const imgUrl = await getProfilePicture(
-                    `${$BASE_URL}/${log.profile_picture}`,
-                    blankProfilePic
-                );
-                return { ...log, imgUrl };
-            })
-        );
+        recentLogs = data;
     }
 
     onMount(async () => {
@@ -147,7 +138,7 @@
                                 {log.username}
                             </A>
                             <Avatar
-                                src={log.imgUrl}
+                                src={log.profile_picture? `${$BASE_URL}/${log.profile_picture}` : blankProfilePic}
                                 href={`/${log.username}`}
                                 alt="Profile Picture"
                                 class="w-4 h-4"

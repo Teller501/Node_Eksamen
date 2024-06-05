@@ -6,7 +6,6 @@
     import Movie from "./Movie.svelte";
     import { fetchGet, fetchPost, fetchDelete } from "../util/api.js";
     import blankProfilePic from "../assets/blank-profile-pic.png";
-    import { getProfilePicture } from "../util/profilePicture.js";
 
     export let reviews;
     export let showMoviePoster = true;
@@ -67,16 +66,6 @@
             });
         }
     }
-
-    $: reviews.forEach((review) => {
-        getProfilePicture(`${$BASE_URL}/${review.profile_picture}`, blankProfilePic)
-            .then((imgUrl) => {
-                review.profile_picture = imgUrl;
-            })
-            .catch((error) => {
-                console.error("Failed to load profile picture:", error);
-            });
-    });
 </script>
 
 <h2 class="text-2xl font-bold text-slate-900">Recent Reviews</h2>
@@ -115,7 +104,8 @@
                             <div class="flex items-center">
                                 {#if showUserAvatar}
                                     <Avatar
-                                        src={review.profile_picture}
+                                        src={review.profile_picture? `${BASE_URL}/${review.profile_picture}` : blankProfilePic}
+                                        alt="Profile Picture"
                                         href={`/${review.username}`}
                                         size="xs"
                                         class="mr-2 h-8 w-8"
