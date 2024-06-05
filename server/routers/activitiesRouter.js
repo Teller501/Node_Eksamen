@@ -5,8 +5,9 @@ import mongoClient from "../database/mongoDBConnection.js";
 const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
+import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
 
-router.get("/api/activities/recent", authenticateToken, async (req, res) => {
+router.get("/api/activities/recent", authenticateToken, async (req, res, next) => {
     try {
         const activities = await mongoClient.activities
             .find()
@@ -20,11 +21,11 @@ router.get("/api/activities/recent", authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error("Error getting recent activities:", error);
-        res.status(500).send("Failed to get recent activities");
+        next(InternalServerError("Failed to get recent activities"));
     }
 });
 
-router.get("/api/activities/unread/:user_id", authenticateToken, async (req, res) => {
+router.get("/api/activities/unread/:user_id", authenticateToken, async (req, res, next) => {
         const userId = req.params.user_id;
 
         try {
@@ -34,12 +35,12 @@ router.get("/api/activities/unread/:user_id", authenticateToken, async (req, res
             res.json({ data: notifications });
         } catch (error) {
             console.error("Error fetching unread notifications:", error);
-            res.status(500).send("Failed to fetch unread notifications");
+            next(InternalServerError("Failed to fetch unread notifications"));
         }
     }
 );
 
-router.post("/api/activities/read", authenticateToken, async (req, res) => {
+router.post("/api/activities/read", authenticateToken, async (req, res, next) => {
     const { userId, activityId } = req.body;
 
     try {
@@ -51,7 +52,7 @@ router.post("/api/activities/read", authenticateToken, async (req, res) => {
         res.send({ data: updatedNotification });
     } catch (error) {
         console.error("Error marking activity as read:", error);
-        res.status(500).send("Failed to mark activity as read");
+        next(InternalServerError("Failed to mark activity as read"));
     }
 });
 

@@ -2,7 +2,7 @@ import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
+import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
 
 const router = Router();
 
@@ -37,7 +37,7 @@ const upload = multer({
 
 import authenticateToken from "../util/authenticateToken.js";
 
-router.get("/api/users", authenticateToken, async (req, res) => {
+router.get("/api/users", authenticateToken, async (req, res, next) => {
     try {
         const query = "SELECT * FROM users";
         const result = await pgClient.query(query);
@@ -47,14 +47,14 @@ router.get("/api/users", authenticateToken, async (req, res) => {
         res.json({ data: users });
     } catch (error) {
         console.error("Error getting users:", error);
-        res.status(500).send("Failed to get users");
+        next(InternalServerError("Failed to get users"));
     }
 });
 
-router.get("/api/users/search", authenticateToken, async (req, res) => {
+router.get("/api/users/search", authenticateToken, async (req, res, next) => {
     const q = req.query.q;
     if (!q) {
-        return res.status(400).send("Missing query parameter 'q'");
+        return next(BadRequestError("Query parameter 'q' is required"));
     }
 
     try {
@@ -65,28 +65,28 @@ router.get("/api/users/search", authenticateToken, async (req, res) => {
         res.json({ data: users });
     } catch (error) {
         console.error("Error searching users:", error);
-        res.status(500).send("Failed to search users");
+        next(InternalServerError("Failed to search users"));
     }
 });
 
-router.get("/api/users/:id([0-9]+)", authenticateToken, async (req, res) => {
+router.get("/api/users/:id([0-9]+)", authenticateToken, async (req, res, next) => {
     try {
         const query = "SELECT * FROM users WHERE id = $1";
         const result = await pgClient.query(query, [req.params.id]);
         const user = result.rows[0];
 
         if (!user) {
-            return res.status(404).send({ error: "User not found" });
+            return next(NotFoundError("User not found"));
         }
 
         res.json({ data: user });
     } catch (error) {
         console.error("Error getting user:", error);
-        res.status(500).send({ error: "Failed to get user" });
+        next(InternalServerError("Failed to get user"));
     }
 });
 
-router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req, res) => {
+router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req, res, next) => {
     try {
         const username = req.params.username;
 
@@ -103,17 +103,80 @@ router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req,
         const user = result.rows[0];
 
         if (!user) {
-            return res.status(404).send({ error: "User not found" });
+            return next(NotFoundError("User not found"));
         }
 
         res.json({ data: user });
     } catch (error) {
         console.error("Error getting user:", error);
-        res.status(500).send({ error: "Failed to get user" });
+        next(InternalServerError("Failed to get user"));
     }
 });
 
-router.patch("/api/users/:id", upload.single("profile_picture"), authenticateToken, async (req, res) => {
+router.get('/api/users/:userId/statistics', authenticateToken, async (req, res, next) => {
+    const userId = req.params.userId;
+    try {
+        const totalMoviesWatchedRes = await pgClient.query('SELECT COUNT(*) FROM watch_logs WHERE user_id = $1', [userId]);
+        const totalMoviesWatched = totalMoviesWatchedRes.rows[0].count;
+
+        const currentYear = new Date().getFullYear();
+        const moviesWatchedThisYearRes = await pgClient.query('SELECT COUNT(*) FROM watch_logs WHERE user_id = $1 AND EXTRACT(YEAR FROM watched_on) = $2', [userId, currentYear]);
+        const moviesWatchedThisYear = moviesWatchedThisYearRes.rows[0].count;
+
+        const mostMoviesInAMonthRes = await pgClient.query(`
+            SELECT EXTRACT(MONTH FROM watched_on) AS month, EXTRACT(YEAR FROM watched_on) AS year, COUNT(*)
+            FROM watch_logs
+            WHERE user_id = $1
+            GROUP BY month, year
+            ORDER BY COUNT DESC
+            LIMIT 1`, [userId]);
+        const mostMoviesInAMonth = mostMoviesInAMonthRes.rows[0];
+
+        const mostMoviesInADayRes = await pgClient.query(`
+            SELECT watched_on, COUNT(*)
+            FROM watch_logs
+            WHERE user_id = $1
+            GROUP BY watched_on
+            ORDER BY COUNT DESC
+            LIMIT 1`, [userId]);
+        const mostMoviesInADay = mostMoviesInADayRes.rows[0];
+
+        const averageRatingRes = await pgClient.query(`
+            SELECT AVG(rating) AS average_rating
+            FROM watch_logs
+            WHERE user_id = $1 AND rating IS NOT NULL`, [userId]);
+        const averageRating = averageRatingRes.rows[0].average_rating;
+
+        const mostWatchedGenreRes = await pgClient.query(`
+            SELECT genres.name, COUNT(*) AS count
+            FROM watch_logs
+            JOIN movies ON watch_logs.movie_id = movies.id
+            JOIN movie_genres ON movies.id = movie_genres.movie_id
+            JOIN genres ON movie_genres.genre_id = genres.id
+            WHERE watch_logs.user_id = $1
+            GROUP BY genres.name
+            ORDER BY COUNT DESC
+            LIMIT 1`, [userId]);
+        const mostWatchedGenre = mostWatchedGenreRes.rows[0];
+
+        const response = {
+            total_movies_watched: totalMoviesWatched,
+            movies_watched_this_year: moviesWatchedThisYear,
+            most_movies_in_a_month: `${mostMoviesInAMonth.count} (${mostMoviesInAMonth.month}/${mostMoviesInAMonth.year})`,
+            most_movies_in_a_day: `${mostMoviesInADay.count} (${mostMoviesInADay.watched_on.toISOString().split('T')[0]})`,
+            average_rating: averageRating ? parseFloat(averageRating).toFixed(2) : null,
+            most_watched_genre: mostWatchedGenre ? mostWatchedGenre.name : 'N/A'
+        }
+
+        res.json({ data: response });
+    } catch (error) {
+        console.error('Error fetching user statistics:', error);
+        next(InternalServerError('Failed to fetch user statistics'));
+    }
+});
+
+
+router.patch("/api/users/:id", upload.single("profile_picture"), authenticateToken, async (req, res, next) => {
         try {
             const { full_name, birth_date, location, bio } = req.body;
 
@@ -143,13 +206,13 @@ router.patch("/api/users/:id", upload.single("profile_picture"), authenticateTok
             const result = await pgClient.query(selectQuery, [req.params.id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).send("User not found");
+                return next(NotFoundError("User not found"));
             }
 
             res.json({ data: result.rows[0] });
         } catch (error) {
             console.error("Error updating user:", error);
-            res.status(500).send("Failed to update user");
+            next(InternalServerError("Failed to update user"));
         }
     }
 );

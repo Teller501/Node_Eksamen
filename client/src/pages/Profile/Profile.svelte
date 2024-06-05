@@ -33,6 +33,7 @@
     let isOwner = false;
     let following = false;
     let profilePicturePath;
+    let stats;
 
     $: isOwner = username === $userStore.username;
 
@@ -53,6 +54,7 @@
             checkIfFollowing(),
             fetchFollowers(),
             fetchFollowings(),
+            fetchStats(),
         ]);
 
         profilePicturePath = user.profile_picture? `${$BASE_URL}/${user.profile_picture}` : blankProfilePic;
@@ -178,6 +180,12 @@
         followingsList = data;
         followingsCount = followingsList ? followingsList.length : 0;
     }
+
+    async function fetchStats() {
+        const { data } = await fetchGet(`${$BASE_URL}/api/users/${user.id}/statistics`, $tokenStore);
+
+        stats = data;
+    }
 </script>
 
 <ProfileHeader
@@ -207,6 +215,7 @@
                 {user}
                 {isOwner}
                 {watchList}
+                {stats}
             />
         </TabItem>
         <TabItem
