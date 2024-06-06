@@ -67,8 +67,8 @@ async function insertMovieToMySQL(movieData) {
         const movie = movieData;
 
         await pgClient.query(
-            `INSERT INTO movies (id, title, original_title, overview, backdrop_path, release_date, original_language, runtime, budget, revenue, status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            `INSERT INTO movies (id, title, original_title, overview, backdrop_path, release_date, original_language, runtime, budget, revenue, status, popularity)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             ON CONFLICT (id) DO UPDATE SET
             title = EXCLUDED.title,
             original_title = EXCLUDED.original_title,
@@ -92,6 +92,7 @@ async function insertMovieToMySQL(movieData) {
                 movie.budget,
                 movie.revenue,
                 movie.status,
+                movie.popularity
             ]
         );
 
@@ -123,7 +124,6 @@ async function insertMovieToMongoDB(movieData, cast) {
             $set: {
                 title: movieData.title,
                 cast: cast,
-                popularity: movieData.popularity,
                 voteAverage: movieData.vote_average,
                 voteCount: movieData.vote_count,
                 posterPath: movieData.poster_path,

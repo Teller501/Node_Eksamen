@@ -11,7 +11,7 @@ export async function getAllMovies(
 ) {
     try {
         let query = `
-            SELECT movies.id, movies.title, movies.overview, array_agg(genres.name) AS genres
+            SELECT movies.id, movies.title, movies.popularity, movies.overview, array_agg(genres.name) AS genres
             FROM movies
             INNER JOIN movie_genres ON movies.id = movie_genres.movie_id
             INNER JOIN genres ON movie_genres.genre_id = genres.id
@@ -28,8 +28,8 @@ export async function getAllMovies(
         }
 
         if (genreFilter) {
-            query += ` WHERE genres.name = $1`;
-            params.unshift(genreFilter);
+            conditions.push(`genres.name = $${conditions.length + 1}`);
+            params.push(genreFilter);
         }
 
         if (conditions.length > 0) {
@@ -38,50 +38,58 @@ export async function getAllMovies(
 
         query += ` GROUP BY movies.id`;
 
-        const [pgMovies, mongoMovies] = await Promise.all([
-            pgClient.query(query, params),
-            mongoClient.movies.find({}, { projection: { cast: 0 } }).toArray(),
-        ]);
+        if (sortByPopularity) {
+            query += ` ORDER BY movies.popularity DESC`;
+        }
+
+        const offset = (page - 1) * limit;
+        query += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+        params.push(limit, offset);
+
+        const pgMovies = await pgClient.query(query, params);
 
         const pgMoviesData = pgMovies.rows;
+        const movieIds = pgMoviesData.map(movie => Number(movie.id));
+
+        const mongoMovies = await mongoClient.movies.find(
+            { id: { $in: movieIds } },
+            { projection: { id: 1, posterPath: 1 } }
+        ).toArray();
+
         const mongoMap = mongoMovies.reduce((acc, movie) => {
-            acc[movie.id.toString()] = movie;
+            acc[movie.id] = movie;
             return acc;
         }, {});
 
         let mergedMovies = pgMoviesData.map((pgMovie) => {
-            const mongoMovie = mongoMap[pgMovie.id.toString()];
+            const mongoMovie = mongoMap[pgMovie.id];
             return {
                 ...pgMovie,
-                popularity: mongoMovie?.popularity ?? 0,
-                vote_average: mongoMovie?.voteAverage ?? 0,
-                vote_count: mongoMovie?.voteCount ?? 0,
-                cast: mongoMovie?.cast ?? [],
                 poster_path: mongoMovie?.posterPath ?? "",
             };
         });
 
-        if (sortByPopularity) {
-            mergedMovies.sort((a, b) => b.popularity - a.popularity);
-        }
-
         if (tmdbIdSet) {
             mergedMovies = mergedMovies.filter((movie) =>
-                tmdbIdSet.has(movie.id.toString())
+                tmdbIdSet.has(movie.id)
             );
         }
 
-        const totalMovies = mergedMovies.length;
-        const totalPages = Math.ceil(totalMovies / limit);
+        const totalMovies = await pgClient.query(`
+            SELECT COUNT(DISTINCT movies.id) AS count
+            FROM movies
+            INNER JOIN movie_genres ON movies.id = movie_genres.movie_id
+            INNER JOIN genres ON movie_genres.genre_id = genres.id
+            ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ''}
+        `, params.slice(0, params.length - 2));
+
+        const totalPages = Math.ceil(totalMovies.rows[0].count / limit);
 
         const hasNextPage = page < totalPages;
         const hasPreviousPage = page > 1;
 
-        const offset = (page - 1) * limit;
-        const paginatedMovies = mergedMovies.slice(offset, offset + limit);
-
         return {
-            data: paginatedMovies,
+            data: mergedMovies,
             pagination: {
                 current_page: page,
                 total_pages: totalPages,

@@ -27,6 +27,26 @@ const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const saltRounds = 14;
 
+import cron from "node-cron";
+cron.schedule('0 * * * *', async () => {
+    try {
+        const result = await pgClient.query(`
+            DELETE FROM users 
+            WHERE is_active = FALSE 
+            AND created_at < NOW() - INTERVAL '30 minutes'
+            RETURNING username
+        `);
+
+        const deletedUsers = result.rows;
+
+        deletedUsers.forEach(async (user) => {
+            await redisClient.del(user.username);
+        });
+    } catch (error) {
+        console.error("Error deleting inactive users:", error);
+    }
+})
+
 function generateAccessToken(user, rememberMe = false) {
     return jwt.sign(user, process.env.JWT_SECRET, {
         expiresIn: rememberMe ? "7d" : "30m",

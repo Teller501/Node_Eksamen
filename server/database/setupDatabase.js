@@ -28,7 +28,8 @@ const isDeleteMode = process.argv.includes("delete");
             birth_date DATE,
             location TEXT,
             bio TEXT,
-            profile_picture TEXT
+            profile_picture TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
 
         await pgClient.query(`
@@ -43,7 +44,8 @@ const isDeleteMode = process.argv.includes("delete");
                 runtime INT,
                 budget BIGINT,
                 revenue BIGINT,
-                status VARCHAR(50)
+                status VARCHAR(50),
+                popularity FLOAT
             );
         `);
 
@@ -133,6 +135,15 @@ const isDeleteMode = process.argv.includes("delete");
             FOREIGN KEY (list_id) REFERENCES user_movie_lists(id),
             FOREIGN KEY (movie_id) REFERENCES movies(id)
         )`);
+
+        // Adding constraints with ON DELETE CASCADE
+        await pgClient.query(`
+            ALTER TABLE user_follows DROP CONSTRAINT IF EXISTS user_follows_followed_id_fkey;
+            ALTER TABLE user_follows ADD CONSTRAINT user_follows_followed_id_fkey FOREIGN KEY (followed_id) REFERENCES users (id) ON DELETE CASCADE;
+
+            ALTER TABLE user_follows DROP CONSTRAINT IF EXISTS user_follows_follower_id_fkey;
+            ALTER TABLE user_follows ADD CONSTRAINT user_follows_follower_id_fkey FOREIGN KEY (follower_id) REFERENCES users (id) ON DELETE CASCADE;
+        `);
 
         if (isDeleteMode) {
             await pgClient.query(`INSERT INTO users (username, password, email, is_active)
