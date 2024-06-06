@@ -42,8 +42,16 @@
     }
     
     function highlightClass(userValue, comparingValue) {
-        return userValue > comparingValue ? 'font-bold' : (userValue < comparingValue ? 'font-light' : '');
+        const userStringValue = typeof userValue === 'string'? userValue : String(userValue);
+        const comparingStringValue = typeof comparingValue === 'string'? comparingValue : String(comparingValue);
+
+        const userNumericPart = parseInt(userStringValue.replace(/\D/g, ''), 10);
+        const comparingNumericPart = parseInt(comparingStringValue.replace(/\D/g, ''), 10);
+
+        return userNumericPart > comparingNumericPart? 'font-bold' : (userNumericPart < comparingNumericPart? 'font-light' : '');
     }
+
+
 </script>
 
 <Button class="h-8 w-18 absolute right-0" on:click={() => (compareModal = true)}>Compare</Button>
@@ -68,10 +76,10 @@
                             <span class={highlightClass(userStats.movies_watched_this_year, comparingStats?.movies_watched_this_year)}>Movies watched this year: {userStats.movies_watched_this_year}</span>
                         </Li>
                         <Li class="text-slate-950 font-light">
-                            <span class={highlightClass(userStats.most_movies_in_a_month, comparingStats?.most_movies_in_a_month)}>Most movies in a month: {userStats.most_movies_in_a_month}</span>
+                            <span class={highlightClass(userStats.most_movies_in_a_month.split(" "), comparingStats?.most_movies_in_a_month.split(" "))}>Most movies in a month: {userStats.most_movies_in_a_month}</span>
                         </Li>
                         <Li class="text-slate-950 font-light">
-                            <span class={highlightClass(userStats.most_movies_in_a_day, comparingStats?.most_movies_in_a_day)}>Most movies in a day: {userStats.most_movies_in_a_day}</span>
+                            <span class={highlightClass(userStats.most_movies_in_a_day.split(" "), comparingStats?.most_movies_in_a_day.split(" "))}>Most movies in a day: {userStats.most_movies_in_a_day}</span>
                         </Li>
                         <Li class="text-slate-950 flex items-center font-light">
                             <span class={highlightClass(userStats.average_rating, comparingStats?.average_rating)}>Average rating: {userStats.average_rating}</span>
@@ -92,10 +100,10 @@
                             <span class={highlightClass(comparingStats.movies_watched_this_year, userStats?.movies_watched_this_year)}>Movies watched this year: {comparingStats.movies_watched_this_year}</span>
                         </Li>
                         <Li class="text-slate-950 font-light">
-                            <span class={highlightClass(comparingStats.most_movies_in_a_month, userStats?.most_movies_in_a_month)}>Most movies in a month: {comparingStats.most_movies_in_a_month}</span>
+                            <span class={highlightClass(comparingStats.most_movies_in_a_month.split(" "), userStats?.most_movies_in_a_month.split(" "))}>Most movies in a month: {comparingStats.most_movies_in_a_month}</span>
                         </Li>
                         <Li class="text-slate-950 font-light">
-                            <span class={highlightClass(comparingStats.most_movies_in_a_day, userStats?.most_movies_in_a_day)}>Most movies in a day: {comparingStats.most_movies_in_a_day}</span>
+                            <span class={highlightClass(comparingStats.most_movies_in_a_day.split(" "), userStats?.most_movies_in_a_day.split(" "))}>Most movies in a day: {comparingStats.most_movies_in_a_day}</span>
                         </Li>
                         <Li class="text-slate-950 flex items-center font-light">
                             <span class={highlightClass(comparingStats.average_rating, userStats?.average_rating)}>Average rating: {comparingStats.average_rating}</span>
