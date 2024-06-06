@@ -5,6 +5,7 @@
     import { fetchGet } from "../util/api.js";
     import { tokenStore } from "../stores/authStore";
     import { BASE_URL } from "../stores/generalStore";
+    import blankProfilePic from "../assets/blank-profile-pic.png";
 
     export let user;
     export let isOwner;
@@ -114,7 +115,9 @@
                         class="bg-slate-200 rounded-none"
                         on:click={() => handleSelectFollowing(following)}
                     >
-                        <Avatar src={following.profile_picture} alt={following.username} size="sm" />
+                        <Avatar 
+                        src={following.profile_picture? `${$BASE_URL}/${following.profile_picture}` : blankProfilePic}
+                        alt={following.username} size="sm" />
                         <span>{following.username}</span>
                     </ListgroupItem>
                 {/each}

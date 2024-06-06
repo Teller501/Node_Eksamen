@@ -36,7 +36,7 @@
                 >
                     <div class="flex items-center">
                         <Avatar
-                            src={following.profile_picture? `${BASE_URL}/${following.profile_picture}` : blankProfilePic}
+                            src={following.profile_picture? `${$BASE_URL}/${following.profile_picture}` : blankProfilePic}
                             alt="Profile Picture"
                             class="w-12 h-12"
                             border
