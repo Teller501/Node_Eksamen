@@ -166,28 +166,22 @@ router.get("/api/movies/:id/similar", authenticateToken, async (req, res, next) 
             FROM movies
             LEFT JOIN movie_genres ON movies.id = movie_genres.movie_id
             LEFT JOIN genres ON movie_genres.genre_id = genres.id
-            WHERE movies.id != $2
+            WHERE movies.id != $1
             AND movies.release_date > '1980-01-01'
             GROUP BY movies.id
-            HAVING array_agg(genres.name) @> $1::text[]
-            AND array_agg(genres.name) <@ $1::text[]`,
-            [genres, req.params.id]
+            HAVING array_agg(genres.name)::text[] @> $2::text[]
+            AND array_agg(genres.name)::text[] <@ $2::text[]`,
+            [req.params.id, genres]
         );
+
         const similarMovies = similarMoviesResult.rows;
 
-        let filteredSimilarMovies = similarMovies.filter(
-            (movie) => movie.poster_path
-        );
-
-        let shuffledSimilarMovies = filteredSimilarMovies
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 8);
-
-        res.json({ data: shuffledSimilarMovies });
+        res.json({ data: similarMovies });
     } catch (error) {
         console.error("Failed to fetch similar movies:", error);
         next(InternalServerError("Failed to fetch similar movies"));
     }
 });
+
 
 export default router;

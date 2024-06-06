@@ -5,15 +5,17 @@ const isDeleteMode = process.argv.includes("delete");
 (async function () {
     try {
         if (isDeleteMode) {
-            await pgClient.query(`DROP TABLE IF EXISTS movie_genres;`);
-            await pgClient.query(`DROP TABLE IF EXISTS genres;`);
-            await pgClient.query(`DROP TABLE IF EXISTS watch_logs;`);
-            await pgClient.query(`DROP TABLE IF EXISTS users;`);
-            await pgClient.query(`DROP TABLE IF EXISTS favorite_movies;`);
-            await pgClient.query(`DROP TABLE IF EXISTS watchlist_movies;`);
-            await pgClient.query(`DROP TABLE IF EXISTS user_follows;`);
-            await pgClient.query(`DROP TABLE IF EXISTS review_likes;`);
-            await pgClient.query(`DROP TABLE IF EXISTS review_comments;`);
+            await pgClient.query(`DROP TABLE IF EXISTS review_likes CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS review_comments CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS watch_logs CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS movie_genres CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS genres CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS users CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS favorite_movies CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS watchlist_movies CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS user_follows CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS user_movie_lists CASCADE;`);
+            await pgClient.query(`DROP TABLE IF EXISTS movie_list_items CASCADE;`);
         }
 
         await pgClient.query(`CREATE TABLE IF NOT EXISTS users (
@@ -47,7 +49,7 @@ const isDeleteMode = process.argv.includes("delete");
                 poster_path TEXT,
                 vote_average FLOAT,
                 vote_count INT,
-                cast_list JSONB,
+                cast_list JSONB
             );
         `);
 
@@ -73,6 +75,7 @@ const isDeleteMode = process.argv.includes("delete");
             movie_id INT,
             user_id INT,
             watched_on DATE NOT NULL DEFAULT CURRENT_DATE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             rating DECIMAL(2, 1),
             review TEXT,
             FOREIGN KEY (movie_id) REFERENCES movies(id),

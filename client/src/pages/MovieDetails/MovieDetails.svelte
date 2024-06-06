@@ -109,7 +109,6 @@
             fetchSimilarMovies(movieId),
             checkIfMovieOnWatchlist(),
         ]);
-
     });
 </script>
 
@@ -226,8 +225,8 @@
             <AccordionItem class="bg-slate-200 mb-2">
                 <span slot="header">Cast</span>
                 <p class="mb-2 text-gray-500 dark:text-gray-400">
-                    {#if movieDetails?.cast && Array.isArray(movieDetails?.cast)}
-                        {#each movieDetails?.cast as cast}
+                    {#if movieDetails?.cast_list && Array.isArray(movieDetails?.cast_list)}
+                        {#each movieDetails?.cast_list as cast}
                             <span class="font-bold">{cast?.name}, </span>
                             playing as
                             <span class="font-bold">{cast?.character}</span>

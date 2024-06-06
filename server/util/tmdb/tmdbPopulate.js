@@ -1,13 +1,12 @@
 import axios from "axios";
 import pgClient from "../../database/pgConnection.js";
-import mongoClient from "../../database/mongoDBConnection.js";
 import Bottleneck from "bottleneck";
 
 const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.TMDB_API_KEY;
 
 const limiter = new Bottleneck({
-    minTime: 20 // Ensures we don't exceed 50 requests per second
+    minTime: 20
 });
 
 let currentPage = 1;
@@ -41,7 +40,7 @@ const fetchTMDBData = limiter.wrap(async function () {
             try {
                 const detailedMovieResponse = await axios.get(`${BASE_URL}/movie/${movie.id}?api_key=${API_KEY}`);
                 const castResponse = await axios.get(`${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`);
-                await insertMovieToMySQL(detailedMovieResponse.data, castResponse.data.cast);
+                await insertMovieIntoDB(detailedMovieResponse.data, castResponse.data.cast);
             } catch (error) {
                 console.error(`Failed to fetch details for movie ID: ${movie.id}`, error);
             }
@@ -60,11 +59,14 @@ function getMinDate(maxDate, monthsToSubtract) {
     return maxDateObj.toISOString().split('T')[0];
 }
 
-async function insertMovieToMySQL(movieData, cast) {
+async function insertMovieIntoDB(movieData, cast) {
     try {
         const genres = movieData.genres;
         const movie = movieData;
-        
+
+        const releaseDate = movie.release_date ?? null;
+
+        const castJson = JSON.stringify(cast);
 
         await pgClient.query(
             `INSERT INTO movies (id, title, original_title, overview, backdrop_path, release_date, original_language, runtime, budget, revenue, status, popularity, poster_path, vote_average, vote_count, cast_list)
@@ -91,7 +93,7 @@ async function insertMovieToMySQL(movieData, cast) {
                 movie.original_title,
                 movie.overview,
                 movie.backdrop_path,
-                movie.release_date,
+                releaseDate,
                 movie.original_language,
                 movie.runtime,
                 movie.budget,
@@ -101,7 +103,7 @@ async function insertMovieToMySQL(movieData, cast) {
                 movie.poster_path,
                 movie.vote_average,
                 movie.vote_count,
-                cast
+                castJson
             ]
         );
 
