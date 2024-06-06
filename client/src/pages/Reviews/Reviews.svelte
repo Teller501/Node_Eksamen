@@ -23,11 +23,14 @@
             `${$BASE_URL}/api/logs/reviews/recent?limit=${limit}&offset=${offset}`,
             $tokenStore
         );
-        const { data, pagination } = response;
-        recentLogs = [...recentLogs, ...data];
-        totalPages = pagination.total_pages;
-        currentPage = pagination.current_page;
-        loading = false;
+        const { data, pagination, status } = response;
+        
+        if (status === 200) {
+            recentLogs = [...recentLogs, ...data];
+            totalPages = pagination.totalPages;
+            currentPage = pagination.currentPage;
+            loading = false;
+        }
     }
 
     async function loadMore() {

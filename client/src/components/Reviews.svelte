@@ -104,7 +104,7 @@
                             <div class="flex items-center">
                                 {#if showUserAvatar}
                                     <Avatar
-                                        src={review.profile_picture? `${BASE_URL}/${review.profile_picture}` : blankProfilePic}
+                                        src={review.profile_picture? `${$BASE_URL}/${review.profile_picture}` : blankProfilePic}
                                         alt="Profile Picture"
                                         href={`/${review.username}`}
                                         size="xs"
