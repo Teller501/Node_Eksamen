@@ -67,25 +67,23 @@ router.get("/api/movies/search", authenticateToken, async (req, res, next) => {
             return next(BadRequestError("Missing query parameter 'q'"));
         }
 
-        const searchResults = await mongoClient.movies
-            .find({
-                title: { $regex: searchQuery, $options: "i" },
-            },
-            {
-                projection: { cast: 0 },
-            })
-            .toArray();
+        const searchResults = await pgClient.query(`
+            SELECT id, title, original_title, poster_path, vote_average, vote_count, popularity
+            FROM movies
+            WHERE title ILIKE $1 OR original_title ILIKE $1
+            ORDER BY popularity DESC
+            LIMIT 50
+        `, [`%${searchQuery}%`]);
 
-        const response = searchResults.map((movie) => {
-            return {
-                id: movie.id,
-                title: movie.title,
-                poster_path: movie.posterPath,
-                vote_average: movie.voteAverage,
-                vote_count: movie.voteCount,
-                cast: movie.cast,
-            };
-        });
+        const response = searchResults.rows.map((movie) => ({
+            id: movie.id,
+            title: movie.title,
+            original_title: movie.original_title,
+            poster_path: movie.poster_path,
+            vote_average: movie.vote_average,
+            vote_count: movie.vote_count,
+            popularity: movie.popularity,
+        }));
 
         res.json({ data: response });
     } catch (error) {
@@ -139,20 +137,7 @@ router.get("/api/movies/:id", authenticateToken, async (req, res, next) => {
             return next(NotFoundError("Movie not found"));
         }
 
-        const mongoMovie = await mongoClient.movies.findOne({
-            id: parseInt(req.params.id),
-        });
-
-        const mergedMovie = {
-            ...pgMovieData,
-            popularity: mongoMovie?.popularity ?? 0,
-            vote_average: mongoMovie?.voteAverage ?? 0,
-            vote_count: mongoMovie?.voteCount ?? 0,
-            cast: mongoMovie?.cast ?? [],
-            poster_path: mongoMovie?.posterPath ?? "",
-        };
-
-        res.json({ data: mergedMovie });
+        res.json({ data: pgMovieData });
     } catch (error) {
         console.error("Failed to fetch movie:", error);
         next(InternalServerError("Failed to fetch movie"));
@@ -177,7 +162,7 @@ router.get("/api/movies/:id/similar", authenticateToken, async (req, res, next) 
         }
 
         const similarMoviesResult = await pgClient.query(
-            `SELECT movies.id, movies.title, movies.overview, movies.release_date, array_agg(genres.name) as genres
+            `SELECT movies.id, movies.title, movies.overview, movies.release_date, movies.poster_path, array_agg(genres.name) as genres
             FROM movies
             LEFT JOIN movie_genres ON movies.id = movie_genres.movie_id
             LEFT JOIN genres ON movie_genres.genre_id = genres.id
@@ -190,37 +175,15 @@ router.get("/api/movies/:id/similar", authenticateToken, async (req, res, next) 
         );
         const similarMovies = similarMoviesResult.rows;
 
-        const mongoMovies = await mongoClient.movies
-            .find({}, { projection: { cast: 0 } })
-            .toArray();
-
-        const mongoMap = mongoMovies.reduce((acc, movie) => {
-            acc[movie.id.toString()] = movie;
-            return acc;
-        }, {});
-
-        let mergedSimilarMovies = similarMovies.map((pgMovie) => {
-            const mongoMovie = mongoMap[pgMovie.id.toString()];
-            return {
-                ...pgMovie,
-                popularity: mongoMovie?.popularity ?? 0,
-                vote_average: mongoMovie?.voteAverage ?? 0,
-                vote_count: mongoMovie?.voteCount ?? 0,
-                cast: mongoMovie?.cast ?? [],
-                poster_path: mongoMovie?.posterPath ?? "",
-                release_date: pgMovie.release_date,
-            };
-        });
-
-        mergedSimilarMovies = mergedSimilarMovies.filter(
+        let filteredSimilarMovies = similarMovies.filter(
             (movie) => movie.poster_path
         );
 
-        mergedSimilarMovies = mergedSimilarMovies
+        let shuffledSimilarMovies = filteredSimilarMovies
             .sort(() => 0.5 - Math.random())
             .slice(0, 8);
 
-        res.json({ data: mergedSimilarMovies });
+        res.json({ data: shuffledSimilarMovies });
     } catch (error) {
         console.error("Failed to fetch similar movies:", error);
         next(InternalServerError("Failed to fetch similar movies"));

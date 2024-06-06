@@ -5,8 +5,13 @@ import mongoClient from "../database/mongoDBConnection.js";
 const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
+import {
+    NotFoundError,
+    BadRequestError,
+    InternalServerError,
+} from "../util/errors.js";
 
-router.get("/api/watchlists/:user_id/:movie_id?", authenticateToken, async (req, res) => {
+router.get("/api/watchlists/:user_id/:movie_id?", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const movieId = req.params.movie_id;
@@ -16,7 +21,7 @@ router.get("/api/watchlists/:user_id/:movie_id?", authenticateToken, async (req,
 
         if (movieId) {
             query = `
-                SELECT wm.movie_id, m.title
+                SELECT wm.movie_id, m.title, m.poster_path
                 FROM watchlist_movies wm
                 JOIN movies m ON wm.movie_id = m.id
                 WHERE wm.user_id = $1 AND wm.movie_id = $2;
@@ -24,7 +29,7 @@ router.get("/api/watchlists/:user_id/:movie_id?", authenticateToken, async (req,
             queryParams = [userId, movieId];
         } else {
             query = `
-                SELECT wm.movie_id, m.title
+                SELECT wm.movie_id, m.title, m.poster_path
                 FROM watchlist_movies wm
                 JOIN movies m ON wm.movie_id = m.id
                 WHERE wm.user_id = $1;
@@ -37,29 +42,17 @@ router.get("/api/watchlists/:user_id/:movie_id?", authenticateToken, async (req,
         const watchlist = result.rows;
 
         if (watchlist.length === 0) {
-            return res.status(404).send("No watchlist found");
+            return next(NotFoundError("No watchlist found"));
         }
 
-        const enrichedWatchlist = await Promise.all(
-            watchlist.map(async (movie) => {
-                const mongoData = await mongoClient.movies.findOne({
-                    id: Number(movie.movie_id),
-                });
-                return {
-                    ...movie,
-                    poster_path: mongoData ? mongoData.posterPath : null,
-                };
-            })
-        );
-
-        res.json({ data: enrichedWatchlist });
+        res.json({ data: watchlist });
     } catch (error) {
         console.error("Error getting watchlist:", error);
-        res.status(500).send("Failed to get watchlist");
+        next(InternalServerError("Failed to get watchlist"));
     }
 });
 
-router.post("/api/watchlists/:user_id", authenticateToken, async (req, res) => {
+router.post("/api/watchlists/:user_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const { movieId } = req.body;
@@ -73,7 +66,7 @@ router.post("/api/watchlists/:user_id", authenticateToken, async (req, res) => {
 
         const movie = result.rows[0];
         if (!movie) {
-            return res.status(404).send("Movie not found");
+            return next(NotFoundError("Movie not found"));
         }
 
         const movieQuery = await pgClient.query(
@@ -98,11 +91,11 @@ router.post("/api/watchlists/:user_id", authenticateToken, async (req, res) => {
         res.status(201).json({ data: movie });
     } catch (error) {
         console.error("Error adding movie to watchlist:", error);
-        res.status(500).send("Failed to add movie to watchlist");
+        next(InternalServerError("Failed to add movie to watchlist"));
     }
 });
 
-router.delete("/api/watchlists/:user_id/:movie_id", authenticateToken, async (req, res) => {
+router.delete("/api/watchlists/:user_id/:movie_id", authenticateToken, async (req, res, next) => {
     try {
         const userId = req.params.user_id;
         const movieId = req.params.movie_id;
@@ -116,13 +109,13 @@ router.delete("/api/watchlists/:user_id/:movie_id", authenticateToken, async (re
 
         const movie = result.rows[0];
         if (!movie) {
-            return res.status(404).send("Movie not found");
+            return next(NotFoundError("Movie not found in watchlist"));
         }
 
         res.json({ data: movie });
     } catch (error) {
         console.error("Error removing movie from watchlist:", error);
-        res.status(500).send("Failed to remove movie from watchlist");
+        next(InternalServerError("Failed to remove movie from watchlist"));
     }
 });
 

@@ -83,7 +83,7 @@ router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, n
 
         const movieQuery = await pgClient.query(
             `
-            SELECT m.id as movie_id, m.title, m.original_title, m.overview
+            SELECT m.id as movie_id, m.title, m.original_title, m.overview, m.poster_path
             FROM movie_list_items li
             JOIN movies m ON li.movie_id = m.id
             WHERE li.list_id = $1;
@@ -93,20 +93,6 @@ router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, n
 
         const list = listQuery.rows[0];
         list.movies = movieQuery.rows;
-
-        const enrichedMovies = await Promise.all(
-            list.movies.map(async (movie) => {
-                const mongoData = await mongoClient.movies.findOne({
-                    id: Number(movie.movie_id),
-                });
-                return {
-                    ...movie,
-                    poster_path: mongoData ? mongoData.posterPath : null,
-                };
-            })
-        );
-
-        list.movies = enrichedMovies;
 
         res.send({ data: list });
     } catch (error) {

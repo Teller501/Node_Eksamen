@@ -1,5 +1,4 @@
 import pgClient from "../database/pgConnection.js";
-import mongoClient from "../database/mongoDBConnection.js";
 
 export async function getAllMovies(
     page = 1,
@@ -11,7 +10,7 @@ export async function getAllMovies(
 ) {
     try {
         let query = `
-            SELECT movies.id, movies.title, movies.popularity, movies.overview, array_agg(genres.name) AS genres
+            SELECT movies.id, movies.title, movies.popularity, movies.overview, movies.poster_path, array_agg(genres.name) AS genres
             FROM movies
             INNER JOIN movie_genres ON movies.id = movie_genres.movie_id
             INNER JOIN genres ON movie_genres.genre_id = genres.id
@@ -47,30 +46,10 @@ export async function getAllMovies(
         params.push(limit, offset);
 
         const pgMovies = await pgClient.query(query, params);
-
-        const pgMoviesData = pgMovies.rows;
-        const movieIds = pgMoviesData.map(movie => Number(movie.id));
-
-        const mongoMovies = await mongoClient.movies.find(
-            { id: { $in: movieIds } },
-            { projection: { id: 1, posterPath: 1 } }
-        ).toArray();
-
-        const mongoMap = mongoMovies.reduce((acc, movie) => {
-            acc[movie.id] = movie;
-            return acc;
-        }, {});
-
-        let mergedMovies = pgMoviesData.map((pgMovie) => {
-            const mongoMovie = mongoMap[pgMovie.id];
-            return {
-                ...pgMovie,
-                poster_path: mongoMovie?.posterPath ?? "",
-            };
-        });
+        let pgMoviesData = pgMovies.rows;
 
         if (tmdbIdSet) {
-            mergedMovies = mergedMovies.filter((movie) =>
+            pgMoviesData = pgMoviesData.filter((movie) =>
                 tmdbIdSet.has(movie.id)
             );
         }
@@ -89,7 +68,7 @@ export async function getAllMovies(
         const hasPreviousPage = page > 1;
 
         return {
-            data: mergedMovies,
+            data: pgMoviesData,
             pagination: {
                 current_page: page,
                 total_pages: totalPages,

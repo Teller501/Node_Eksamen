@@ -1,5 +1,4 @@
 import pgClient from "./pgConnection.js";
-import mongoClient from "./mongoDBConnection.js";
 
 const isDeleteMode = process.argv.includes("delete");
 
@@ -15,7 +14,6 @@ const isDeleteMode = process.argv.includes("delete");
             await pgClient.query(`DROP TABLE IF EXISTS user_follows;`);
             await pgClient.query(`DROP TABLE IF EXISTS review_likes;`);
             await pgClient.query(`DROP TABLE IF EXISTS review_comments;`);
-            await mongoClient.movies.deleteMany({});
         }
 
         await pgClient.query(`CREATE TABLE IF NOT EXISTS users (
@@ -45,7 +43,11 @@ const isDeleteMode = process.argv.includes("delete");
                 budget BIGINT,
                 revenue BIGINT,
                 status VARCHAR(50),
-                popularity FLOAT
+                popularity FLOAT,
+                poster_path TEXT,
+                vote_average FLOAT,
+                vote_count INT,
+                cast_list JSONB,
             );
         `);
 
@@ -136,7 +138,6 @@ const isDeleteMode = process.argv.includes("delete");
             FOREIGN KEY (movie_id) REFERENCES movies(id)
         )`);
 
-        // Adding constraints with ON DELETE CASCADE
         await pgClient.query(`
             ALTER TABLE user_follows DROP CONSTRAINT IF EXISTS user_follows_followed_id_fkey;
             ALTER TABLE user_follows ADD CONSTRAINT user_follows_followed_id_fkey FOREIGN KEY (followed_id) REFERENCES users (id) ON DELETE CASCADE;

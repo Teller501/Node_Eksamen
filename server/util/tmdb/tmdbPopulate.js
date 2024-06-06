@@ -41,8 +41,7 @@ const fetchTMDBData = limiter.wrap(async function () {
             try {
                 const detailedMovieResponse = await axios.get(`${BASE_URL}/movie/${movie.id}?api_key=${API_KEY}`);
                 const castResponse = await axios.get(`${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`);
-                await insertMovieToMySQL(detailedMovieResponse.data);
-                await insertMovieToMongoDB(detailedMovieResponse.data, castResponse.data.cast);
+                await insertMovieToMySQL(detailedMovieResponse.data, castResponse.data.cast);
             } catch (error) {
                 console.error(`Failed to fetch details for movie ID: ${movie.id}`, error);
             }
@@ -61,14 +60,15 @@ function getMinDate(maxDate, monthsToSubtract) {
     return maxDateObj.toISOString().split('T')[0];
 }
 
-async function insertMovieToMySQL(movieData) {
+async function insertMovieToMySQL(movieData, cast) {
     try {
         const genres = movieData.genres;
         const movie = movieData;
+        
 
         await pgClient.query(
-            `INSERT INTO movies (id, title, original_title, overview, backdrop_path, release_date, original_language, runtime, budget, revenue, status, popularity)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            `INSERT INTO movies (id, title, original_title, overview, backdrop_path, release_date, original_language, runtime, budget, revenue, status, popularity, poster_path, vote_average, vote_count, cast_list)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
             ON CONFLICT (id) DO UPDATE SET
             title = EXCLUDED.title,
             original_title = EXCLUDED.original_title,
@@ -79,7 +79,12 @@ async function insertMovieToMySQL(movieData) {
             runtime = EXCLUDED.runtime,
             budget = EXCLUDED.budget,
             revenue = EXCLUDED.revenue,
-            status = EXCLUDED.status`,
+            status = EXCLUDED.status,
+            popularity = EXCLUDED.popularity,
+            poster_path = EXCLUDED.poster_path,
+            vote_average = EXCLUDED.vote_average,
+            vote_count = EXCLUDED.vote_count,
+            cast_list = EXCLUDED.cast_list`,
             [
                 movie.id,
                 movie.title,
@@ -92,7 +97,11 @@ async function insertMovieToMySQL(movieData) {
                 movie.budget,
                 movie.revenue,
                 movie.status,
-                movie.popularity
+                movie.popularity,
+                movie.poster_path,
+                movie.vote_average,
+                movie.vote_count,
+                cast
             ]
         );
 
@@ -114,26 +123,6 @@ async function insertMovieToMySQL(movieData) {
         }
     } catch (error) {
         console.error("Failed to insert or update movie in database:", error);
-    }
-}
-
-async function insertMovieToMongoDB(movieData, cast) {
-    try {
-        const filter = { id: movieData.id }; 
-        const update = {
-            $set: {
-                title: movieData.title,
-                cast: cast,
-                voteAverage: movieData.vote_average,
-                voteCount: movieData.vote_count,
-                posterPath: movieData.poster_path,
-            },
-        };
-        const options = { upsert: true };
-
-        await mongoClient.movies.updateOne(filter, update, options);
-    } catch (error) {
-        console.error("Failed to upsert movie in MongoDB:", error);
     }
 }
 

@@ -29,7 +29,7 @@ router.get("/api/favorites/:user_id", authenticateToken, async (req, res, next) 
     try {
         const userId = req.params.user_id;
         const favoritesQuery = `
-            SELECT fm.movie_id, fm.user_id, m.title
+            SELECT fm.movie_id, fm.user_id, m.title, m.poster_path
             FROM favorite_movies fm
             JOIN movies m ON fm.movie_id = m.id
             WHERE fm.user_id = $1;
@@ -42,15 +42,7 @@ router.get("/api/favorites/:user_id", authenticateToken, async (req, res, next) 
             return next(NotFoundError("No favorites found"));
         }
 
-        const enrichedFavorites = await Promise.all(favorites.map(async (favorite) => {
-            const mongoData = await mongoClient.movies.findOne({ id: Number(favorite.movie_id) });
-            return {
-                ...favorite,
-                poster_path: mongoData ? mongoData.posterPath : null
-            };
-        }));
-
-        res.json({ data: enrichedFavorites });
+        res.json({ data: favorites });
     } catch (error) {
         console.error("Error getting favorites:", error);
         next(InternalServerError("Failed to get favorites"));
@@ -85,10 +77,14 @@ router.post("/api/favorites", authenticateToken, async (req, res, next) => {
         const result = await pgClient.query(insertQuery, [userId, movieId]);
         const favorite = result.rows[0];
 
-        const mongoData = await mongoClient.movies.findOne({ id: Number(movieId) });
+        const movieQuery = `
+            SELECT title, poster_path FROM movies WHERE id = $1;
+        `;
+        const movieResult = await pgClient.query(movieQuery, [movieId]);
+        const movie = movieResult.rows[0];
 
-        favorite.poster_path = mongoData ? mongoData.posterPath : null;
-        favorite.title = mongoData ? mongoData.title : null;
+        favorite.poster_path = movie ? movie.poster_path : null;
+        favorite.title = movie ? movie.title : null;
 
         res.json({ data: favorite });
     } catch (error) {
