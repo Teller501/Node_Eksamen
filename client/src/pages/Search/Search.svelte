@@ -62,7 +62,7 @@
                             movieId={movie.id}
                         />
                         <h3 class="text-slate-900 ml-4 text-lg font-medium flex-grow">
-                            <A class="hover:no-underline" href={`/moviedetails/${movie.id}`}>{movie.title}</A>
+                            <A class="hover:no-underline" href={`/moviedetails/${movie.id}`}>{movie.title} <span class="text-gray-500 ml-2 font-light text-sm">{`${movie.original_title !== movie.title ? `(${movie.original_title})` : ""}`}</span></A>
                         </h3>
                     </div>
                     {#if index < searchResults.length - 1}
