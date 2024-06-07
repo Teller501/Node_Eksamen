@@ -6,10 +6,12 @@
         Button,
         Avatar,
         SpeedDial,
+        SpeedDialButton,
         A,
         Skeleton,
     } from "flowbite-svelte";
-    import { CaretLeftSolid, CaretRightSolid } from "flowbite-svelte-icons";
+    import { CaretLeftSolid, CaretRightSolid, ClapperboardPlaySolid } from "flowbite-svelte-icons";
+    import { navigate } from "svelte-routing";
     import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
     import { tokenStore, userStore } from "../../stores/authStore";
     import { activityStore } from "../../stores/activityStore.js";
@@ -68,6 +70,11 @@
         page--;
         fetchMovies();
     }
+
+    async function handleRandomMovie() {
+        const { data } = await fetchGet(`${$BASE_URL}/api/movies/random`, $tokenStore);
+        navigate(`/moviedetails/${data}`);
+    } 
 </script>
 
 <h1 class="text-slate-900 text-3xl font-bold">
@@ -173,6 +180,9 @@
 
 <div class="fixed bottom-0 right-0 z-50 p-4">
     <SpeedDial defaultClass="absolute end-8 bottom-32">
+        <SpeedDialButton name="Random Movie" on:click={handleRandomMovie}>
+            <ClapperboardPlaySolid class="w-6 h-6" />
+        </SpeedDialButton>
         <SearchModal mode={"log"} />
     </SpeedDial>
 </div>
