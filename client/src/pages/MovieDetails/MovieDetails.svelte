@@ -214,7 +214,10 @@
                 <span slot="header">Reviews</span>
                 <div id="review-section">
                     {#if reviews && Array.isArray(reviews)}
-                        <Reviews reviews={reviews} showMoviePoster={false} showMovieTitle={false} showReleaseDate={false} showUsername={true} showUserAvatar={true} marginX={"0"}/>
+                        <Reviews reviews={reviews.slice(0,4)} showMoviePoster={false} showMovieTitle={false} showReleaseDate={false} showUsername={true} showUserAvatar={true} marginX={"0"}/>
+                        <div class="flex justify-end">
+                            <Button class="mt-2 hover:text-white" href={`/reviews/${movieDetails.id}`}>View all reviews</Button>
+                        </div>
                     {:else}
                         <p class="text-gray-500 dark:text-gray-400">
                             No reviews yet.

@@ -8,6 +8,7 @@
     import blankProfilePic from "../assets/blank-profile-pic.png";
 
     export let reviews;
+    export let heading = "Recent Reviews";
     export let showMoviePoster = true;
     export let showMovieTitle = true;
     export let showReleaseDate = true;
@@ -68,7 +69,7 @@
     }
 </script>
 
-<h2 class="text-2xl font-bold text-slate-900">Recent Reviews</h2>
+<h2 class="text-2xl font-bold text-slate-900">{heading}</h2>
 <div class="mt-4 space-y-4 mb-2">
     {#if reviews}
         {#each reviews as review}

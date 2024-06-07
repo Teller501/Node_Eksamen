@@ -259,6 +259,7 @@
             <PrivateRoute path="/home"><Home /></PrivateRoute>
             <PrivateRoute path="/movies"><Movies /></PrivateRoute>
             <PrivateRoute path="/reviews"><Reviews /></PrivateRoute>
+            <PrivateRoute path="/reviews/:movieId" let:params><Reviews {params}/></PrivateRoute>
             <PrivateRoute path="/search/:type/:query" let:params
                 ><Search {params} /></PrivateRoute
             >
