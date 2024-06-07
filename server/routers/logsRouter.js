@@ -87,6 +87,49 @@ router.get("/api/logs/:id", authenticateToken, async (req, res, next) => {
     res.send({ data: log.rows[0] });
 });
 
+router.get("/api/logs/followings/:user_id", authenticateToken, async (req, res, next) => {
+    const userId = req.params.user_id;
+    try {
+        const result = await pgClient.query(
+            `SELECT wl.id, wl.movie_id, wl.user_id, wl.rating, wl.watched_on, wl.review, wl.created_at,
+                    u.username, u.profile_picture, m.title, m.poster_path, m.release_date,
+                    (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = wl.id) AS total_likes
+             FROM watch_logs wl
+             INNER JOIN users u ON wl.user_id = u.id
+             INNER JOIN movies m ON wl.movie_id = m.id
+             WHERE wl.user_id IN (SELECT followed_id FROM user_follows WHERE follower_id = $1)
+             ORDER BY wl.watched_on DESC
+             LIMIT 5`,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return next(NotFoundError("No logs found for followings"));
+        }
+
+        const logs = result.rows.map(row => ({
+            id: row.id,
+            movie_id: row.movie_id,
+            user_id: row.user_id,
+            rating: row.rating,
+            watched_on: row.watched_on,
+            review: row.review,
+            created_at: row.created_at,
+            username: row.username,
+            profile_picture: row.profile_picture,
+            title: row.title,
+            poster_path: row.poster_path,
+            release_date: row.release_date,
+            total_likes: row.total_likes
+        }));
+
+        res.send({ data: logs });
+    } catch (error) {
+        console.error("Failed to get logs for followings:", error);
+        next(InternalServerError("Failed to get logs for followings"));
+    }
+});
+
 router.get("/api/logs/movie/:movie_id", authenticateToken, async (req, res, next) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
