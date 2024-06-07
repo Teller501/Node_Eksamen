@@ -1,4 +1,5 @@
 import pgClient from "../database/pgConnection.js";
+import redisClient from "../database/redisConnection.js";
 
 export async function getAllMovies(
     page = 1,
@@ -9,6 +10,14 @@ export async function getAllMovies(
     tmdbIdSet = null
 ) {
     try {
+        const cacheKey = `movies:${page}:${limit}:${sortByPopularity}:${yearFilter}:${genreFilter}:${tmdbIdSet ? [...tmdbIdSet].join(",") : ""}`;
+
+        const cacheData = await redisClient.get(cacheKey);
+        if (cacheData) {
+            return JSON.parse(cacheData);
+        }
+
+
         let query = `
             SELECT movies.id, movies.title, movies.popularity, movies.overview, movies.poster_path, array_agg(genres.name) AS genres
             FROM movies
@@ -67,7 +76,7 @@ export async function getAllMovies(
         const hasNextPage = page < totalPages;
         const hasPreviousPage = page > 1;
 
-        return {
+        const result = {
             data: pgMoviesData,
             pagination: {
                 current_page: page,
@@ -78,6 +87,12 @@ export async function getAllMovies(
                 previous_page: hasPreviousPage ? page - 1 : null,
             },
         };
+
+        await redisClient.set(cacheKey, JSON.stringify(result), {
+            EX: 3600
+        });
+
+        return result;
     } catch (error) {
         console.error("Error fetching movies:", error);
         throw error;

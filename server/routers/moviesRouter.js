@@ -1,6 +1,6 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
-import mongoClient from "../database/mongoDBConnection.js";
+import redisClient from "../database/redisConnection.js";
 import { tmdbIds } from "../util/linksCSVParser.js";
 import { NotFoundError, BadRequestError, InternalServerError, } from "../util/errors.js";
 
@@ -60,11 +60,17 @@ router.get("/api/movies", authenticateToken, async (req, res, next) => {
 });
 
 router.get("/api/movies/search", authenticateToken, async (req, res, next) => {
-    try {
-        const searchQuery = req.query.q;
+    const searchQuery = req.query.q;
+    const cacheKey = `search_movies:${searchQuery}`
+    
+    if (!searchQuery) {
+        return next(BadRequestError("Missing query parameter 'q'"));
+    }
 
-        if (!searchQuery) {
-            return next(BadRequestError("Missing query parameter 'q'"));
+    try {
+        const cacheData = await redisClient.get(cacheKey);
+        if (cacheData) {
+            return res.json({ data: JSON.parse(cacheData) });
         }
 
         const searchResults = await pgClient.query(`
@@ -85,6 +91,10 @@ router.get("/api/movies/search", authenticateToken, async (req, res, next) => {
             popularity: movie.popularity,
         }));
 
+        
+        await redisClient.set(cacheKey, JSON.stringify(response), {
+            EX: 3600,
+        });
         res.json({ data: response });
     } catch (error) {
         console.error("Error searching movies:", error);
