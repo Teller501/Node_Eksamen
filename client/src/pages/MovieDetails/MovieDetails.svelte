@@ -1,14 +1,4 @@
 <script>
-    import { onMount } from "svelte";
-    import { BASE_URL } from "../../stores/generalStore";
-    import { userStore, tokenStore } from "../../stores/authStore";
-    import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
-    import tmdbLogo from "../../assets/tmdb-logo.png";
-    import cinematchLogo from "../../assets/CineMatch.png";
-    import LogMovie from "../../components/LogMovie.svelte";
-    import Movie from "../../components/Movie.svelte";
-    import Reviews from "../../components/Reviews.svelte";
-    import toast, { Toaster } from "svelte-french-toast";
     import {
         Rating,
         Card,
@@ -20,7 +10,17 @@
         ImagePlaceholder,
         Skeleton,
     } from "flowbite-svelte";
+    import { onMount } from "svelte";
+    import { BASE_URL } from "../../stores/generalStore";
+    import { userStore, tokenStore } from "../../stores/authStore";
+    import { fetchGet, fetchPost, fetchDelete } from "../../util/api";
+    import toast, { Toaster } from "svelte-french-toast";
+    import LogMovie from "../../components/LogMovie.svelte";
+    import Reviews from "../../components/Reviews.svelte";
+    import Movie from "../../components/Movie.svelte";
     import { ClockOutline, EyeOutline } from "flowbite-svelte-icons";
+    import tmdbLogo from "../../assets/tmdb-logo.png";
+    import cinematchLogo from "../../assets/CineMatch.png";
 
     const movieId = window.location.pathname.split("/").pop();
     let movieDetails;
@@ -34,7 +34,6 @@
     async function fetchMovie() {
         const { data } = await fetchGet(`${$BASE_URL}/api/movies/${movieId}`, $tokenStore);
         movieDetails = data;
-
         const showOnlyYear = movieDetails.release_date;
         movieDetails.release_date = showOnlyYear.slice(0, 4);
     }
@@ -99,6 +98,10 @@
         isOnWatchlist = data
             ? data.some((movie) => movie.movie_id === movieId)
             : false;
+    }
+
+    function handleLogMovie() {
+        checkIfMovieOnWatchlist();
     }
 
     onMount(async () => {
@@ -198,6 +201,7 @@
                 title={movieDetails?.title}
                 movieId={movieDetails?.id}
                 showButton={true}
+                on:logMovie={handleLogMovie}
             />
             <Button class="ms-10" on:click={toggleMovieOnWatchlist}>
                 {#if isOnWatchlist}
