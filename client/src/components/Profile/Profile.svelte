@@ -21,8 +21,8 @@
     }
 </script>
 
-<div class="container mx-auto px-4 mt-8 mb-12 grid grid-cols-3 gap-4">
-    <div class="col-span-2">
+<div class="container mx-auto px-4 mt-8 mb-12 grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2">
         <div>
             <div class="flex items-center">
                 <h3 class="text-lg font-bold text-slate-900 me-1">
@@ -30,7 +30,7 @@
                 </h3>
                 <EyeOutline />
             </div>
-            <div class="grid grid-cols-4 gap-4 mt-4">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
                 {#each lastFourMovies as movie}
                     <div class="text-center">
                         <Movie
@@ -116,7 +116,7 @@
             </div>
         </div>
     </div>
-    <div class="col-span-1 space-y-4">
+    <div class="lg:col-span-1 space-y-4">
         <div class="bg-white p-4 rounded-md shadow-md">
             <h3 class="text-lg font-bold text-slate-900">
                 About {user?.username}

@@ -6,8 +6,8 @@
 </script>
 
 <h2 class="text-slate-900 text-2xl font-bold my-4">Watched Movies</h2>
-<div id="popular-movies" class="w-full flex items-center justify-between">
-  <div class="grid grid-cols-5 grid-rows-4">
+<div id="popular-movies" class="w-full flex flex-col items-center justify-between">
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 grid-rows-4 gap-4">
     {#if watchedMovies}
       {#each watchedMovies as movie}
         <Movie

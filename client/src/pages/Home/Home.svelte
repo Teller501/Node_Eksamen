@@ -88,7 +88,7 @@
     <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
         Popular Movies
     </h2>
-    <div id="popular-movies" class="w-full flex items-center justify-between">
+    <div id="popular-movies" class="w-full flex flex-col sm:flex-row items-center justify-between">
         <Button
             class="bg-transparent border-none p-0 inline-flex justify-center items-center hover:bg-transparent focus:outline-none focus-within:ring-0"
             on:click={handlePreviousPopularMoviePage}
@@ -97,7 +97,7 @@
                 class="w-8 h-8 text-slate-900 hover:text-slate-400 cursor-pointer"
             />
         </Button>
-        <div class="grid grid-cols-5">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
             {#if popularMovies}
                 {#each popularMovies as movie}
                     <Movie
@@ -132,8 +132,8 @@
         <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
             See what your followings have been up to!
         </h2>
-        <div id="followings-activity" class="w-full flex justify-center">
-            <div class="grid grid-cols-5 gap-4">
+        <div id="followings-activity" class="w-full flex flex-col sm:flex-row justify-center">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
                 {#if followingsActivity}
                     {#each followingsActivity as activity}
                         <div class="text-center">
@@ -188,7 +188,7 @@
         Recent Reviews
     </h2>
 
-    <div class="grid grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {#if recentLogs}
             {#each recentLogs.slice(0, 4) as log}
                 <div class="flex space-x-4">

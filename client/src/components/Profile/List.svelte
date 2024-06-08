@@ -85,8 +85,8 @@
 
 <Toaster />
 
-<div class="flex items-center px-96">
-  <h2 class="text-slate-900 text-2xl font-bold me-48">Lists</h2>
+<div class="flex flex-col sm:flex-row items-center sm:px-96 px-4">
+  <h2 class="text-slate-900 text-2xl font-bold sm:me-48">Lists</h2>
   {#if isOwner}
     <Button on:click={() => (openCreateListModal = true)}>
       New <CirclePlusSolid />
@@ -99,7 +99,7 @@
 {/if}
 
 {#each lists as list}
-  <div class="flex justify-between">
+  <div class="flex flex-col sm:flex-row justify-between">
     <Button
       on:click={() => {
         selectedList = list;
@@ -122,7 +122,7 @@
       </div>
     </Button>
     {#if isOwner}
-      <div class="actions flex flex-col items-end mt-4">
+      <div class="actions flex flex-col items-end mt-4 sm:mt-0">
         <SearchModal mode={"addToMovieList"} selectedList={list} />
         <button
           on:click={(event) => {

@@ -68,7 +68,7 @@
 </script>
 
 <div class="container mx-auto p-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row items-center justify-between">
         <div class="flex items-center space-x-4">
             <Avatar
                 src={profilePicturePath ?? blankProfilePic}
