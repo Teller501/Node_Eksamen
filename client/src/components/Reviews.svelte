@@ -108,8 +108,8 @@
                                         src={review.profile_picture? `${$BASE_URL}/${review.profile_picture}` : blankProfilePic}
                                         alt="Profile Picture"
                                         href={`/${review.username}`}
-                                        size="xs"
-                                        class="mr-2 h-8 w-8"
+                                        size="sm"
+                                        class="mr-2 overflow-hidden"
                                         border
                                     />
                                 {/if}

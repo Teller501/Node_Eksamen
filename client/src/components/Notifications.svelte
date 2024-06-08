@@ -52,7 +52,7 @@
                 <Avatar
                     src={notification.follower.profile_picture? `${$BASE_URL}/${notification.follower.profile_picture}` : blankProfilePic}
                     alt="Profile Picture"
-                    class="w-8 h-8"
+                    size="sm"
                     border
                 />
                 <div class="ps-3 w-full">
@@ -80,7 +80,7 @@
                 <Avatar
                     src={notification.liker.profile_picture? `${$BASE_URL}/${notification.liker.profile_picture}` : blankProfilePic}
                     alt="Profile Picture"
-                    class="w-8 h-8"
+                    size="sm"
                     border
                 />
                 <div class="ps-3 w-full">

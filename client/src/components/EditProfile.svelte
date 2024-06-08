@@ -11,6 +11,7 @@
         Helper,
         Modal,
         Button,
+        Img,
     } from "flowbite-svelte";
     import { EditSolid } from "flowbite-svelte-icons";
     import blankProfilePic from "../assets/blank-profile-pic.png";
@@ -18,7 +19,7 @@
     let location = $userStore.location ?? "";
     let editProfileModal = false;
     let birthDate = $userStore.birth_date ? $userStore.birth_date.split("T")[0] : "";
-    const profilePicturePath = `${$BASE_URL}/${$userStore.profile_picture}`;
+    const profilePicturePath = $userStore.profile_picture? `${$BASE_URL}/${$userStore.profile_picture}` : blankProfilePic;
     let selectedImage = null;
 
     async function handleEditProfile(event) {
@@ -53,6 +54,8 @@
     const onFileSelected = (event) => {
         selectedImage = event.target.files[0];
     };
+
+    console.log(profilePicturePath);
 </script>
 
 <Toaster />
@@ -72,14 +75,14 @@
         <h3 class="text-lg font-semibold">Profile picture</h3>
         <div class="items-center justify-center flex mb-6">
             {#if selectedImage}
-                <img
+                <Img
                     src={URL.createObjectURL(selectedImage)}
                     alt="profile-pic"
                     class="rounded-full me-4 w-52 h-52 border shadow"
                 />
             {:else}
-                <img
-                    src={blankProfilePic}
+                <Img
+                    src={profilePicturePath}
                     alt="profile-pic"
                     class="rounded-full me-4 w-48 h-48 border shadow"
                 />

@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from "svelte";
-    import { Tabs, TabItem } from "flowbite-svelte";
+    import { Tabs, TabItem, Spinner } from "flowbite-svelte";
     import Profile from "../../components/Profile/Profile.svelte";
     import Watched from "../../components/Profile/Watched.svelte";
     import WatchList from "../../components/Profile/WatchList.svelte";
@@ -18,7 +18,8 @@
     export let params;
     const username = params.username;
 
-    let user = $userStore;
+    let user = null;
+    let loading = true;
     let userData;
     let lastFourMovies = [];
     let reviews = [];
@@ -65,6 +66,8 @@
     });
 
     async function fetchUser() {
+        loading = true; 
+
         if (!isOwner) {
             const { data, status } = await fetchGet(
                 `${$BASE_URL}/api/users/${username}`,
@@ -78,12 +81,12 @@
 
             user = data;
         } else {
-            const { data } = await fetchGet(`${$BASE_URL}/api/users/${user.username}`, $tokenStore);
-
-            user = data;
-            userStore.set(user);
+            user = $userStore;
         }
+
+        loading = false;
     }
+
 
     async function fetchUserData() {
         const { data } = await fetchGet(
@@ -188,7 +191,10 @@
     }
 </script>
 
-<ProfileHeader
+{#if loading}
+    <Spinner class="w-12 h-12 mt-8 text-primary-500" />
+{:else}
+    <ProfileHeader
     {user}
     {isOwner}
     {following}
@@ -198,57 +204,59 @@
     {followersCount}
     followings={followingsList}
     {followingsCount}
-/>
+    />
 
-<div class="container mx-auto px-4 mt-4">
-    <Tabs tabStyle="pill">
-        <TabItem
-            open={$activeTab === "Profile"}
-            title="Profile"
-            on:click={() => activeTab.set("Profile")}
-            inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        >
-            <Profile
-                {lastFourMovies}
-                {reviews}
-                {favorites}
-                {user}
-                {isOwner}
-                {watchList}
-                {stats}
-            />
-        </TabItem>
-        <TabItem
-            open={$activeTab === "Watched"}
-            title="Watched"
-            on:click={() => activeTab.set("Watched")}
-            inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        >
-            <Watched {watchedMovies} />
-        </TabItem>
-        <TabItem
-            open={$activeTab === "Watchlist"}
-            title="Watchlist"
-            on:click={() => activeTab.set("Watchlist")}
-            inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        >
-            <WatchList {watchList} {isOwner} />
-        </TabItem>
-        <TabItem
-            open={$activeTab === "Reviews"}
-            title="Reviews"
-            on:click={() => activeTab.set("Reviews")}
-            inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        >
-            <Reviews {reviews} />
-        </TabItem>
-        <TabItem
-            open={$activeTab === "List"}
-            title="Lists"
-            on:click={() => activeTab.set("List")}
-            inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        >
-            <List {lists} {isOwner} />
-        </TabItem>
-    </Tabs>
-</div>
+    <div class="container mx-auto px-4 mt-4">
+        <Tabs tabStyle="pill">
+            <TabItem
+                open={$activeTab === "Profile"}
+                title="Profile"
+                on:click={() => activeTab.set("Profile")}
+                inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            >
+                <Profile
+                    {lastFourMovies}
+                    {reviews}
+                    {favorites}
+                    {user}
+                    {isOwner}
+                    {watchList}
+                    {stats}
+                />
+            </TabItem>
+            <TabItem
+                open={$activeTab === "Watched"}
+                title="Watched"
+                on:click={() => activeTab.set("Watched")}
+                inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            >
+                <Watched {watchedMovies} />
+            </TabItem>
+            <TabItem
+                open={$activeTab === "Watchlist"}
+                title="Watchlist"
+                on:click={() => activeTab.set("Watchlist")}
+                inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            >
+                <WatchList {watchList} {isOwner} />
+            </TabItem>
+            <TabItem
+                open={$activeTab === "Reviews"}
+                title="Reviews"
+                on:click={() => activeTab.set("Reviews")}
+                inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            >
+                <Reviews {reviews} />
+            </TabItem>
+            <TabItem
+                open={$activeTab === "List"}
+                title="Lists"
+                on:click={() => activeTab.set("List")}
+                inactiveClasses="bg-slate-300 inline-block text-sm font-medium text-center disabled:cursor-not-allowed py-3 px-4 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+            >
+                <List {lists} {isOwner} />
+            </TabItem>
+        </Tabs>
+    </div>
+{/if}
+

@@ -73,7 +73,7 @@
             <Avatar
                 src={profilePicturePath ?? blankProfilePic}
                 alt="Profile Picture"
-                class="w-20 h-20"
+                size="lg"
                 border
             />
             <div>

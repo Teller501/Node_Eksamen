@@ -57,7 +57,6 @@
 
     onMount(async () => {
         await Promise.all([fetchMovies(), fetchRecentLogs(), fetchFollowingsLogs()]);
-        console.log(followingsActivity)
     });
 
     function handleNextPopularMoviePage() {
@@ -129,56 +128,59 @@
     </div>
 </div>
 
-<div class="shadow bg-white rounded-lg p-4 border mt-8">
-    <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
-        See what your followings have been up to!
-    </h2>
-    <div id="followings-activity" class="w-full flex justify-center">
-        <div class="grid grid-cols-5 gap-4">
-            {#if followingsActivity}
-                {#each followingsActivity as activity}
-                    <div class="text-center">
-                        <Movie
-                            posterPath={activity.poster_path}
-                            alt={activity.title}
-                            movieId={activity.movie_id}
-                            width={172}
-                        />
-                        <div class="mt-2 flex flex-col items-center">
-                            <span class="text-red-500">
-                                <Rating
-                                    total={5}
-                                    size={20}
-                                    rating={activity.rating}
-                                />
-                            </span>
-                            <span class="text-gray-500 text-xs flex items-center">
-                                <ClockOutline size="xs" class="mr-1" />
-                                {activity.watched_on.split("T")[0]}
-                            </span>
-                            <span class="text-gray-500 text-xs flex items-center mt-1">
-                                <Avatar 
-                                    src={activity.profile_picture ? `${$BASE_URL}/${activity.profile_picture}` : blankProfilePic}
-                                    href={`/${activity.username}`}
-                                    alt="Profile Picture"
-                                    class="w-4 h-4 mr-1" 
-                                /> 
-                                <A href={`/${activity.username}`} class="text-gray-500 me-1 hover:no-underline">{activity.username}</A>
-                            </span>
+{#if followingsActivity}
+    <div class="shadow bg-white rounded-lg p-4 border mt-8">
+        <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
+            See what your followings have been up to!
+        </h2>
+        <div id="followings-activity" class="w-full flex justify-center">
+            <div class="grid grid-cols-5 gap-4">
+                {#if followingsActivity}
+                    {#each followingsActivity as activity}
+                        <div class="text-center">
+                            <Movie
+                                posterPath={activity.poster_path}
+                                alt={activity.title}
+                                movieId={activity.movie_id}
+                                width={172}
+                            />
+                            <div class="mt-2 flex flex-col items-center">
+                                <span class="text-red-500">
+                                    <Rating
+                                        total={5}
+                                        size={20}
+                                        rating={activity.rating}
+                                    />
+                                </span>
+                                <span class="text-gray-500 text-xs flex items-center">
+                                    <ClockOutline size="xs" class="mr-1" />
+                                    {activity.watched_on.split("T")[0]}
+                                </span>
+                                <span class="text-gray-500 text-xs flex items-center mt-1">
+                                    <Avatar 
+                                        src={activity.profile_picture ? `${$BASE_URL}/${activity.profile_picture}` : blankProfilePic}
+                                        href={`/${activity.username}`}
+                                        alt="Profile Picture"
+                                        size="xs"
+                                        class="mr-1" 
+                                    /> 
+                                    <A href={`/${activity.username}`} class="text-gray-500 me-1 hover:no-underline">{activity.username}</A>
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                {/each}
-            {:else}
-                {#each Array(5).fill() as _}
-                    <ImagePlaceholder
-                        imgOnly
-                        class="w-36 rounded-sm mx-2 drop-shadow-md"
-                    />
-                {/each}
-            {/if}
+                    {/each}
+                {:else}
+                    {#each Array(5).fill() as _}
+                        <ImagePlaceholder
+                            imgOnly
+                            class="w-36 rounded-sm mx-2 drop-shadow-md"
+                        />
+                    {/each}
+                {/if}
+            </div>
         </div>
     </div>
-</div>
+{/if}
 
 <div class="shadow bg-white rounded-lg p-4 border mt-8">
     <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
@@ -201,7 +203,7 @@
                                 src={log.profile_picture? `${$BASE_URL}/${log.profile_picture}` : blankProfilePic}
                                 href={`/${log.username}`}
                                 alt="Profile Picture"
-                                class="w-4 h-4"
+                                size="xs"
                             />
                         </div>
                         <div class="text-gray-600 text-sm">

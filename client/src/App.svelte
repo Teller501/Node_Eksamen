@@ -64,15 +64,14 @@
 
     let unreadNotifications = 0;
 
-    $: unreadNotifications = $notificationStore.filter(
-        (notification) => !notification.read
-    ).length;
+    $: if ($userStore && $userStore.id) {
+        unreadNotifications = $notificationStore.filter(notification =>!notification.read).length;
 
-    notificationStore.subscribe((notifications) => {
-        unreadNotifications = notifications.filter(
-            (notification) => !notification.read
-        ).length;
-    });
+        notificationStore.subscribe(notifications => {
+            unreadNotifications = notifications.filter(notification =>!notification.read).length;
+        });
+    }
+
 
     $: if ($userStore && $userStore.id) {
         socket.on("activityDeleted", (data) => {

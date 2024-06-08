@@ -38,7 +38,7 @@
                         <Avatar
                             src={following.profile_picture? `${$BASE_URL}/${following.profile_picture}` : blankProfilePic}
                             alt="Profile Picture"
-                            class="w-12 h-12"
+                            size="md"
                             border
                         />
                         <div class="ml-4">
