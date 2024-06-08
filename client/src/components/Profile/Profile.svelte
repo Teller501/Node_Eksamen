@@ -41,14 +41,16 @@
                         />
                         <div class="mt-2 d-flex align-items-center">
                             <span class="text-red-500 me-2">
-                                <Rating
+                                {#if movie.rating}
+                                    <Rating
                                     total={5}
                                     size={20}
                                     rating={movie.rating}
-                                />
+                                    />
+                                {/if}
                             </span>
                             <span
-                                class="text-gray-500 text-xs flex items-center"
+                                class="text-gray-500 text-xs flex items-center {movie.rating ? "" : "mt-5"}"
                             >
                                 <ClockOutline size="xs" class="mr-1" />
                                 {movie.watched_on.split("T")[0]}
@@ -70,14 +72,14 @@
             </div>
             <div class="mt-4 space-y-4 mb-2">
                 {#each reviews.slice(0, 2) as review}
-                    <div class="flex space-x-4">
+                    <div class="flex space-x-4 relative">
                         <Movie
                             posterPath={review.poster_path}
                             alt={review.title}
                             movieId={review.movie_id}
                             width={128}
                         />
-                        <div class="w-full">
+                        <div class="w-full relative">
                             <h3
                                 class={`text-lg font-bold text-slate-900 ${review.title.length > 20 ? "text-sm" : "text-lg"}`}
                             >
@@ -94,6 +96,16 @@
                             />
                             <p class="mt-2 text-sm text-left text-gray-700">
                                 {review.review}
+                            </p>
+                            <p>
+                                {#if review.rating}
+                                    <Rating
+                                        total={5}
+                                        size={30}
+                                        rating={review.rating}
+                                        class="absolute bottom-0 right-0 mb-2 mr-2"
+                                    />
+                                {/if}
                             </p>
                         </div>
                     </div>

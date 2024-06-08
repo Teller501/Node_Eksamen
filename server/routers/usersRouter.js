@@ -116,11 +116,11 @@ router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req,
 router.get('/api/users/:userId/statistics', authenticateToken, async (req, res, next) => {
     const userId = req.params.userId;
     try {
-        const totalMoviesWatchedRes = await pgClient.query('SELECT COUNT(*) FROM watch_logs WHERE user_id = $1', [userId]);
+        const totalMoviesWatchedRes = await pgClient.query('SELECT COUNT(DISTINCT movie_id) FROM watch_logs WHERE user_id = $1', [userId]);
         const totalMoviesWatched = totalMoviesWatchedRes.rows[0]?.count || 0;
 
         const currentYear = new Date().getFullYear();
-        const moviesWatchedThisYearRes = await pgClient.query('SELECT COUNT(*) FROM watch_logs WHERE user_id = $1 AND EXTRACT(YEAR FROM watched_on) = $2', [userId, currentYear]);
+        const moviesWatchedThisYearRes = await pgClient.query('SELECT COUNT(DISTINCT movie_id) FROM watch_logs WHERE user_id = $1 AND EXTRACT(YEAR FROM watched_on) = $2', [userId, currentYear]);
         const moviesWatchedThisYear = moviesWatchedThisYearRes.rows[0]?.count || 0;
 
         const mostMoviesInAMonthRes = await pgClient.query(`

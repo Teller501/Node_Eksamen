@@ -54,8 +54,6 @@
     const onFileSelected = (event) => {
         selectedImage = event.target.files[0];
     };
-
-    console.log(profilePicturePath);
 </script>
 
 <Toaster />
