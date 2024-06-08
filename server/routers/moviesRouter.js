@@ -36,23 +36,18 @@ router.get("/api/movies/popular", authenticateToken, async (req, res, next) => {
 
 router.get("/api/movies/random", authenticateToken, async (req, res, next) => {
     try {
-        const totalMovies = await pgClient.query('SELECT COUNT(*) FROM movies');
-
-        const maxOffset = Math.min(totalMovies.rows[0].count - 1, 100);
-        const offset = Math.floor(Math.random() * maxOffset);
-
-        const randomMovieResult = await pgClient.query(
+        const moviesResult = await pgClient.query(
             `SELECT id FROM movies
-            WHERE release_date > '1960-01-01'
-            OFFSET $1
-            LIMIT 1`, [offset]
+            WHERE release_date > '1960-01-01'`
         );
 
-        if (randomMovieResult.rows.length === 0) {
+        if (moviesResult.rows.length === 0) {
             throw new Error("No movies found matching criteria");
         }
 
-        const randomMovieId = randomMovieResult.rows[0].id;
+        const randomIndex = Math.floor(Math.random() * moviesResult.rows.length);
+        const randomMovieId = moviesResult.rows[randomIndex].id;
+
         res.json({ data: randomMovieId });
 
     } catch (error) {
@@ -60,8 +55,6 @@ router.get("/api/movies/random", authenticateToken, async (req, res, next) => {
         next(InternalServerError("Failed to fetch random movie"));
     }
 });
-
-
 
 router.get("/api/movies", authenticateToken, async (req, res, next) => {
     try {

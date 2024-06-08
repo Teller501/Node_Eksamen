@@ -12,7 +12,6 @@
         Rating,
     } from "flowbite-svelte";
     import { CaretLeftSolid, CaretRightSolid, ClapperboardPlaySolid, ClockOutline } from "flowbite-svelte-icons";
-    import { navigate } from "svelte-routing";
     import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
     import { tokenStore, userStore } from "../../stores/authStore";
     import { activityStore } from "../../stores/activityStore.js";
@@ -74,7 +73,7 @@
 
     async function handleRandomMovie() {
         const { data } = await fetchGet(`${$BASE_URL}/api/movies/random`, $tokenStore);
-        navigate(`/moviedetails/${data}`);
+        window.location.href = `/moviedetails/${data}`;
     } 
 </script>
 
