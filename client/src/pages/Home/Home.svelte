@@ -145,11 +145,13 @@
                             />
                             <div class="mt-2 flex flex-col items-center">
                                 <span class="text-red-500">
-                                    <Rating
+                                    {#if activity.rating}
+                                        <Rating
                                         total={5}
                                         size={20}
                                         rating={activity.rating}
-                                    />
+                                        />
+                                    {/if}
                                 </span>
                                 <span class="text-gray-500 text-xs flex items-center">
                                     <ClockOutline size="xs" class="mr-1" />
@@ -202,6 +204,7 @@
                                 src={log.profile_picture? `${$BASE_URL}/${log.profile_picture}` : blankProfilePic}
                                 href={`/${log.username}`}
                                 alt="Profile Picture"
+                                class="overflow-hidden"
                                 size="xs"
                             />
                         </div>
@@ -212,7 +215,7 @@
                             class="h-px m-2 bg-primary-300 border-0 dark:bg-primary-700"
                         />
                         <p class="mt-2 text-sm text-left text-gray-700">
-                            {log.movie_title} - {log.rating}★
+                            {log.movie_title} {log.rating ? `- ${log.rating}★` : ""}
                         </p>
                         <p class="mt-2 text-sm text-left text-gray-700">
                             {log.review}
