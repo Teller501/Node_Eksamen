@@ -10,13 +10,13 @@ export async function getAllMovies(
     tmdbIdSet = null
 ) {
     try {
-        const cacheKey = `movies:${page}:${limit}:${sortByPopularity}:${yearFilter}:${genreFilter}:${tmdbIdSet ? [...tmdbIdSet].join(",") : ""}`;
+        const cacheKey = `movies:${page}:${limit}:${sortByPopularity}:${yearFilter}
+        :${genreFilter}:${tmdbIdSet ? [...tmdbIdSet].join(",") : ""}`;
 
         const cacheData = await redisClient.get(cacheKey);
         if (cacheData) {
             return JSON.parse(cacheData);
         }
-
 
         let query = `
             SELECT movies.id, movies.title, movies.popularity, movies.overview, movies.poster_path, array_agg(genres.name) AS genres
@@ -63,13 +63,16 @@ export async function getAllMovies(
             );
         }
 
-        const totalMovies = await pgClient.query(`
+        const totalMovies = await pgClient.query(
+            `
             SELECT COUNT(DISTINCT movies.id) AS count
             FROM movies
             INNER JOIN movie_genres ON movies.id = movie_genres.movie_id
             INNER JOIN genres ON movie_genres.genre_id = genres.id
-            ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ''}
-        `, params.slice(0, params.length - 2));
+            ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""}
+        `,
+            params.slice(0, params.length - 2)
+        );
 
         const totalPages = Math.ceil(totalMovies.rows[0].count / limit);
 
@@ -89,7 +92,7 @@ export async function getAllMovies(
         };
 
         await redisClient.set(cacheKey, JSON.stringify(result), {
-            EX: 3600
+            EX: 3600,
         });
 
         return result;

@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable } from "svelte/store";
 
 function createPersistedStore(key, startValue) {
     const { subscribe, set, update } = writable(startValue, () => {
@@ -7,7 +7,10 @@ function createPersistedStore(key, startValue) {
             try {
                 set(JSON.parse(json));
             } catch (e) {
-                console.error(`Error parsing JSON from localStorage for key "${key}":`, e);
+                console.error(
+                    `Error parsing JSON from localStorage for key "${key}":`,
+                    e
+                );
             }
         }
 
@@ -20,10 +23,10 @@ function createPersistedStore(key, startValue) {
             localStorage.setItem(key, JSON.stringify(value));
             set(value);
         },
-        update
+        update,
     };
 }
 
-export const tokenStore = createPersistedStore('token', null);
-export const refreshTokenStore = createPersistedStore('refreshToken', null);
-export const userStore = createPersistedStore('user', null);
+export const tokenStore = createPersistedStore("token", null);
+export const refreshTokenStore = createPersistedStore("refreshToken", null);
+export const userStore = createPersistedStore("user", null);

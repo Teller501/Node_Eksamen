@@ -105,7 +105,9 @@
                             <div class="flex items-center">
                                 {#if showUserAvatar}
                                     <Avatar
-                                        src={review.profile_picture? `${$BASE_URL}/${review.profile_picture}` : blankProfilePic}
+                                        src={review.profile_picture
+                                            ? `${$BASE_URL}/${review.profile_picture}`
+                                            : blankProfilePic}
                                         alt="Profile Picture"
                                         href={`/${review.username}`}
                                         size="sm"
@@ -114,13 +116,13 @@
                                     />
                                 {/if}
                                 {#if showUsername}
-                                    <span class="text-gray-600 text-sm"
-                                        >by <A
+                                    <span class="text-gray-600 text-sm">
+                                        by <A
                                             class="text-gray-600 text-sm hover:no-underline"
                                             href={`/${review.username}`}
-                                            >{review.username}</A
-                                        ></span
-                                    >
+                                            >{review.username}
+                                        </A>
+                                    </span>
                                 {/if}
                             </div>
                         {/if}

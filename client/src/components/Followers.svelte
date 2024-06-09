@@ -11,9 +11,11 @@
 </script>
 
 <span>
-    <A class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
-      on:click={() => (followersModal = true)}>
-      {followersCount ?? 0} followers
+    <A
+        class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
+        on:click={() => (followersModal = true)}
+    >
+        {followersCount ?? 0} followers
     </A>
 </span>
 
@@ -35,7 +37,9 @@
                 >
                     <div class="flex items-center">
                         <Avatar
-                            src={follower.profile_picture? `${$BASE_URL}/${follower.profile_picture}` : blankProfilePic}
+                            src={follower.profile_picture
+                                ? `${$BASE_URL}/${follower.profile_picture}`
+                                : blankProfilePic}
                             alt="Profile Picture"
                             size="md"
                             border

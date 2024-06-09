@@ -10,13 +10,14 @@
     let followingsModal = false;
 </script>
 
-<span
-    ><A
+<span>
+    <A
         class="hover:no-underline text-blue-500 hover:text-blue-600 font-normal"
         on:click={() => (followingsModal = true)}
-        >{followingsCount ?? 0} following</A
-    ></span
->
+    >
+        {followingsCount ?? 0} following
+    </A>
+</span>
 
 <Modal
     bind:open={followingsModal}
@@ -36,7 +37,9 @@
                 >
                     <div class="flex items-center">
                         <Avatar
-                            src={following.profile_picture? `${$BASE_URL}/${following.profile_picture}` : blankProfilePic}
+                            src={following.profile_picture
+                                ? `${$BASE_URL}/${following.profile_picture}`
+                                : blankProfilePic}
                             alt="Profile Picture"
                             size="md"
                             border

@@ -37,13 +37,13 @@
 
         <h2 class="text-slate-950 mb-4 text-2xl">Our vision</h2>
         <P weight="light" class="text-slate-950 mb-20">
-            Our vision with CineMatch is to gather as many users as possible
-            who share a joint interest: Film. CineMatch is our vision for a
-            living ecosystem, powered by the ideas, opinions and experiences
-            that make our world of visual storytelling so rich. Users will have
-            a more active role in the platform, this is not just an application
-            for content consumption. We want to build a collaborative,
-            open-ended cinematic knowledge base via user reviews and ratings and
+            Our vision with CineMatch is to gather as many users as possible who
+            share a joint interest: Film. CineMatch is our vision for a living
+            ecosystem, powered by the ideas, opinions and experiences that make
+            our world of visual storytelling so rich. Users will have a more
+            active role in the platform, this is not just an application for
+            content consumption. We want to build a collaborative, open-ended
+            cinematic knowledge base via user reviews and ratings and
             discussions.
         </P>
 
@@ -65,10 +65,11 @@
             Our recommender system is built on the idea that the best
             recommendations come from people who share your interests. We use
             collaborative filtering to recommend movies based on your ratings!
-            So when you visit our <A href="/recommender">recommender page</A>, you will get a handful of 
-            popular movies, where you can rate them, skip them or add them to watchlist.
-            After we have gathered enough information, we will provide you with a list
-            of movies that you might like.
+            So when you visit our <A href="/recommender">recommender page</A>,
+            you will get a handful of popular movies, where you can rate them,
+            skip them or add them to watchlist. After we have gathered enough
+            information, we will provide you with a list of movies that you
+            might like.
         </P>
     </div>
 </div>

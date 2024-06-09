@@ -1,7 +1,10 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
-import mongoClient from "../database/mongoDBConnection.js";
-import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
+import {
+    NotFoundError,
+    BadRequestError,
+    InternalServerError,
+} from "../util/errors.js";
 
 const router = Router();
 
@@ -60,13 +63,16 @@ router.get("/api/lists/:user_id", authenticateToken, async (req, res, next) => {
     }
 });
 
-router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, next) => {
-    try {
-        const userId = req.params.user_id;
-        const listId = req.params.list_id;
+router.get(
+    "/api/lists/:user_id/:list_id",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const userId = req.params.user_id;
+            const listId = req.params.list_id;
 
-        const listQuery = await pgClient.query(
-            `
+            const listQuery = await pgClient.query(
+                `
             SELECT uml.*, u.username, u.profile_picture, COUNT(mli.movie_id) as movie_count
             FROM user_movie_lists uml
             JOIN users u ON uml.user_id = u.id
@@ -74,144 +80,169 @@ router.get("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, n
             WHERE uml.id = $1 AND uml.user_id = $2
             GROUP BY uml.id, u.id;
             `,
-            [listId, userId]
-        );
+                [listId, userId]
+            );
 
-        if (listQuery.rows.length === 0) {
-            return next(NotFoundError("List not found"));
-        }
+            if (listQuery.rows.length === 0) {
+                return next(NotFoundError("List not found"));
+            }
 
-        const movieQuery = await pgClient.query(
-            `
+            const movieQuery = await pgClient.query(
+                `
             SELECT m.id as movie_id, m.title, m.original_title, m.overview, m.poster_path
             FROM movie_list_items li
             JOIN movies m ON li.movie_id = m.id
             WHERE li.list_id = $1;
             `,
-            [listId]
-        );
+                [listId]
+            );
 
-        const list = listQuery.rows[0];
-        list.movies = movieQuery.rows;
+            const list = listQuery.rows[0];
+            list.movies = movieQuery.rows;
 
-        res.send({ data: list });
-    } catch (error) {
-        console.error("Error getting list details:", error);
-        next(InternalServerError("Failed to get list details"));
+            res.send({ data: list });
+        } catch (error) {
+            console.error("Error getting list details:", error);
+            next(InternalServerError("Failed to get list details"));
+        }
     }
-});
+);
 
-router.post("/api/lists/:user_id", authenticateToken, async (req, res, next) => {
-    try {
-        const userId = req.params.user_id;
-        const { listName, description } = req.body;
+router.post(
+    "/api/lists/:user_id",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const userId = req.params.user_id;
+            const { listName, description } = req.body;
 
-        const query = `
+            const query = `
             INSERT INTO user_movie_lists (user_id, list_name, description)
             VALUES ($1, $2, $3)
             RETURNING *;
         `;
-        const result = await pgClient.query(query, [userId, listName, description]);
+            const result = await pgClient.query(query, [
+                userId,
+                listName,
+                description,
+            ]);
 
-        const usernameQuery = await pgClient.query(`SELECT username FROM users WHERE id = $1`, [userId]);
-        result.rows[0].username = usernameQuery.rows[0].username;
+            const usernameQuery = await pgClient.query(
+                `SELECT username FROM users WHERE id = $1`,
+                [userId]
+            );
+            result.rows[0].username = usernameQuery.rows[0].username;
 
-
-        res.status(201).send({ data: result.rows[0] });
-    } catch (error) {
-        console.error("Error creating list:", error);
-        next(InternalServerError("Failed to create list"));
-    }
-});
-
-router.post("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, next) => {
-    try {
-        const userId = req.params.user_id;
-        const listId = req.params.list_id;
-        const { movieId } = req.body;
-
-        const listQuery = await pgClient.query(
-            `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
-            [listId, userId]
-        );
-        if (listQuery.rows.length === 0) {
-            return res.status(404).send("List not found");
+            res.status(201).send({ data: result.rows[0] });
+        } catch (error) {
+            console.error("Error creating list:", error);
+            next(InternalServerError("Failed to create list"));
         }
+    }
+);
 
-        const query = `
+router.post(
+    "/api/lists/:user_id/:list_id",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const userId = req.params.user_id;
+            const listId = req.params.list_id;
+            const { movieId } = req.body;
+
+            const listQuery = await pgClient.query(
+                `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
+                [listId, userId]
+            );
+            if (listQuery.rows.length === 0) {
+                return res.status(404).send("List not found");
+            }
+
+            const query = `
             INSERT INTO movie_list_items (list_id, movie_id)
             VALUES ($1, $2)
             RETURNING *;
         `;
-        const result = await pgClient.query(query, [listId, movieId]);
+            const result = await pgClient.query(query, [listId, movieId]);
 
-        res.status(201).send({ data: result.rows[0] });
-    } catch (error) {
-        console.error("Error adding movie to list:", error);
-        next(InternalServerError("Failed to add movie to list"));
+            res.status(201).send({ data: result.rows[0] });
+        } catch (error) {
+            console.error("Error adding movie to list:", error);
+            next(InternalServerError("Failed to add movie to list"));
+        }
     }
-});
+);
 
+router.delete(
+    "/api/lists/:user_id/:list_id",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const userId = req.params.user_id;
+            const listId = req.params.list_id;
 
-router.delete("/api/lists/:user_id/:list_id", authenticateToken, async (req, res, next) => {
-    try {
-        const userId = req.params.user_id;
-        const listId = req.params.list_id;
-
-        const deleteItemsQuery = `
+            const deleteItemsQuery = `
             DELETE FROM movie_list_items
             WHERE list_id = $1;
         `;
-        await pgClient.query(deleteItemsQuery, [listId]);
+            await pgClient.query(deleteItemsQuery, [listId]);
 
-        const deleteListQuery = `
+            const deleteListQuery = `
             DELETE FROM user_movie_lists
             WHERE id = $1 AND user_id = $2
             RETURNING *;
         `;
-        const result = await pgClient.query(deleteListQuery, [listId, userId]);
+            const result = await pgClient.query(deleteListQuery, [
+                listId,
+                userId,
+            ]);
 
-        if (result.rows.length === 0) {
-            return next(NotFoundError("List not found"));
+            if (result.rows.length === 0) {
+                return next(NotFoundError("List not found"));
+            }
+
+            res.send({ data: result.rows[0] });
+        } catch (error) {
+            console.error("Error deleting list:", error);
+            next(InternalServerError("Failed to delete list"));
         }
-
-        res.send({ data: result.rows[0] });
-    } catch (error) {
-        console.error("Error deleting list:", error);
-        next(InternalServerError("Failed to delete list"));
     }
-});
+);
 
-router.delete("/api/lists/:user_id/:list_id/:movie_id", authenticateToken, async (req, res, next) => {
-    try {
-        const userId = req.params.user_id;
-        const listId = req.params.list_id;
-        const movieId = req.params.movie_id;
+router.delete(
+    "/api/lists/:user_id/:list_id/:movie_id",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const userId = req.params.user_id;
+            const listId = req.params.list_id;
+            const movieId = req.params.movie_id;
 
-        const listQuery = await pgClient.query(
-            `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
-            [listId, userId]
-        );
-        if (listQuery.rows.length === 0) {
-            return res.status(404).send("List not found");
-        }
+            const listQuery = await pgClient.query(
+                `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
+                [listId, userId]
+            );
+            if (listQuery.rows.length === 0) {
+                return res.status(404).send("List not found");
+            }
 
-        const query = `
+            const query = `
             DELETE FROM movie_list_items
             WHERE list_id = $1 AND movie_id = $2
             RETURNING *;
         `;
-        const result = await pgClient.query(query, [listId, movieId]);
+            const result = await pgClient.query(query, [listId, movieId]);
 
-        if (result.rows.length === 0) {
-            return next(NotFoundError("Movie not found in list"));
+            if (result.rows.length === 0) {
+                return next(NotFoundError("Movie not found in list"));
+            }
+
+            res.send({ data: result.rows[0] });
+        } catch (error) {
+            console.error("Error deleting movie from list:", error);
+            next(InternalServerError("Failed to delete movie from list"));
         }
-
-        res.send({ data: result.rows[0] });
-    } catch (error) {
-        console.error("Error deleting movie from list:", error);
-        next(InternalServerError("Failed to delete movie from list"));
     }
-});
+);
 
 export default router;

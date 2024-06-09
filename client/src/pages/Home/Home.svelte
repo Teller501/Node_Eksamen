@@ -11,7 +11,12 @@
         Skeleton,
         Rating,
     } from "flowbite-svelte";
-    import { CaretLeftSolid, CaretRightSolid, ClapperboardPlaySolid, ClockOutline } from "flowbite-svelte-icons";
+    import {
+        CaretLeftSolid,
+        CaretRightSolid,
+        ClapperboardPlaySolid,
+        ClockOutline,
+    } from "flowbite-svelte-icons";
     import { BASE_URL, SOCKET_URL } from "../../stores/generalStore";
     import { tokenStore, userStore } from "../../stores/authStore";
     import { activityStore } from "../../stores/activityStore.js";
@@ -40,22 +45,35 @@
     });
 
     async function fetchMovies() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/movies/popular?limit=5&page=${page}`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/movies/popular?limit=5&page=${page}`,
+            $tokenStore
+        );
         popularMovies = data;
     }
 
     async function fetchRecentLogs() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/logs/recent`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/logs/recent`,
+            $tokenStore
+        );
         recentLogs = data;
     }
 
     async function fetchFollowingsLogs() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/logs/followings/${user.id}`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/logs/followings/${user.id}`,
+            $tokenStore
+        );
         followingsActivity = data;
     }
 
     onMount(async () => {
-        await Promise.all([fetchMovies(), fetchRecentLogs(), fetchFollowingsLogs()]);
+        await Promise.all([
+            fetchMovies(),
+            fetchRecentLogs(),
+            fetchFollowingsLogs(),
+        ]);
     });
 
     function handleNextPopularMoviePage() {
@@ -72,9 +90,12 @@
     }
 
     async function handleRandomMovie() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/movies/random`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/movies/random`,
+            $tokenStore
+        );
         window.location.href = `/moviedetails/${data}`;
-    } 
+    }
 </script>
 
 <h1 class="text-slate-900 text-3xl font-bold">
@@ -88,7 +109,10 @@
     <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
         Popular Movies
     </h2>
-    <div id="popular-movies" class="w-full flex flex-col sm:flex-row items-center justify-between">
+    <div
+        id="popular-movies"
+        class="w-full flex flex-col sm:flex-row items-center justify-between"
+    >
         <Button
             class="bg-transparent border-none p-0 inline-flex justify-center items-center hover:bg-transparent focus:outline-none focus-within:ring-0"
             on:click={handlePreviousPopularMoviePage}
@@ -132,7 +156,10 @@
         <h2 class="text-slate-900 text-left mb-4 font-bold border-b-2 p-4">
             See what your followings have been up to!
         </h2>
-        <div id="followings-activity" class="w-full flex flex-col sm:flex-row justify-center">
+        <div
+            id="followings-activity"
+            class="w-full flex flex-col sm:flex-row justify-center"
+        >
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
                 {#if followingsActivity}
                     {#each followingsActivity as activity}
@@ -147,25 +174,35 @@
                                 <span class="text-red-500">
                                     {#if activity.rating}
                                         <Rating
-                                        total={5}
-                                        size={20}
-                                        rating={activity.rating}
+                                            total={5}
+                                            size={20}
+                                            rating={activity.rating}
                                         />
                                     {/if}
                                 </span>
-                                <span class="text-gray-500 text-xs flex items-center">
+                                <span
+                                    class="text-gray-500 text-xs flex items-center"
+                                >
                                     <ClockOutline size="xs" class="mr-1" />
                                     {activity.watched_on.split("T")[0]}
                                 </span>
-                                <span class="text-gray-500 text-xs flex items-center mt-1">
-                                    <Avatar 
-                                        src={activity.profile_picture ? `${$BASE_URL}/${activity.profile_picture}` : blankProfilePic}
+                                <span
+                                    class="text-gray-500 text-xs flex items-center mt-1"
+                                >
+                                    <Avatar
+                                        src={activity.profile_picture
+                                            ? `${$BASE_URL}/${activity.profile_picture}`
+                                            : blankProfilePic}
                                         href={`/${activity.username}`}
                                         alt="Profile Picture"
                                         size="xs"
-                                        class="mr-1" 
-                                    /> 
-                                    <A href={`/${activity.username}`} class="text-gray-500 me-1 hover:no-underline">{activity.username}</A>
+                                        class="mr-1"
+                                    />
+                                    <A
+                                        href={`/${activity.username}`}
+                                        class="text-gray-500 me-1 hover:no-underline"
+                                        >{activity.username}</A
+                                    >
                                 </span>
                             </div>
                         </div>
@@ -201,7 +238,9 @@
                                 {log.username}
                             </A>
                             <Avatar
-                                src={log.profile_picture? `${$BASE_URL}/${log.profile_picture}` : blankProfilePic}
+                                src={log.profile_picture
+                                    ? `${$BASE_URL}/${log.profile_picture}`
+                                    : blankProfilePic}
                                 href={`/${log.username}`}
                                 alt="Profile Picture"
                                 class="overflow-hidden"
@@ -215,7 +254,8 @@
                             class="h-px m-2 bg-primary-300 border-0 dark:bg-primary-700"
                         />
                         <p class="mt-2 text-sm text-left text-gray-700">
-                            {log.movie_title} {log.rating ? `- ${log.rating}★` : ""}
+                            {log.movie_title}
+                            {log.rating ? `- ${log.rating}★` : ""}
                         </p>
                         <p class="mt-2 text-sm text-left text-gray-700">
                             {log.review}

@@ -6,16 +6,26 @@ const isDeleteMode = process.argv.includes("delete");
     try {
         if (isDeleteMode) {
             await pgClient.query(`DROP TABLE IF EXISTS review_likes CASCADE;`);
-            await pgClient.query(`DROP TABLE IF EXISTS review_comments CASCADE;`);
+            await pgClient.query(
+                `DROP TABLE IF EXISTS review_comments CASCADE;`
+            );
             await pgClient.query(`DROP TABLE IF EXISTS watch_logs CASCADE;`);
             await pgClient.query(`DROP TABLE IF EXISTS movie_genres CASCADE;`);
             await pgClient.query(`DROP TABLE IF EXISTS genres CASCADE;`);
             await pgClient.query(`DROP TABLE IF EXISTS users CASCADE;`);
-            await pgClient.query(`DROP TABLE IF EXISTS favorite_movies CASCADE;`);
-            await pgClient.query(`DROP TABLE IF EXISTS watchlist_movies CASCADE;`);
+            await pgClient.query(
+                `DROP TABLE IF EXISTS favorite_movies CASCADE;`
+            );
+            await pgClient.query(
+                `DROP TABLE IF EXISTS watchlist_movies CASCADE;`
+            );
             await pgClient.query(`DROP TABLE IF EXISTS user_follows CASCADE;`);
-            await pgClient.query(`DROP TABLE IF EXISTS user_movie_lists CASCADE;`);
-            await pgClient.query(`DROP TABLE IF EXISTS movie_list_items CASCADE;`);
+            await pgClient.query(
+                `DROP TABLE IF EXISTS user_movie_lists CASCADE;`
+            );
+            await pgClient.query(
+                `DROP TABLE IF EXISTS movie_list_items CASCADE;`
+            );
         }
 
         await pgClient.query(`CREATE TABLE IF NOT EXISTS users (
@@ -132,7 +142,7 @@ const isDeleteMode = process.argv.includes("delete");
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )`);
-        
+
         await pgClient.query(`CREATE TABLE IF NOT EXISTS movie_list_items (
             id SERIAL PRIMARY KEY,
             list_id INT,
@@ -156,7 +166,7 @@ const isDeleteMode = process.argv.includes("delete");
             ('Lars', '1234', 'lars@mail.dk', FALSE);`);
         }
     } catch (error) {
-        console.error('An error occurred:', error);
+        console.error("An error occurred:", error);
     } finally {
         await pgClient.end();
     }

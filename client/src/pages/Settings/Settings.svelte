@@ -16,9 +16,12 @@
             username: $userStore.username,
             currentPassword: currentPassword,
             newPassword: newPassword,
-        }
+        };
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/change-password`, body);
+        const { status } = await fetchPost(
+            `${$BASE_URL}/api/change-password`,
+            body
+        );
 
         if (status === 200) {
             toast.success("Password changed successfully");
@@ -34,8 +37,10 @@
 
 <div>
     <h2 class="text-gray-900 text-xl font-bold mb-4">Email Address</h2>
-    <p class="text-gray-700 text-sm">Your email address is <strong>{$userStore.email}</strong></p>
-    <Hr class="my-4"/>
+    <p class="text-gray-700 text-sm">
+        Your email address is <strong>{$userStore.email}</strong>
+    </p>
+    <Hr class="my-4" />
 </div>
 
 <div>
@@ -43,22 +48,47 @@
     <form on:submit={handleChangePassword}>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <Label for="password" class="text-gray-700 text-sm mb-2 block">New Password</Label>
-                <Input type="password" id="password" class="w-full" placeholder="•••••" bind:value={newPassword} required/>
+                <Label for="password" class="text-gray-700 text-sm mb-2 block"
+                    >New Password</Label
+                >
+                <Input
+                    type="password"
+                    id="password"
+                    class="w-full"
+                    placeholder="•••••"
+                    bind:value={newPassword}
+                    required
+                />
             </div>
             <div>
-                <Label for="current-password" class="text-gray-700 text-sm mb-2 block">Current Password</Label>
-                <Input type="password" id="current-password" class="w-full" placeholder="•••••" bind:value={currentPassword} required/>
+                <Label
+                    for="current-password"
+                    class="text-gray-700 text-sm mb-2 block"
+                    >Current Password</Label
+                >
+                <Input
+                    type="password"
+                    id="current-password"
+                    class="w-full"
+                    placeholder="•••••"
+                    bind:value={currentPassword}
+                    required
+                />
             </div>
         </div>
-        <p class="text-gray-700 text-sm mt-2">Forgot your current password? <ForgotPassword /></p>
+        <p class="text-gray-700 text-sm mt-2">
+            Forgot your current password? <ForgotPassword />
+        </p>
         <Button type="submit" class="mt-4">Change Password</Button>
     </form>
-    <Hr class="my-4"/>
+    <Hr class="my-4" />
 </div>
 
 <div>
     <h2 class="text-gray-900 text-xl font-bold mb-4">Delete Account</h2>
-    <p class="text-gray-700 text-sm">You can delete your account at any time. This will permanently delete all of your data. We cannot restore your account once deleted.</p>
+    <p class="text-gray-700 text-sm">
+        You can delete your account at any time. This will permanently delete
+        all of your data. We cannot restore your account once deleted.
+    </p>
     <DeleteAccount />
 </div>

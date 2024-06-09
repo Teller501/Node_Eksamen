@@ -6,11 +6,11 @@ const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = process.env.TMDB_API_KEY;
 
 const limiter = new Bottleneck({
-    minTime: 20
+    minTime: 20,
 });
 
 let currentPage = 1;
-let maxDate = new Date("2024-05-01").toISOString().split('T')[0];
+let maxDate = new Date("2024-05-01").toISOString().split("T")[0];
 let minDate = getMinDate(maxDate, 1);
 let maxYear = 1950;
 
@@ -38,16 +38,25 @@ const fetchTMDBData = limiter.wrap(async function () {
 
         const moviePromises = movies.map(async (movie) => {
             try {
-                const detailedMovieResponse = await axios.get(`${BASE_URL}/movie/${movie.id}?api_key=${API_KEY}`);
-                const castResponse = await axios.get(`${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`);
-                await insertMovieIntoDB(detailedMovieResponse.data, castResponse.data.cast);
+                const detailedMovieResponse = await axios.get(
+                    `${BASE_URL}/movie/${movie.id}?api_key=${API_KEY}`
+                );
+                const castResponse = await axios.get(
+                    `${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`
+                );
+                await insertMovieIntoDB(
+                    detailedMovieResponse.data,
+                    castResponse.data.cast
+                );
             } catch (error) {
-                console.error(`Failed to fetch details for movie ID: ${movie.id}`, error);
+                console.error(
+                    `Failed to fetch details for movie ID: ${movie.id}`,
+                    error
+                );
             }
         });
 
         await Promise.all(moviePromises);
-
     } catch (error) {
         console.error("Failed to fetch or store movies:", error);
     }
@@ -56,7 +65,7 @@ const fetchTMDBData = limiter.wrap(async function () {
 function getMinDate(maxDate, monthsToSubtract) {
     const maxDateObj = new Date(maxDate);
     maxDateObj.setMonth(maxDateObj.getMonth() - monthsToSubtract);
-    return maxDateObj.toISOString().split('T')[0];
+    return maxDateObj.toISOString().split("T")[0];
 }
 
 async function insertMovieIntoDB(movieData, cast) {
@@ -103,7 +112,7 @@ async function insertMovieIntoDB(movieData, cast) {
                 movie.poster_path,
                 movie.vote_average,
                 movie.vote_count,
-                castJson
+                castJson,
             ]
         );
 

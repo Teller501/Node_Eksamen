@@ -38,8 +38,21 @@
 
     $: isOwner = username === $userStore.username;
 
+    $: if (user) {
+        loading = false;
+    }
+
     listsStore.subscribe((value) => {
         lists = value;
+    });
+
+    userStore.subscribe(($userStore) => {
+        if ($userStore && isOwner) {
+            user = $userStore;
+            profilePicturePath = user.profile_picture
+                ? `${$BASE_URL}/${user.profile_picture}`
+                : blankProfilePic;
+        }
     });
 
     onMount(async () => {
@@ -58,7 +71,9 @@
             fetchStats(),
         ]);
 
-        profilePicturePath = user.profile_picture? `${$BASE_URL}/${user.profile_picture}` : blankProfilePic;
+        profilePicturePath = user.profile_picture
+            ? `${$BASE_URL}/${user.profile_picture}`
+            : blankProfilePic;
     });
 
     onDestroy(() => {
@@ -66,7 +81,7 @@
     });
 
     async function fetchUser() {
-        loading = true; 
+        loading = true;
 
         if (!isOwner) {
             const { data, status } = await fetchGet(
@@ -84,9 +99,11 @@
             user = $userStore;
         }
 
+        profilePicturePath = user.profile_picture
+            ? `${$BASE_URL}/${user.profile_picture}`
+            : blankProfilePic;
         loading = false;
     }
-
 
     async function fetchUserData() {
         const { data } = await fetchGet(
@@ -173,19 +190,28 @@
     }
 
     async function fetchFollowers() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/followers`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/follows/${user.id}/followers`,
+            $tokenStore
+        );
         followersList = data;
         followersCount = followersList ? followersList.length : 0;
     }
 
     async function fetchFollowings() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/follows/${user.id}/following`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/follows/${user.id}/following`,
+            $tokenStore
+        );
         followingsList = data;
         followingsCount = followingsList ? followingsList.length : 0;
     }
 
     async function fetchStats() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/users/${user.id}/statistics`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/users/${user.id}/statistics`,
+            $tokenStore
+        );
 
         stats = data;
     }
@@ -195,15 +221,15 @@
     <Spinner class="w-12 h-12 mt-8 text-primary-500" />
 {:else}
     <ProfileHeader
-    {user}
-    {isOwner}
-    {following}
-    profilePicturePath={profilePicturePath}
-    {userData}
-    followers={followersList}
-    {followersCount}
-    followings={followingsList}
-    {followingsCount}
+        {user}
+        {isOwner}
+        {following}
+        {profilePicturePath}
+        {userData}
+        followers={followersList}
+        {followersCount}
+        followings={followingsList}
+        {followingsCount}
     />
 
     <div class="container mx-auto px-4 mt-4">
@@ -259,4 +285,3 @@
         </Tabs>
     </div>
 {/if}
-

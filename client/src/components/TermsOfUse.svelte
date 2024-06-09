@@ -175,7 +175,9 @@
         upon becoming aware of it.
     </p>
 
-    <h2 class="text-slate-950 font-bold text-xl mt-8">Third-Party Links & Ads; Other Users</h2>
+    <h2 class="text-slate-950 font-bold text-xl mt-8">
+        Third-Party Links & Ads; Other Users
+    </h2>
 
     <p class="text-slate-950">
         <strong>Third-Party Links & Ads.</strong> The Site may contain links to third-party
@@ -240,7 +242,9 @@
         limitation may not apply to you.
     </p>
 
-    <h2 class="text-slate-950 font-bold text-xl mt-8">Limitation on Liability</h2>
+    <h2 class="text-slate-950 font-bold text-xl mt-8">
+        Limitation on Liability
+    </h2>
 
     <p class="text-slate-950">
         To the maximum extent permitted by law, in no event shall company or our
@@ -566,7 +570,9 @@
         upon assignees.
     </p>
 
-    <p class="text-slate-950"><strong>Your Privacy.</strong> Please read our Privacy Policy.</p>
+    <p class="text-slate-950">
+        <strong>Your Privacy.</strong> Please read our Privacy Policy.
+    </p>
 
     <p class="text-slate-950">
         <strong>Copyright/Trademark Information.</strong> Copyright ©. All rights

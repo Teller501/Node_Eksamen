@@ -31,7 +31,11 @@
             followedId: user.id,
         };
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/follows`, body, $tokenStore);
+        const { status } = await fetchPost(
+            `${$BASE_URL}/api/follows`,
+            body,
+            $tokenStore
+        );
 
         if (status === 200) {
             isFollowing = !isFollowing;
@@ -64,7 +68,6 @@
             }
         }
     }
-
 </script>
 
 <div class="container mx-auto p-4">
@@ -78,8 +81,13 @@
             />
             <div>
                 <div class="flex items-center">
-                    <h1 class="text-3xl font-bold text-slate-900">
+                    <h1
+                        class="text-3xl font-bold text-slate-900 flex items-center"
+                    >
                         {user.username}
+                        <span class="font-light text-gray-500 text-sm ml-2"
+                            >{user.full_name ? `(${user.full_name})` : ""}</span
+                        >
                     </h1>
                     {#if !isOwner}
                         {#if !isFollowing}
@@ -102,10 +110,11 @@
                     </span>
                 {/if}
                 <div class="text-gray-600">
-                    <Followers {followers} {followersCount}/> •
+                    <Followers {followers} {followersCount} /> •
                     <Following {followings} {followingsCount} />
                     •
-                    <span>{userData?.unique_movies_watched ?? 0} movies watched</span
+                    <span
+                        >{userData?.unique_movies_watched ?? 0} movies watched</span
                     >
                 </div>
             </div>

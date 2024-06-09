@@ -28,7 +28,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL;
 const saltRounds = 14;
 
 import cron from "node-cron";
-cron.schedule('0 * * * *', async () => {
+cron.schedule("0 * * * *", async () => {
     try {
         const result = await pgClient.query(`
             DELETE FROM users 
@@ -45,7 +45,7 @@ cron.schedule('0 * * * *', async () => {
     } catch (error) {
         console.error("Error deleting inactive users:", error);
     }
-})
+});
 
 function generateAccessToken(user, rememberMe = false) {
     return jwt.sign(user, process.env.JWT_SECRET, {
@@ -253,7 +253,10 @@ router.post("/api/token", validateToken, async (req, res, next) => {
     });
 });
 
-router.post("/api/forgot-password", validateForgotPassword, async (req, res, next) => {
+router.post(
+    "/api/forgot-password",
+    validateForgotPassword,
+    async (req, res, next) => {
         const { email } = req.body;
         const result = await pgClient.query(
             `SELECT * FROM users WHERE email = $1`,
@@ -276,7 +279,10 @@ router.post("/api/forgot-password", validateForgotPassword, async (req, res, nex
     }
 );
 
-router.post("/api/reset-password/:token", validateResetPassword, async (req, res, next) => {
+router.post(
+    "/api/reset-password/:token",
+    validateResetPassword,
+    async (req, res, next) => {
         const { token } = req.params;
         const { newPassword } = req.body;
 

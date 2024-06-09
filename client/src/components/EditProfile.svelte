@@ -18,8 +18,12 @@
 
     let location = $userStore.location ?? "";
     let editProfileModal = false;
-    let birthDate = $userStore.birth_date ? $userStore.birth_date.split("T")[0] : "";
-    const profilePicturePath = $userStore.profile_picture? `${$BASE_URL}/${$userStore.profile_picture}` : blankProfilePic;
+    let birthDate = $userStore.birth_date
+        ? $userStore.birth_date.split("T")[0]
+        : "";
+    const profilePicturePath = $userStore.profile_picture
+        ? `${$BASE_URL}/${$userStore.profile_picture}`
+        : blankProfilePic;
     let selectedImage = null;
 
     async function handleEditProfile(event) {
@@ -118,15 +122,15 @@
             <Textarea id="bio" rows="3" bind:value={$userStore.bio} />
         </div>
         <hr class="mb-6" />
-        <button
+        <Button
             type="button"
-            class="text-red-500 hover:text-red-600 hover:bg-primary-100"
-            on:click={() => (editProfileModal = false)}>Cancel changes</button
+            class="text-red-500 hover:text-red-600 bg-gray-900 hover:bg-primary-100"
+            on:click={() => (editProfileModal = false)}>Cancel changes</Button
         >
-        <button
+        <Button
             type="submit"
             class="hover:bg-primary-800 bg-primary-600 text-white"
-            >Update profile</button
+            >Update profile</Button
         >
     </form>
 </Modal>

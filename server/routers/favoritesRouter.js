@@ -1,13 +1,16 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
-import mongoClient from "../database/mongoDBConnection.js";
-import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
+import {
+    NotFoundError,
+    BadRequestError,
+    InternalServerError,
+} from "../util/errors.js";
 
 const router = Router();
 
 import authenticateToken from "../util/authenticateToken.js";
 
-router.get("/api/favorites", authenticateToken, async (req, res, next) => { 
+router.get("/api/favorites", authenticateToken, async (req, res, next) => {
     try {
         const query = "SELECT * FROM favorite_movies";
         const result = await pgClient.query(query);
@@ -25,31 +28,35 @@ router.get("/api/favorites", authenticateToken, async (req, res, next) => {
     }
 });
 
-router.get("/api/favorites/:user_id", authenticateToken, async (req, res, next) => {
-    try {
-        const userId = req.params.user_id;
-        const favoritesQuery = `
+router.get(
+    "/api/favorites/:user_id",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const userId = req.params.user_id;
+            const favoritesQuery = `
             SELECT fm.movie_id, fm.user_id, m.title, m.poster_path
             FROM favorite_movies fm
             JOIN movies m ON fm.movie_id = m.id
             WHERE fm.user_id = $1;
         `;
-        const favoritesResult = await pgClient.query(favoritesQuery, [userId]);
+            const favoritesResult = await pgClient.query(favoritesQuery, [
+                userId,
+            ]);
 
-        const favorites = favoritesResult.rows;
+            const favorites = favoritesResult.rows;
 
-        if (favorites.length === 0) {
-            return next(NotFoundError("No favorites found"));
+            if (favorites.length === 0) {
+                return next(NotFoundError("No favorites found"));
+            }
+
+            res.json({ data: favorites });
+        } catch (error) {
+            console.error("Error getting favorites:", error);
+            next(InternalServerError("Failed to get favorites"));
         }
-
-        res.json({ data: favorites });
-    } catch (error) {
-        console.error("Error getting favorites:", error);
-        next(InternalServerError("Failed to get favorites"));
     }
-});
-
-
+);
 
 router.post("/api/favorites", authenticateToken, async (req, res, next) => {
     try {
@@ -58,7 +65,10 @@ router.post("/api/favorites", authenticateToken, async (req, res, next) => {
         const existsQuery = `
             SELECT * FROM favorite_movies WHERE user_id = $1 AND movie_id = $2;
         `;
-        const existsResult = await pgClient.query(existsQuery, [userId, movieId]);
+        const existsResult = await pgClient.query(existsQuery, [
+            userId,
+            movieId,
+        ]);
         if (existsResult.rowCount > 0) {
             return next(BadRequestError("Movie is already in favorites"));
         }
@@ -93,26 +103,28 @@ router.post("/api/favorites", authenticateToken, async (req, res, next) => {
     }
 });
 
-router.delete("/api/favorites/:user_id/:movie_id", authenticateToken, async (req, res, next) => {
-    try {
-        const userId = req.params.user_id;
-        const movieId = req.params.movie_id;
+router.delete(
+    "/api/favorites/:user_id/:movie_id",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const userId = req.params.user_id;
+            const movieId = req.params.movie_id;
 
-        const deleteQuery = `DELETE FROM favorite_movies WHERE user_id = $1 AND movie_id = $2 RETURNING *;`;
-        const result = await pgClient.query(deleteQuery, [userId, movieId]);
-        const favorite = result.rows[0];
+            const deleteQuery = `DELETE FROM favorite_movies WHERE user_id = $1 AND movie_id = $2 RETURNING *;`;
+            const result = await pgClient.query(deleteQuery, [userId, movieId]);
+            const favorite = result.rows[0];
 
-        if (!favorite) {
-            return next(NotFoundError("Favorite not found"));
+            if (!favorite) {
+                return next(NotFoundError("Favorite not found"));
+            }
+
+            res.json({ data: favorite });
+        } catch (error) {
+            console.error("Error deleting favorite:", error);
+            next(InternalServerError("Failed to delete favorite"));
         }
-
-        res.json({ data: favorite });
-    } catch (error) {
-        console.error("Error deleting favorite:", error);
-        next(InternalServerError("Failed to delete favorite"));
     }
-});
-
-
+);
 
 export default router;

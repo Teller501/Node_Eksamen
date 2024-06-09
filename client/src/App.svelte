@@ -47,7 +47,7 @@
     import PrivateRoute from "./components/PrivateRoute.svelte";
     import Notifications from "./components/Notifications.svelte";
     import Activation from "./components/Activation.svelte";
-    
+
     import io from "socket.io-client";
     const socket = io($SOCKET_URL);
 
@@ -58,20 +58,22 @@
     let searchType = [
         { value: "movies", name: "Movies" },
         { value: "users", name: "Users" },
-        { value: "lists", name: "Lists" }
+        { value: "lists", name: "Lists" },
     ];
-
 
     let unreadNotifications = 0;
 
     $: if ($userStore && $userStore.id) {
-        unreadNotifications = $notificationStore.filter(notification =>!notification.read).length;
+        unreadNotifications = $notificationStore.filter(
+            (notification) => !notification.read
+        ).length;
 
-        notificationStore.subscribe(notifications => {
-            unreadNotifications = notifications.filter(notification =>!notification.read).length;
+        notificationStore.subscribe((notifications) => {
+            unreadNotifications = notifications.filter(
+                (notification) => !notification.read
+            ).length;
         });
     }
-
 
     $: if ($userStore && $userStore.id) {
         socket.on("activityDeleted", (data) => {
@@ -80,7 +82,7 @@
                 return notificationListArray.filter((n) => n._id !== _id);
             });
         });
-        
+
         socket.on(`notification:${$userStore.id}`, (data) => {
             const notification = data.data;
 
@@ -258,7 +260,9 @@
             <PrivateRoute path="/home"><Home /></PrivateRoute>
             <PrivateRoute path="/movies"><Movies /></PrivateRoute>
             <PrivateRoute path="/reviews"><Reviews /></PrivateRoute>
-            <PrivateRoute path="/reviews/:movieId" let:params><Reviews {params}/></PrivateRoute>
+            <PrivateRoute path="/reviews/:movieId" let:params
+                ><Reviews {params} /></PrivateRoute
+            >
             <PrivateRoute path="/search/:type/:query" let:params
                 ><Search {params} /></PrivateRoute
             >

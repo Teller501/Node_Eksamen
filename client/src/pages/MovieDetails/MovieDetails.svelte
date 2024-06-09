@@ -32,7 +32,10 @@
     let logMovieModal = false;
 
     async function fetchMovie() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/movies/${movieId}`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/movies/${movieId}`,
+            $tokenStore
+        );
         movieDetails = data;
         const showOnlyYear = movieDetails.release_date;
         movieDetails.release_date = showOnlyYear.slice(0, 4);
@@ -133,7 +136,12 @@
             <h5
                 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
             >
-                {movieDetails?.title} <span class="text-gray-600 font-light text-lg">{movieDetails?.original_title !== movieDetails?.title ? `(${movieDetails?.original_title})` : ""}</span>
+                {movieDetails?.title}
+                <span class="text-gray-600 font-light text-lg"
+                    >{movieDetails?.original_title !== movieDetails?.title
+                        ? `(${movieDetails?.original_title})`
+                        : ""}</span
+                >
             </h5>
             <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
                 {movieDetails?.release_date} - {movieDetails?.runtime} minutes
@@ -150,7 +158,9 @@
                 <span
                     class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"
                 />
-                <p class="text-sm font-medium text-gray-900 dark:text-white mr-2">
+                <p
+                    class="text-sm font-medium text-gray-900 dark:text-white mr-2"
+                >
                     out of {movieDetails?.vote_count} ratings
                 </p>
                 <Img
@@ -159,28 +169,32 @@
                     class="w-6 h-6 border rounded p-1 shadow"
                 />
             </Rating>
-    
+
             <Rating count rating={movieStats?.average_rating ?? 0}>
                 <span class="font-normal text-black">/5</span>
                 <span
                     class="w-1 h-1 mx-1.5 bg-gray-500 rounded-full dark:bg-gray-400"
                 />
-                <p class="text-sm font-medium text-gray-900 dark:text-white mr-2">
-                    out of {movieStats?.total_ratings !== null ? movieStats?.total_ratings : 0} ratings
+                <p
+                    class="text-sm font-medium text-gray-900 dark:text-white mr-2"
+                >
+                    out of {movieStats?.total_ratings !== null
+                        ? movieStats?.total_ratings
+                        : 0} ratings
                 </p>
                 <Img src={cinematchLogo} alt="Cinematch logo" class="w-6 h-6" />
             </Rating>
-    
+
             <p class="text-gray-700 inline-flex items-center">
                 {movieStats?.total_logs}
                 <EyeOutline />
             </p>
-    
+
             <p class="text-gray-700 inline-flex items-center">
                 {movieStats?.total_watchlist_users}
                 <ClockOutline />
             </p>
-    
+
             <hr class="my-4 border-gray-200 dark:border-gray-700" />
         {:else}
             <ImagePlaceholder
@@ -218,9 +232,21 @@
                 <span slot="header">Reviews</span>
                 <div id="review-section">
                     {#if reviews && Array.isArray(reviews)}
-                        <Reviews reviews={reviews.slice(0,4)} showMoviePoster={false} showMovieTitle={false} showReleaseDate={false} showUsername={true} showUserAvatar={true} marginX={"0"}/>
+                        <Reviews
+                            reviews={reviews.slice(0, 4)}
+                            showMoviePoster={false}
+                            showMovieTitle={false}
+                            showReleaseDate={false}
+                            showUsername={true}
+                            showUserAvatar={true}
+                            marginX={"0"}
+                        />
                         <div class="flex justify-end">
-                            <Button class="mt-2 hover:text-white" href={`/reviews/${movieDetails.id}`}>View all reviews</Button>
+                            <Button
+                                class="mt-2 hover:text-white"
+                                href={`/reviews/${movieDetails.id}`}
+                                >View all reviews</Button
+                            >
                         </div>
                     {:else}
                         <p class="text-gray-500 dark:text-gray-400">

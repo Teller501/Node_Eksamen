@@ -2,7 +2,11 @@ import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import redisClient from "../database/redisConnection.js";
 import { tmdbIds } from "../util/linksCSVParser.js";
-import { NotFoundError, BadRequestError, InternalServerError, } from "../util/errors.js";
+import {
+    NotFoundError,
+    BadRequestError,
+    InternalServerError,
+} from "../util/errors.js";
 
 const router = Router();
 
@@ -45,11 +49,12 @@ router.get("/api/movies/random", authenticateToken, async (req, res, next) => {
             throw new Error("No movies found matching criteria");
         }
 
-        const randomIndex = Math.floor(Math.random() * moviesResult.rows.length);
+        const randomIndex = Math.floor(
+            Math.random() * moviesResult.rows.length
+        );
         const randomMovieId = moviesResult.rows[randomIndex].id;
 
         res.json({ data: randomMovieId });
-
     } catch (error) {
         console.error("Failed to fetch random movie:", error);
         next(InternalServerError("Failed to fetch random movie"));
@@ -83,8 +88,8 @@ router.get("/api/movies", authenticateToken, async (req, res, next) => {
 
 router.get("/api/movies/search", authenticateToken, async (req, res, next) => {
     const searchQuery = req.query.q;
-    const cacheKey = `search_movies:${searchQuery}`
-    
+    const cacheKey = `search_movies:${searchQuery}`;
+
     if (!searchQuery) {
         return next(BadRequestError("Missing query parameter 'q'"));
     }
@@ -95,13 +100,16 @@ router.get("/api/movies/search", authenticateToken, async (req, res, next) => {
             return res.json({ data: JSON.parse(cacheData) });
         }
 
-        const searchResults = await pgClient.query(`
+        const searchResults = await pgClient.query(
+            `
             SELECT id, title, original_title, poster_path, vote_average, vote_count, popularity
             FROM movies
             WHERE title ILIKE $1 OR original_title ILIKE $1
             ORDER BY popularity DESC
             LIMIT 50
-        `, [`%${searchQuery}%`]);
+        `,
+            [`%${searchQuery}%`]
+        );
 
         const response = searchResults.rows.map((movie) => ({
             id: movie.id,
@@ -113,7 +121,6 @@ router.get("/api/movies/search", authenticateToken, async (req, res, next) => {
             popularity: movie.popularity,
         }));
 
-        
         await redisClient.set(cacheKey, JSON.stringify(response), {
             EX: 3600,
         });
@@ -124,33 +131,39 @@ router.get("/api/movies/search", authenticateToken, async (req, res, next) => {
     }
 });
 
-router.get("/api/movies/recommender", authenticateToken, async (req, res, next) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const yearFilter = req.query.year;
-        const genreFilter = req.query.genre;
-        const tmdbIdSet = new Set(tmdbIds);
+router.get(
+    "/api/movies/recommender",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const yearFilter = req.query.year;
+            const genreFilter = req.query.genre;
+            const tmdbIdSet = new Set(tmdbIds);
 
-        let response = await getAllMovies(
-            page,
-            limit,
-            false,
-            yearFilter,
-            genreFilter,
-            tmdbIdSet
-        );
+            let response = await getAllMovies(
+                page,
+                limit,
+                false,
+                yearFilter,
+                genreFilter,
+                tmdbIdSet
+            );
 
-        const shuffledMovies = response.data.sort(() => 0.5 - Math.random());
+            const shuffledMovies = response.data.sort(
+                () => 0.5 - Math.random()
+            );
 
-        response.data = shuffledMovies;
+            response.data = shuffledMovies;
 
-        res.send(response);
-    } catch (error) {
-        console.error("Error fetching recommender movies:", error);
-        next(InternalServerError("Failed to fetch recommender movies"));
+            res.send(response);
+        } catch (error) {
+            console.error("Error fetching recommender movies:", error);
+            next(InternalServerError("Failed to fetch recommender movies"));
+        }
     }
-});
+);
 
 router.get("/api/movies/:id", authenticateToken, async (req, res, next) => {
     try {
@@ -176,25 +189,28 @@ router.get("/api/movies/:id", authenticateToken, async (req, res, next) => {
     }
 });
 
-router.get("/api/movies/:id/similar", authenticateToken, async (req, res, next) => {
-    try {
-        const pgMovieResult = await pgClient.query(
-            `SELECT array_agg(genres.name) as genres
+router.get(
+    "/api/movies/:id/similar",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const pgMovieResult = await pgClient.query(
+                `SELECT array_agg(genres.name) as genres
             FROM movies
             LEFT JOIN movie_genres ON movies.id = movie_genres.movie_id
             LEFT JOIN genres ON movie_genres.genre_id = genres.id
             WHERE movies.id = $1
             GROUP BY movies.id`,
-            [req.params.id]
-        );
-        const genres = pgMovieResult.rows[0]?.genres;
+                [req.params.id]
+            );
+            const genres = pgMovieResult.rows[0]?.genres;
 
-        if (!genres) {
-            return next(NotFoundError("Genres not found for movie"));
-        }
+            if (!genres) {
+                return next(NotFoundError("Genres not found for movie"));
+            }
 
-        const similarMoviesResult = await pgClient.query(
-            `SELECT movies.id, movies.title, movies.overview, movies.release_date, movies.poster_path, array_agg(genres.name) as genres
+            const similarMoviesResult = await pgClient.query(
+                `SELECT movies.id, movies.title, movies.overview, movies.release_date, movies.poster_path, array_agg(genres.name) as genres
             FROM movies
             LEFT JOIN movie_genres ON movies.id = movie_genres.movie_id
             LEFT JOIN genres ON movie_genres.genre_id = genres.id
@@ -203,17 +219,17 @@ router.get("/api/movies/:id/similar", authenticateToken, async (req, res, next) 
             GROUP BY movies.id
             HAVING array_agg(genres.name)::text[] @> $2::text[]
             AND array_agg(genres.name)::text[] <@ $2::text[]`,
-            [req.params.id, genres]
-        );
+                [req.params.id, genres]
+            );
 
-        const similarMovies = similarMoviesResult.rows;
+            const similarMovies = similarMoviesResult.rows;
 
-        res.json({ data: similarMovies });
-    } catch (error) {
-        console.error("Failed to fetch similar movies:", error);
-        next(InternalServerError("Failed to fetch similar movies"));
+            res.json({ data: similarMovies });
+        } catch (error) {
+            console.error("Failed to fetch similar movies:", error);
+            next(InternalServerError("Failed to fetch similar movies"));
+        }
     }
-});
-
+);
 
 export default router;

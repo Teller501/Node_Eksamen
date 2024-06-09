@@ -28,13 +28,21 @@
 
 <Toaster />
 
-<button
+<Button
     type="button"
     class="bg-transparent text-primary-800 hover:bg-transparent hover:text-primary-500 focus:outline-none focus:ring-0 mx-auto my-auto focus:text-primary-500 ms-auto text-sm ml-8 p-0 border-0"
-    on:click={() => (formModal = true)}>Forgot password</button
+    on:click={() => (formModal = true)}
 >
+    Forgot password
+</Button>
 
-<Modal bind:open={formModal} size="xs" autoclose={false} class="w-full" outsideclose>
+<Modal
+    bind:open={formModal}
+    size="xs"
+    autoclose={false}
+    class="w-full"
+    outsideclose
+>
     <form class="flex flex-col space-y-6" on:submit={handleForgotPassword}>
         <h3 class="mb-4 text-xl font-medium text-neutral-900 dark:text-white">
             Please enter email to reset password

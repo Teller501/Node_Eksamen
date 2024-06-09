@@ -1,12 +1,12 @@
 <script>
-	import { Route } from "svelte-routing";
-	import PrivateRouteGuard from "./PrivateRouteGuard.svelte";
+    import { Route } from "svelte-routing";
+    import PrivateRouteGuard from "./PrivateRouteGuard.svelte";
 
-	export let path;
+    export let path;
 </script>
 
 <Route {path} let:params let:location>
-	<PrivateRouteGuard>
-		<slot {params} {location} />
-	</PrivateRouteGuard>
+    <PrivateRouteGuard>
+        <slot {params} {location} />
+    </PrivateRouteGuard>
 </Route>

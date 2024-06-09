@@ -1,11 +1,7 @@
 import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import mongoClient from "../database/mongoDBConnection.js";
-import {
-    NotFoundError,
-    BadRequestError,
-    InternalServerError,
-} from "../util/errors.js";
+import { NotFoundError, InternalServerError } from "../util/errors.js";
 
 const router = Router();
 
@@ -87,11 +83,14 @@ router.get("/api/logs/:id", authenticateToken, async (req, res, next) => {
     res.send({ data: log.rows[0] });
 });
 
-router.get("/api/logs/followings/:user_id", authenticateToken, async (req, res, next) => {
-    const userId = req.params.user_id;
-    try {
-        const result = await pgClient.query(
-            `SELECT wl.id, wl.movie_id, wl.user_id, wl.rating, wl.watched_on, wl.review, wl.created_at,
+router.get(
+    "/api/logs/followings/:user_id",
+    authenticateToken,
+    async (req, res, next) => {
+        const userId = req.params.user_id;
+        try {
+            const result = await pgClient.query(
+                `SELECT wl.id, wl.movie_id, wl.user_id, wl.rating, wl.watched_on, wl.review, wl.created_at,
                     u.username, u.profile_picture, m.title, m.poster_path, m.release_date,
                     (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = wl.id) AS total_likes
              FROM watch_logs wl
@@ -100,37 +99,41 @@ router.get("/api/logs/followings/:user_id", authenticateToken, async (req, res, 
              WHERE wl.user_id IN (SELECT followed_id FROM user_follows WHERE follower_id = $1)
              ORDER BY wl.watched_on DESC
              LIMIT 5`,
-            [userId]
-        );
+                [userId]
+            );
 
-        if (result.rows.length === 0) {
-            return next(NotFoundError("No logs found for followings"));
+            if (result.rows.length === 0) {
+                return next(NotFoundError("No logs found for followings"));
+            }
+
+            const logs = result.rows.map((row) => ({
+                id: row.id,
+                movie_id: row.movie_id,
+                user_id: row.user_id,
+                rating: row.rating,
+                watched_on: row.watched_on,
+                review: row.review,
+                created_at: row.created_at,
+                username: row.username,
+                profile_picture: row.profile_picture,
+                title: row.title,
+                poster_path: row.poster_path,
+                release_date: row.release_date,
+                total_likes: row.total_likes,
+            }));
+
+            res.send({ data: logs });
+        } catch (error) {
+            console.error("Failed to get logs for followings:", error);
+            next(InternalServerError("Failed to get logs for followings"));
         }
-
-        const logs = result.rows.map(row => ({
-            id: row.id,
-            movie_id: row.movie_id,
-            user_id: row.user_id,
-            rating: row.rating,
-            watched_on: row.watched_on,
-            review: row.review,
-            created_at: row.created_at,
-            username: row.username,
-            profile_picture: row.profile_picture,
-            title: row.title,
-            poster_path: row.poster_path,
-            release_date: row.release_date,
-            total_likes: row.total_likes
-        }));
-
-        res.send({ data: logs });
-    } catch (error) {
-        console.error("Failed to get logs for followings:", error);
-        next(InternalServerError("Failed to get logs for followings"));
     }
-});
+);
 
-router.get("/api/logs/movie/:movie_id", authenticateToken, async (req, res, next) => {
+router.get(
+    "/api/logs/movie/:movie_id",
+    authenticateToken,
+    async (req, res, next) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
@@ -180,7 +183,10 @@ router.get("/api/logs/movie/:movie_id", authenticateToken, async (req, res, next
     }
 );
 
-router.get("/api/logs/movie/:movie_id/aggregated", authenticateToken, async (req, res, next) => {
+router.get(
+    "/api/logs/movie/:movie_id/aggregated",
+    authenticateToken,
+    async (req, res, next) => {
         const movieId = req.params.movie_id;
         try {
             const logsAggregation = await pgClient.query(
@@ -222,13 +228,16 @@ router.get("/api/logs/movie/:movie_id/aggregated", authenticateToken, async (req
     }
 );
 
-router.get("/api/logs/reviews/recent", authenticateToken, async (req, res, next) => {
-    const limit = parseInt(req.query.limit) || 15;
-    const offset = parseInt(req.query.offset) || 0;
+router.get(
+    "/api/logs/reviews/recent",
+    authenticateToken,
+    async (req, res, next) => {
+        const limit = parseInt(req.query.limit) || 15;
+        const offset = parseInt(req.query.offset) || 0;
 
-    try {
-        const result = await pgClient.query(
-            `SELECT watch_logs.*, users.username, users.id AS user_id, users.profile_picture, movies.title AS title, movies.release_date, movies.poster_path,
+        try {
+            const result = await pgClient.query(
+                `SELECT watch_logs.*, users.username, users.id AS user_id, users.profile_picture, movies.title AS title, movies.release_date, movies.poster_path,
                 (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
             FROM watch_logs
             INNER JOIN users ON watch_logs.user_id = users.id
@@ -236,56 +245,60 @@ router.get("/api/logs/reviews/recent", authenticateToken, async (req, res, next)
             WHERE review IS NOT NULL AND review <> ''
             ORDER BY total_likes DESC, watch_logs.id DESC
             LIMIT $1 OFFSET $2`,
-            [limit, offset]
-        );
+                [limit, offset]
+            );
 
-        const total_reviews = await pgClient.query(
-            `SELECT COUNT(*) FROM watch_logs WHERE review IS NOT NULL AND review <> ''`
-        );
-        const total_pages = Math.ceil(total_reviews.rows[0].count / limit);
+            const total_reviews = await pgClient.query(
+                `SELECT COUNT(*) FROM watch_logs WHERE review IS NOT NULL AND review <> ''`
+            );
+            const total_pages = Math.ceil(total_reviews.rows[0].count / limit);
 
-        if (result.rows.length === 0) {
-            return next(NotFoundError("No reviews found"));
-        } else {
-            const response = result.rows.map(row => ({
-                id: row.id,
-                user_id: row.user_id,
-                movie_id: row.movie_id,
-                title: row.title,
-                watched_on: row.watched_on,
-                release_date: row.release_date,
-                rating: row.rating,
-                review: row.review,
-                created_at: row.created_at,
-                username: row.username,
-                profile_picture: row.profile_picture,
-                poster_path: row.poster_path,
-                total_likes: row.total_likes,
-            }));
+            if (result.rows.length === 0) {
+                return next(NotFoundError("No reviews found"));
+            } else {
+                const response = result.rows.map((row) => ({
+                    id: row.id,
+                    user_id: row.user_id,
+                    movie_id: row.movie_id,
+                    title: row.title,
+                    watched_on: row.watched_on,
+                    release_date: row.release_date,
+                    rating: row.rating,
+                    review: row.review,
+                    created_at: row.created_at,
+                    username: row.username,
+                    profile_picture: row.profile_picture,
+                    poster_path: row.poster_path,
+                    total_likes: row.total_likes,
+                }));
 
-            res.send({
-                data: response,
-                pagination: {
-                    total_reviews: total_reviews.rows[0].count,
-                    total_pages: total_pages,
-                    current_page: Math.floor(offset / limit) + 1,
-                },
-            });
+                res.send({
+                    data: response,
+                    pagination: {
+                        total_reviews: total_reviews.rows[0].count,
+                        total_pages: total_pages,
+                        current_page: Math.floor(offset / limit) + 1,
+                    },
+                });
+            }
+        } catch (error) {
+            console.error("Failed to get recent reviews:", error);
+            next(InternalServerError("Failed to get recent reviews"));
         }
-    } catch (error) {
-        console.error("Failed to get recent reviews:", error);
-        next(InternalServerError("Failed to get recent reviews"));
     }
-});
+);
 
-router.get("/api/logs/reviews/:movie_id", authenticateToken, async (req, res, next) => {
-    const movieId = req.params.movie_id;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
+router.get(
+    "/api/logs/reviews/:movie_id",
+    authenticateToken,
+    async (req, res, next) => {
+        const movieId = req.params.movie_id;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = parseInt(req.query.offset) || 0;
 
-    try {
-        const reviewsResult = await pgClient.query(
-            `SELECT watch_logs.id, users.username, users.profile_picture, users.id AS user_id, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at,
+        try {
+            const reviewsResult = await pgClient.query(
+                `SELECT watch_logs.id, users.username, users.profile_picture, users.id AS user_id, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at,
                     movies.title, 
                     (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
             FROM watch_logs
@@ -294,51 +307,55 @@ router.get("/api/logs/reviews/:movie_id", authenticateToken, async (req, res, ne
             WHERE watch_logs.movie_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''
             ORDER BY watch_logs.created_at DESC
             LIMIT $2 OFFSET $3`,
-            [movieId, limit, offset]
-        );
+                [movieId, limit, offset]
+            );
 
-        if (reviewsResult.rows.length === 0) {
-            return next(NotFoundError("No reviews found for this movie"));
-        }
+            if (reviewsResult.rows.length === 0) {
+                return next(NotFoundError("No reviews found for this movie"));
+            }
 
-        const countResult = await pgClient.query(
-            `SELECT COUNT(*) FROM watch_logs
+            const countResult = await pgClient.query(
+                `SELECT COUNT(*) FROM watch_logs
             WHERE watch_logs.movie_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''`,
-            [movieId]
-        );
-        const totalReviews = parseInt(countResult.rows[0].count, 10);
-        const totalPages = Math.ceil(totalReviews / limit);
-        const currentPage = Math.floor(offset / limit) + 1;
+                [movieId]
+            );
+            const totalReviews = parseInt(countResult.rows[0].count, 10);
+            const totalPages = Math.ceil(totalReviews / limit);
+            const currentPage = Math.floor(offset / limit) + 1;
 
-        res.json({
-            data: reviewsResult.rows,
-            pagination: {
-                total_reviews: totalReviews,
-                total_pages: totalPages,
-                current_page: currentPage,
-                has_next_page: offset + limit < totalReviews,
-                has_previous_page: offset > 0,
-                next_page: offset + limit < totalReviews ? currentPage + 1 : null,
-                previous_page: offset > 0 ? currentPage - 1 : null,
-            },
-        });
-    } catch (error) {
-        console.error("Failed to get reviews for movie:", error);
-        next(InternalServerError("Failed to get reviews for movie"));
+            res.json({
+                data: reviewsResult.rows,
+                pagination: {
+                    total_reviews: totalReviews,
+                    total_pages: totalPages,
+                    current_page: currentPage,
+                    has_next_page: offset + limit < totalReviews,
+                    has_previous_page: offset > 0,
+                    next_page:
+                        offset + limit < totalReviews ? currentPage + 1 : null,
+                    previous_page: offset > 0 ? currentPage - 1 : null,
+                },
+            });
+        } catch (error) {
+            console.error("Failed to get reviews for movie:", error);
+            next(InternalServerError("Failed to get reviews for movie"));
+        }
     }
-});
+);
 
-
-router.get("/api/logs/user/:user_id", authenticateToken, async (req, res, next) => {
-    const userId = req.params.user_id;
-    try {
-        const result = await pgClient.query(
-            `WITH last_four_movies AS (
+router.get(
+    "/api/logs/user/:user_id",
+    authenticateToken,
+    async (req, res, next) => {
+        const userId = req.params.user_id;
+        try {
+            const result = await pgClient.query(
+                `WITH last_four_movies AS (
                 SELECT movies.title, movies.poster_path, watch_logs.movie_id, watch_logs.rating, watch_logs.watched_on
                 FROM watch_logs
                 INNER JOIN movies ON watch_logs.movie_id = movies.id
                 WHERE watch_logs.user_id = $1
-                ORDER BY watch_logs.watched_on DESC
+                ORDER BY watch_logs.created_at DESC
                 LIMIT 4
             ), unique_movies_count AS (
                 SELECT COUNT(DISTINCT watch_logs.movie_id) AS unique_movies_watched
@@ -348,43 +365,48 @@ router.get("/api/logs/user/:user_id", authenticateToken, async (req, res, next) 
             SELECT last_four_movies.title, last_four_movies.movie_id, last_four_movies.rating, last_four_movies.watched_on, last_four_movies.poster_path, unique_movies_count.unique_movies_watched
             FROM last_four_movies
             CROSS JOIN unique_movies_count;`,
-            [userId]
-        );
+                [userId]
+            );
 
-        if (result.rows.length === 0) {
-            return next(NotFoundError("No logs found for this user"));
-        } else {
-            const movieDetails = result.rows.map(row => ({
-                movie_id: row.movie_id,
-                title: row.title,
-                rating: row.rating,
-                watched_on: row.watched_on,
-                poster_path: row.poster_path,
-            }));
+            if (result.rows.length === 0) {
+                return next(NotFoundError("No logs found for this user"));
+            } else {
+                const movieDetails = result.rows.map((row) => ({
+                    movie_id: row.movie_id,
+                    title: row.title,
+                    rating: row.rating,
+                    watched_on: row.watched_on,
+                    poster_path: row.poster_path,
+                }));
 
-            const formattedResponse = {
-                data: {
-                    unique_movies_watched: result.rows[0].unique_movies_watched,
-                    last_four: movieDetails,
-                },
-            };
+                const formattedResponse = {
+                    data: {
+                        unique_movies_watched:
+                            result.rows[0].unique_movies_watched,
+                        last_four: movieDetails,
+                    },
+                };
 
-            res.send(formattedResponse);
+                res.send(formattedResponse);
+            }
+        } catch (error) {
+            console.error("Failed to get logs for user:", error);
+            next(InternalServerError("Failed to get logs for user"));
         }
-    } catch (error) {
-        console.error("Failed to get logs for user:", error);
-        next(InternalServerError("Failed to get logs for user"));
     }
-});
+);
 
-router.get("/api/logs/user/:user_id/watched", authenticateToken, async (req, res, next) => {
-    const userId = req.params.user_id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+router.get(
+    "/api/logs/user/:user_id/watched",
+    authenticateToken,
+    async (req, res, next) => {
+        const userId = req.params.user_id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
 
-    try {
-        const logsQuery = `
+        try {
+            const logsQuery = `
             SELECT DISTINCT ON (watch_logs.movie_id) watch_logs.id, movies.title, movies.id AS movie_id, movies.release_date, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at, movies.poster_path
             FROM watch_logs
             INNER JOIN movies ON watch_logs.movie_id = movies.id
@@ -393,63 +415,67 @@ router.get("/api/logs/user/:user_id/watched", authenticateToken, async (req, res
             LIMIT $2 OFFSET $3
         `;
 
-        const logsResult = await pgClient.query(logsQuery, [
-            userId,
-            limit,
-            offset,
-        ]);
+            const logsResult = await pgClient.query(logsQuery, [
+                userId,
+                limit,
+                offset,
+            ]);
 
-        const countQuery = `
+            const countQuery = `
             SELECT COUNT(DISTINCT watch_logs.movie_id) AS count
             FROM watch_logs
             WHERE watch_logs.user_id = $1
         `;
 
-        const countResult = await pgClient.query(countQuery, [userId]);
-        const totalUniqueMovies = countResult.rows[0].count;
-        const totalPages = Math.ceil(totalUniqueMovies / limit);
+            const countResult = await pgClient.query(countQuery, [userId]);
+            const totalUniqueMovies = countResult.rows[0].count;
+            const totalPages = Math.ceil(totalUniqueMovies / limit);
 
-        if (logsResult.rows.length === 0) {
-            return next(NotFoundError("No logs found for this user"));
-        } else {
-            const logDetails = logsResult.rows.map((row) => ({
-                id: row.id,
-                movie_id: row.movie_id,
-                title: row.title,
-                release_date: row.release_date,
-                watched_on: row.watched_on,
-                rating: row.rating,
-                review: row.review,
-                created_at: row.created_at,
-                poster_path: row.poster_path,
-            }));
+            if (logsResult.rows.length === 0) {
+                return next(NotFoundError("No logs found for this user"));
+            } else {
+                const logDetails = logsResult.rows.map((row) => ({
+                    id: row.id,
+                    movie_id: row.movie_id,
+                    title: row.title,
+                    release_date: row.release_date,
+                    watched_on: row.watched_on,
+                    rating: row.rating,
+                    review: row.review,
+                    created_at: row.created_at,
+                    poster_path: row.poster_path,
+                }));
 
-            res.send({
-                data: logDetails,
-                pagination: {
-                    current_page: page,
-                    total_pages: totalPages,
-                    has_next_page: page < totalPages,
-                    has_previous_page: page > 1,
-                    next_page: page < totalPages ? page + 1 : null,
-                    previous_page: page > 1 ? page - 1 : null,
-                },
-            });
+                res.send({
+                    data: logDetails,
+                    pagination: {
+                        current_page: page,
+                        total_pages: totalPages,
+                        has_next_page: page < totalPages,
+                        has_previous_page: page > 1,
+                        next_page: page < totalPages ? page + 1 : null,
+                        previous_page: page > 1 ? page - 1 : null,
+                    },
+                });
+            }
+        } catch (error) {
+            console.error("Failed to get watched logs for user:", error);
+            next(InternalServerError("Failed to get watched logs for user"));
         }
-    } catch (error) {
-        console.error("Failed to get watched logs for user:", error);
-        next(InternalServerError("Failed to get watched logs for user"));
     }
-});
+);
 
-router.get("/api/logs/user/:user_id/reviews", authenticateToken, async (req, res, next) => {
-    const userId = req.params.user_id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+router.get(
+    "/api/logs/user/:user_id/reviews",
+    authenticateToken,
+    async (req, res, next) => {
+        const userId = req.params.user_id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
 
-    try {
-        const reviewsQuery = `
+        try {
+            const reviewsQuery = `
             SELECT watch_logs.id, movies.title, movies.id AS movie_id, movies.release_date, watch_logs.watched_on, watch_logs.rating, watch_logs.review, watch_logs.created_at, watch_logs.user_id, movies.poster_path,
                     (SELECT COUNT(*) FROM review_likes rl WHERE rl.review_id = watch_logs.id) AS total_likes
             FROM watch_logs
@@ -459,57 +485,57 @@ router.get("/api/logs/user/:user_id/reviews", authenticateToken, async (req, res
             LIMIT $2 OFFSET $3
         `;
 
-        const reviewsResult = await pgClient.query(reviewsQuery, [
-            userId,
-            limit,
-            offset,
-        ]);
+            const reviewsResult = await pgClient.query(reviewsQuery, [
+                userId,
+                limit,
+                offset,
+            ]);
 
-        const countQuery = `
+            const countQuery = `
             SELECT COUNT(*)
             FROM watch_logs
             WHERE watch_logs.user_id = $1 AND watch_logs.review IS NOT NULL AND watch_logs.review <> ''
         `;
 
-        const countResult = await pgClient.query(countQuery, [userId]);
-        const totalReviews = countResult.rows[0].count;
-        const totalPages = Math.ceil(totalReviews / limit);
+            const countResult = await pgClient.query(countQuery, [userId]);
+            const totalReviews = countResult.rows[0].count;
+            const totalPages = Math.ceil(totalReviews / limit);
 
-        if (reviewsResult.rows.length === 0) {
-            return next(NotFoundError("No reviews found for this user"));
-        } else {
-            const reviewDetails = reviewsResult.rows.map((row) => ({
-                id: row.id,
-                movie_id: row.movie_id,
-                title: row.title,
-                release_date: row.release_date,
-                watched_on: row.watched_on,
-                rating: row.rating,
-                review: row.review,
-                created_at: row.created_at,
-                poster_path: row.poster_path,
-                user_id: row.user_id,
-                total_likes: row.total_likes,
-            }));
+            if (reviewsResult.rows.length === 0) {
+                return next(NotFoundError("No reviews found for this user"));
+            } else {
+                const reviewDetails = reviewsResult.rows.map((row) => ({
+                    id: row.id,
+                    movie_id: row.movie_id,
+                    title: row.title,
+                    release_date: row.release_date,
+                    watched_on: row.watched_on,
+                    rating: row.rating,
+                    review: row.review,
+                    created_at: row.created_at,
+                    poster_path: row.poster_path,
+                    user_id: row.user_id,
+                    total_likes: row.total_likes,
+                }));
 
-            res.send({
-                data: reviewDetails,
-                pagination: {
-                    current_page: page,
-                    total_pages: totalPages,
-                    has_next_page: page < totalPages,
-                    has_previous_page: page > 1,
-                    next_page: page < totalPages ? page + 1 : null,
-                    previous_page: page > 1 ? page - 1 : null,
-                },
-            });
+                res.send({
+                    data: reviewDetails,
+                    pagination: {
+                        current_page: page,
+                        total_pages: totalPages,
+                        has_next_page: page < totalPages,
+                        has_previous_page: page > 1,
+                        next_page: page < totalPages ? page + 1 : null,
+                        previous_page: page > 1 ? page - 1 : null,
+                    },
+                });
+            }
+        } catch (error) {
+            console.error("Failed to get reviews for user:", error);
+            next(InternalServerError("Failed to get reviews for user"));
         }
-    } catch (error) {
-        console.error("Failed to get reviews for user:", error);
-        next(InternalServerError("Failed to get reviews for user"));
     }
-});
-
+);
 
 router.post("/api/logs", authenticateToken, async (req, res, next) => {
     const { movieId, userId, watchedOn, rating, review } = req.body;

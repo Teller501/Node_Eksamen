@@ -19,12 +19,7 @@
             activityId: notificationId,
         };
 
-        const { data } = await fetchPost(
-            `${$BASE_URL}/api/activities/read/`,
-            body,
-            $tokenStore
-        );
-        const updatedNotification = data;
+        await fetchPost(`${$BASE_URL}/api/activities/read/`, body, $tokenStore);
 
         notificationStore.update((notificationListArray) => {
             return notificationListArray.map((notification) =>
@@ -38,7 +33,6 @@
     function formatTime(date) {
         return formatDistanceToNow(new Date(date), { addSuffix: true });
     }
-
 </script>
 
 {#if notifications.length > 0}
@@ -50,7 +44,9 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={notification.follower.profile_picture? `${$BASE_URL}/${notification.follower.profile_picture}` : blankProfilePic}
+                    src={notification.follower.profile_picture
+                        ? `${$BASE_URL}/${notification.follower.profile_picture}`
+                        : blankProfilePic}
                     alt="Profile Picture"
                     size="sm"
                     border
@@ -78,7 +74,9 @@
                 class="flex space-x-4 rtl:space-x-reverse bg-slate-200"
             >
                 <Avatar
-                    src={notification.liker.profile_picture? `${$BASE_URL}/${notification.liker.profile_picture}` : blankProfilePic}
+                    src={notification.liker.profile_picture
+                        ? `${$BASE_URL}/${notification.liker.profile_picture}`
+                        : blankProfilePic}
                     alt="Profile Picture"
                     size="sm"
                     border
@@ -109,7 +107,5 @@
     {/each}
 {/if}
 {#if notifications.length === 0}
-    <p class="p-4">
-        No new notifications.
-    </p>
+    <p class="p-4">No new notifications.</p>
 {/if}

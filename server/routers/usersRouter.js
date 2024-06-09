@@ -2,7 +2,11 @@ import { Router } from "express";
 import pgClient from "../database/pgConnection.js";
 import multer from "multer";
 import path from "path";
-import { NotFoundError, BadRequestError, InternalServerError } from '../util/errors.js';
+import {
+    NotFoundError,
+    BadRequestError,
+    InternalServerError,
+} from "../util/errors.js";
 
 const router = Router();
 
@@ -58,7 +62,8 @@ router.get("/api/users/search", authenticateToken, async (req, res, next) => {
     }
 
     try {
-        const query = "SELECT username, profile_picture FROM users WHERE username ILIKE $1";
+        const query =
+            "SELECT username, profile_picture FROM users WHERE username ILIKE $1";
         const result = await pgClient.query(query, [`%${q}%`]);
         const users = result.rows;
 
@@ -69,28 +74,35 @@ router.get("/api/users/search", authenticateToken, async (req, res, next) => {
     }
 });
 
-router.get("/api/users/:id([0-9]+)", authenticateToken, async (req, res, next) => {
-    try {
-        const query = "SELECT * FROM users WHERE id = $1";
-        const result = await pgClient.query(query, [req.params.id]);
-        const user = result.rows[0];
+router.get(
+    "/api/users/:id([0-9]+)",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const query = "SELECT * FROM users WHERE id = $1";
+            const result = await pgClient.query(query, [req.params.id]);
+            const user = result.rows[0];
 
-        if (!user) {
-            return next(NotFoundError("User not found"));
+            if (!user) {
+                return next(NotFoundError("User not found"));
+            }
+
+            res.json({ data: user });
+        } catch (error) {
+            console.error("Error getting user:", error);
+            next(InternalServerError("Failed to get user"));
         }
-
-        res.json({ data: user });
-    } catch (error) {
-        console.error("Error getting user:", error);
-        next(InternalServerError("Failed to get user"));
     }
-});
+);
 
-router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req, res, next) => {
-    try {
-        const username = req.params.username;
+router.get(
+    "/api/users/:username([a-zA-Z0-9_]+)",
+    authenticateToken,
+    async (req, res, next) => {
+        try {
+            const username = req.params.username;
 
-        const query = `
+            const query = `
             SELECT 
                 u.*, 
                 (SELECT COUNT(*) FROM user_follows WHERE followed_id = u.id) AS followers_count,
@@ -98,56 +110,86 @@ router.get("/api/users/:username([a-zA-Z0-9_]+)", authenticateToken, async (req,
             FROM users u 
             WHERE u.username = $1
         `;
-        
-        const result = await pgClient.query(query, [username]);
-        const user = result.rows[0];
 
-        if (!user) {
-            return next(NotFoundError("User not found"));
+            const result = await pgClient.query(query, [username]);
+            const user = result.rows[0];
+
+            if (!user) {
+                return next(NotFoundError("User not found"));
+            }
+
+            res.json({ data: user });
+        } catch (error) {
+            console.error("Error getting user:", error);
+            next(InternalServerError("Failed to get user"));
         }
-
-        res.json({ data: user });
-    } catch (error) {
-        console.error("Error getting user:", error);
-        next(InternalServerError("Failed to get user"));
     }
-});
+);
 
-router.get('/api/users/:userId/statistics', authenticateToken, async (req, res, next) => {
-    const userId = req.params.userId;
-    try {
-        const totalMoviesWatchedRes = await pgClient.query('SELECT COUNT(DISTINCT movie_id) FROM watch_logs WHERE user_id = $1', [userId]);
-        const totalMoviesWatched = totalMoviesWatchedRes.rows[0]?.count || 0;
+router.get(
+    "/api/users/:userId/statistics",
+    authenticateToken,
+    async (req, res, next) => {
+        const userId = req.params.userId;
+        try {
+            const totalMoviesWatchedRes = await pgClient.query(
+                "SELECT COUNT(DISTINCT movie_id) FROM watch_logs WHERE user_id = $1",
+                [userId]
+            );
+            const totalMoviesWatched =
+                totalMoviesWatchedRes.rows[0]?.count || 0;
 
-        const currentYear = new Date().getFullYear();
-        const moviesWatchedThisYearRes = await pgClient.query('SELECT COUNT(DISTINCT movie_id) FROM watch_logs WHERE user_id = $1 AND EXTRACT(YEAR FROM watched_on) = $2', [userId, currentYear]);
-        const moviesWatchedThisYear = moviesWatchedThisYearRes.rows[0]?.count || 0;
+            const currentYear = new Date().getFullYear();
+            const moviesWatchedThisYearRes = await pgClient.query(
+                "SELECT COUNT(DISTINCT movie_id) FROM watch_logs WHERE user_id = $1 AND EXTRACT(YEAR FROM watched_on) = $2",
+                [userId, currentYear]
+            );
+            const moviesWatchedThisYear =
+                moviesWatchedThisYearRes.rows[0]?.count || 0;
 
-        const mostMoviesInAMonthRes = await pgClient.query(`
+            const mostMoviesInAMonthRes = await pgClient.query(
+                `
             SELECT EXTRACT(MONTH FROM watched_on) AS month, EXTRACT(YEAR FROM watched_on) AS year, COUNT(*)
             FROM watch_logs
             WHERE user_id = $1
             GROUP BY month, year
             ORDER BY COUNT DESC
-            LIMIT 1`, [userId]);
-        const mostMoviesInAMonth = mostMoviesInAMonthRes.rows[0] || { count: 0, month: 'N/A', year: 'N/A' };
+            LIMIT 1`,
+                [userId]
+            );
+            const mostMoviesInAMonth = mostMoviesInAMonthRes.rows[0] || {
+                count: 0,
+                month: "N/A",
+                year: "N/A",
+            };
 
-        const mostMoviesInADayRes = await pgClient.query(`
+            const mostMoviesInADayRes = await pgClient.query(
+                `
             SELECT watched_on, COUNT(*)
             FROM watch_logs
             WHERE user_id = $1
             GROUP BY watched_on
             ORDER BY COUNT DESC
-            LIMIT 1`, [userId]);
-        const mostMoviesInADay = mostMoviesInADayRes.rows[0] || { count: 0, watched_on: 'N/A' };
+            LIMIT 1`,
+                [userId]
+            );
+            const mostMoviesInADay = mostMoviesInADayRes.rows[0] || {
+                count: 0,
+                watched_on: "N/A",
+            };
 
-        const averageRatingRes = await pgClient.query(`
+            const averageRatingRes = await pgClient.query(
+                `
             SELECT AVG(rating) AS average_rating
             FROM watch_logs
-            WHERE user_id = $1 AND rating IS NOT NULL`, [userId]);
-        const averageRating = averageRatingRes.rows[0]?.average_rating || null;
+            WHERE user_id = $1 AND rating IS NOT NULL`,
+                [userId]
+            );
+            const averageRating =
+                averageRatingRes.rows[0]?.average_rating || null;
 
-        const mostWatchedGenreRes = await pgClient.query(`
+            const mostWatchedGenreRes = await pgClient.query(
+                `
             SELECT genres.name, COUNT(*) AS count
             FROM watch_logs
             JOIN movies ON watch_logs.movie_id = movies.id
@@ -156,26 +198,45 @@ router.get('/api/users/:userId/statistics', authenticateToken, async (req, res, 
             WHERE watch_logs.user_id = $1
             GROUP BY genres.name
             ORDER BY COUNT DESC
-            LIMIT 1`, [userId]);
-        const mostWatchedGenre = mostWatchedGenreRes.rows[0] || { name: 'N/A' };
+            LIMIT 1`,
+                [userId]
+            );
+            const mostWatchedGenre = mostWatchedGenreRes.rows[0] || {
+                name: "N/A",
+            };
 
-        const response = {
-            total_movies_watched: totalMoviesWatched,
-            movies_watched_this_year: moviesWatchedThisYear,
-            most_movies_in_a_month: mostMoviesInAMonth.count ? `${mostMoviesInAMonth.count} (${mostMoviesInAMonth.month}/${mostMoviesInAMonth.year})` : 'N/A',
-            most_movies_in_a_day: mostMoviesInADay.count ? `${mostMoviesInADay.count} (${mostMoviesInADay.watched_on.toISOString().split('T')[0]})` : 'N/A',
-            average_rating: averageRating ? parseFloat(averageRating).toFixed(2) : 'N/A',
-            most_watched_genre: mostWatchedGenre.name
+            const response = {
+                total_movies_watched: totalMoviesWatched,
+                movies_watched_this_year: moviesWatchedThisYear,
+                most_movies_in_a_month: mostMoviesInAMonth.count
+                    ? `${mostMoviesInAMonth.count} (${mostMoviesInAMonth.month}/${mostMoviesInAMonth.year})`
+                    : "N/A",
+                most_movies_in_a_day: mostMoviesInADay.count
+                    ? `${mostMoviesInADay.count} (${
+                          mostMoviesInADay.watched_on
+                              .toISOString()
+                              .split("T")[0]
+                      })`
+                    : "N/A",
+                average_rating: averageRating
+                    ? parseFloat(averageRating).toFixed(2)
+                    : "N/A",
+                most_watched_genre: mostWatchedGenre.name,
+            };
+
+            res.json({ data: response });
+        } catch (error) {
+            console.error("Error fetching user statistics:", error);
+            next(InternalServerError("Failed to fetch user statistics"));
         }
-
-        res.json({ data: response });
-    } catch (error) {
-        console.error('Error fetching user statistics:', error);
-        next(InternalServerError('Failed to fetch user statistics'));
     }
-});
+);
 
-router.patch("/api/users/:id", upload.single("profile_picture"), authenticateToken, async (req, res, next) => {
+router.patch(
+    "/api/users/:id",
+    upload.single("profile_picture"),
+    authenticateToken,
+    async (req, res, next) => {
         try {
             const { full_name, birth_date, location, bio } = req.body;
 

@@ -9,7 +9,10 @@
     let movieDetails = [];
 
     async function fetchRecommendations() {
-        const { data } = await fetchGet(`${$BASE_URL}/api/recommendations/${$userStore.id}`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/recommendations/${$userStore.id}`,
+            $tokenStore
+        );
         recommendations = data;
 
         for (const id of recommendations) {
@@ -19,28 +22,32 @@
     }
 
     async function fetchMovieDetails(id) {
-        const { data } = await fetchGet(`${$BASE_URL}/api/movies/${id}`, $tokenStore);
+        const { data } = await fetchGet(
+            `${$BASE_URL}/api/movies/${id}`,
+            $tokenStore
+        );
         return data;
     }
-
 
     onMount(async () => {
         await fetchRecommendations();
     });
 </script>
 
-<h1 class="text-slate-900 text-xl font-bold">Your recommendations are ready!</h1>
+<h1 class="text-slate-900 text-xl font-bold">
+    Your recommendations are ready!
+</h1>
 
 <div class="container mx-auto px-4 mt-4">
     <div class="grid grid-cols-3 gap-4">
         {#if movieDetails}
             {#each movieDetails as movie}
-            <Movie
-                movieId={movie?.id}
-                posterPath={movie?.poster_path}
-                alt={movie?.title}
-                width="w-8"
-            />
+                <Movie
+                    movieId={movie?.id}
+                    posterPath={movie?.poster_path}
+                    alt={movie?.title}
+                    width="w-8"
+                />
             {/each}
         {/if}
     </div>

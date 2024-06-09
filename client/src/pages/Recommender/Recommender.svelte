@@ -48,7 +48,7 @@
         const payload = {
             user_id: $recommendationStore.user_id,
             user_ratings: $recommendationStore.user_ratings,
-    };
+        };
 
         const { status } = await fetchPost(
             `${$BASE_URL}/api/recommendations`,
@@ -114,7 +114,7 @@
     {:else}
         <Card size="sm">
             <div class="flex flex-col items-center">
-                <ImagePlaceholder imgOnly class="w-36"/>
+                <ImagePlaceholder imgOnly class="w-36" />
                 <TextPlaceholder size="md" class="mt-8" />
             </div>
         </Card>

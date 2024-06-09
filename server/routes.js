@@ -12,16 +12,16 @@ import likesRouter from "./routers/likesRouter.js";
 import contactRouter from "./routers/contactRouter.js";
 
 export default {
-  authRouter,
-  moivesRouter,
-  logsRouter,
-  recommendationsRouter,
-  usersRouter,
-  favoritesRouter,
-  watchlistRouter,
-  listsRouter,
-  activitiesRouter,
-  followsRouter,
-  likesRouter,
-  contactRouter,
+    authRouter,
+    moivesRouter,
+    logsRouter,
+    recommendationsRouter,
+    usersRouter,
+    favoritesRouter,
+    watchlistRouter,
+    listsRouter,
+    activitiesRouter,
+    followsRouter,
+    likesRouter,
+    contactRouter,
 };

@@ -24,13 +24,13 @@
 
     async function fetchRecentLogs() {
         loading = true;
-        const url = movieId 
+        const url = movieId
             ? `${$BASE_URL}/api/logs/reviews/${movieId}?limit=${limit}&offset=${offset}`
             : `${$BASE_URL}/api/logs/reviews/recent?limit=${limit}&offset=${offset}`;
-        
+
         const response = await fetchGet(url, $tokenStore);
         const { data, pagination, status } = response;
-        
+
         if (status === 200) {
             if (Array.isArray(data)) {
                 recentLogs = [...recentLogs, ...data];
@@ -60,10 +60,25 @@
 
 {#if movieId}
     {#if !loading}
-        <Reviews reviews={recentLogs} heading={`Reviews for ${movie?.title}`} showUsername showMovieTitle={false} showMoviePoster={false} showUserAvatar showReleaseDate marginX="0" />
+        <Reviews
+            reviews={recentLogs}
+            heading={`Reviews for ${movie?.title}`}
+            showUsername
+            showMovieTitle={false}
+            showMoviePoster={false}
+            showUserAvatar
+            showReleaseDate
+            marginX="0"
+        />
     {/if}
 {:else}
-    <Reviews reviews={recentLogs} showUsername showUserAvatar showReleaseDate marginX="0" />
+    <Reviews
+        reviews={recentLogs}
+        showUsername
+        showUserAvatar
+        showReleaseDate
+        marginX="0"
+    />
 {/if}
 {#if currentPage < totalPages}
     <Button on:click={loadMore} disabled={loading}>

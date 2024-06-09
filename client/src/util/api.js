@@ -37,14 +37,14 @@ export async function fetchPost(url, body, token) {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(body),
         });
 
         status = response.status;
         data = await response.json();
-        
+
         if (!response.ok) {
             return { status, data };
         }
@@ -61,7 +61,7 @@ export async function fetchPatch(url, body, token) {
         const isFormData = body instanceof FormData;
 
         const headers = {
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
         };
 
         if (!isFormData) {
@@ -71,7 +71,7 @@ export async function fetchPatch(url, body, token) {
         const response = await fetch(url, {
             method: "PATCH",
             credentials: "include",
-            body: isFormData? body : JSON.stringify(body),
+            body: isFormData ? body : JSON.stringify(body),
             headers: headers,
         });
 
@@ -95,7 +95,7 @@ export async function fetchDelete(url, token) {
             method: "DELETE",
             credentials: "include",
             headers: {
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
 

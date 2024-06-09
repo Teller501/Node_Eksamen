@@ -22,7 +22,7 @@
     let selectedGenre = "";
     let genreDropdownOpen = false;
     let yearDropdownOpen = false;
-    
+
     const genres = [
         "Adventure",
         "Fantasy",
@@ -60,6 +60,7 @@
         "1910s",
         "1900s",
     ];
+    
     function updatePagination() {
         let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -146,7 +147,10 @@
                 class="w-4 h-4 ms-2 text-white dark:text-white"
             /></Button
         >
-        <Dropdown bind:open={yearDropdownOpen} class="w-44 z-20 bg-slate-50 rounded">
+        <Dropdown
+            bind:open={yearDropdownOpen}
+            class="w-44 z-20 bg-slate-50 rounded"
+        >
             {#each years as year}
                 <DropdownItem
                     on:click={() => filterYear(year)}
@@ -160,7 +164,10 @@
                 class="w-4 h-4 ms-2 text-white dark:text-white"
             /></Button
         >
-        <Dropdown bind:open={genreDropdownOpen}  class="w-44 z-20 bg-slate-50 rounded">
+        <Dropdown
+            bind:open={genreDropdownOpen}
+            class="w-44 z-20 bg-slate-50 rounded"
+        >
             {#each genres as genre}
                 <DropdownItem
                     on:click={() => filterGenre(genre)}

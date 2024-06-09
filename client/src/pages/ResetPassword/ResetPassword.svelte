@@ -1,31 +1,31 @@
 <script>
-    import { navigate } from 'svelte-routing';
-    import { onMount } from 'svelte';
+    import { navigate } from "svelte-routing";
+    import { onMount } from "svelte";
     import toast, { Toaster } from "svelte-french-toast";
-    import { BASE_URL } from '../../stores/generalStore';
-    import { fetchPost } from '../../util/api';
+    import { BASE_URL } from "../../stores/generalStore";
+    import { fetchPost } from "../../util/api";
     import { Button, Input, Card, Label } from "flowbite-svelte";
 
-    let password = '';
-    let confirmPassword = '';
+    let password = "";
+    let confirmPassword = "";
 
     export let params;
     const token = params.token;
 
-    
     onMount(async () => {
         if (!token) {
-            navigate("/", { replace: true })
+            navigate("/", { replace: true });
         }
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/validate-token`, { token });
+        const { status } = await fetchPost(`${$BASE_URL}/api/validate-token`, {
+            token,
+        });
         if (status !== 200) {
             toast.error("Invalid or expired token.", { duration: 3000 });
             navigate("/");
             return;
         }
     });
-
 
     async function handleResetPassword(event) {
         event.preventDefault();
@@ -34,9 +34,14 @@
             return;
         }
 
-        const { status } = await fetchPost(`${$BASE_URL}/api/reset-password/${token}`, { newPassword: password });
+        const { status } = await fetchPost(
+            `${$BASE_URL}/api/reset-password/${token}`,
+            { newPassword: password }
+        );
         if (status === 200) {
-            toast.success("Password reset successful. You can now login.", { duration: 5000 });
+            toast.success("Password reset successful. You can now login.", {
+                duration: 5000,
+            });
             navigate("/");
         } else {
             toast.error("Password reset failed.", { duration: 3000 });

@@ -15,6 +15,10 @@
 
 <Marquee shadow class="py-16">
     {#each images as image}
-        <Img src={image} alt="404 image" class="w-32 h-64 object-cover rounded-lg shadow-lg" />
+        <Img
+            src={image}
+            alt="404 image"
+            class="w-32 h-64 object-cover rounded-lg shadow-lg"
+        />
     {/each}
 </Marquee>

@@ -16,8 +16,10 @@
 </script>
 
 {#if isLoading}
-    <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 z-10">
-        <Spinner size={16}/>
+    <div
+        class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 z-10"
+    >
+        <Spinner size={16} />
     </div>
 {/if}
 
@@ -34,7 +36,7 @@
             >
         </div>
         {#if currentView === "login"}
-            <Login {isLoading} on:handleLoading={handleLoading}/>
+            <Login {isLoading} on:handleLoading={handleLoading} />
         {:else if currentView === "signup"}
             <Signup />
         {/if}
