@@ -1,6 +1,6 @@
+import "dotenv/config";
 import { Router } from "express";
 import axios from "axios";
-import "dotenv/config";
 import mongoClient from "../database/mongoDBConnection.js";
 import { NotFoundError, InternalServerError } from "../util/errors.js";
 
