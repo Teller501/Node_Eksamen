@@ -155,7 +155,7 @@ router.post(
                 [listId, userId]
             );
             if (listQuery.rows.length === 0) {
-                return res.status(404).send("List not found");
+                return next(NotFoundError("List not found"));
             }
 
             const query = `
@@ -223,7 +223,7 @@ router.delete(
                 [listId, userId]
             );
             if (listQuery.rows.length === 0) {
-                return res.status(404).send("List not found");
+                return next(NotFoundError("List not found"));
             }
 
             const query = `
