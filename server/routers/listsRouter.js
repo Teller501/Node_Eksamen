@@ -145,11 +145,11 @@ router.post(
     "/api/lists/:user_id/:list_id",
     authenticateToken,
     async (req, res, next) => {
-        try {
-            const userId = req.params.user_id;
-            const listId = req.params.list_id;
-            const { movieId } = req.body;
+        const userId = req.params.user_id;
+        const listId = req.params.list_id;
+        const { movieId } = req.body;
 
+        try {
             const listQuery = await pgClient.query(
                 `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
                 [listId, userId]
@@ -177,10 +177,10 @@ router.delete(
     "/api/lists/:user_id/:list_id",
     authenticateToken,
     async (req, res, next) => {
-        try {
-            const userId = req.params.user_id;
-            const listId = req.params.list_id;
+        const userId = req.params.user_id;
+        const listId = req.params.list_id;
 
+        try {
             const deleteItemsQuery = `
             DELETE FROM movie_list_items
             WHERE list_id = $1;
@@ -213,11 +213,11 @@ router.delete(
     "/api/lists/:user_id/:list_id/:movie_id",
     authenticateToken,
     async (req, res, next) => {
-        try {
-            const userId = req.params.user_id;
-            const listId = req.params.list_id;
-            const movieId = req.params.movie_id;
+        const userId = req.params.user_id;
+        const listId = req.params.list_id;
+        const movieId = req.params.movie_id;
 
+        try {
             const listQuery = await pgClient.query(
                 `SELECT * FROM user_movie_lists WHERE id = $1 AND user_id = $2`,
                 [listId, userId]

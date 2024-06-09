@@ -43,13 +43,19 @@ import authenticateToken from "../util/authenticateToken.js";
 router.get("/api/logs", authenticateToken, async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const logs = await getAllLogs(page, limit);
 
-    if (logs.data.length === 0) {
-        return next(NotFoundError("No logs found"));
+    try {
+        const logs = await getAllLogs(page, limit);
+
+        if (logs.data.length === 0) {
+            return next(NotFoundError("No logs found"));
+        }
+
+        res.send(logs);
+    } catch (error) {
+        console.error("Failed to get logs:", error);
+        next(InternalServerError("Failed to get logs"));
     }
-
-    res.send(logs);
 });
 
 router.get("/api/logs/recent", authenticateToken, async (req, res, next) => {
@@ -72,15 +78,22 @@ router.get("/api/logs/recent", authenticateToken, async (req, res, next) => {
 
 router.get("/api/logs/:id", authenticateToken, async (req, res, next) => {
     const id = req.params.id;
-    const log = await pgClient.query("SELECT * FROM watch_logs WHERE id = $1", [
-        id,
-    ]);
 
-    if (log.rows.length === 0) {
-        return next(NotFoundError("Log not found"));
+    try {
+        const log = await pgClient.query(
+            "SELECT * FROM watch_logs WHERE id = $1",
+            [id]
+        );
+
+        if (log.rows.length === 0) {
+            return next(NotFoundError("Log not found"));
+        }
+
+        res.send({ data: log.rows[0] });
+    } catch (error) {
+        console.error("Database error:", error);
+        next(InternalServerError("An error occurred while fetching the log."));
     }
-
-    res.send({ data: log.rows[0] });
 });
 
 router.get(
@@ -88,6 +101,7 @@ router.get(
     authenticateToken,
     async (req, res, next) => {
         const userId = req.params.user_id;
+
         try {
             const result = await pgClient.query(
                 `SELECT wl.id, wl.movie_id, wl.user_id, wl.rating, wl.watched_on, wl.review, wl.created_at,
@@ -139,6 +153,7 @@ router.get(
         const offset = (page - 1) * limit;
 
         const movieId = req.params.movie_id;
+
         try {
             const result = await pgClient.query(
                 `SELECT watch_logs.*, users.username 
@@ -188,6 +203,7 @@ router.get(
     authenticateToken,
     async (req, res, next) => {
         const movieId = req.params.movie_id;
+
         try {
             const logsAggregation = await pgClient.query(
                 `
@@ -348,6 +364,7 @@ router.get(
     authenticateToken,
     async (req, res, next) => {
         const userId = req.params.user_id;
+        
         try {
             const result = await pgClient.query(
                 `WITH last_four_movies AS (

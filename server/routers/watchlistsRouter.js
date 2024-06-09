@@ -11,10 +11,9 @@ router.get(
     "/api/watchlists/:user_id/:movie_id?",
     authenticateToken,
     async (req, res, next) => {
+        const userId = req.params.user_id;
+        const movieId = req.params.movie_id;
         try {
-            const userId = req.params.user_id;
-            const movieId = req.params.movie_id;
-
             let query;
             let queryParams;
 
@@ -56,10 +55,9 @@ router.post(
     "/api/watchlists/:user_id",
     authenticateToken,
     async (req, res, next) => {
+        const userId = req.params.user_id;
+        const { movieId } = req.body;
         try {
-            const userId = req.params.user_id;
-            const { movieId } = req.body;
-
             const query = `
             INSERT INTO watchlist_movies (user_id, movie_id)
             VALUES ($1, $2)
@@ -103,10 +101,10 @@ router.delete(
     "/api/watchlists/:user_id/:movie_id",
     authenticateToken,
     async (req, res, next) => {
+        const userId = req.params.user_id;
+        const movieId = req.params.movie_id;
+        
         try {
-            const userId = req.params.user_id;
-            const movieId = req.params.movie_id;
-
             const query = `
             DELETE FROM watchlist_movies
             WHERE user_id = $1 AND movie_id = $2

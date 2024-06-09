@@ -14,11 +14,12 @@ import authenticateToken from "../util/authenticateToken.js";
 
 import { getAllMovies } from "../helper/movieHelper.js";
 router.get("/api/movies/popular", authenticateToken, async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const yearFilter = req.query.year;
+    const genreFilter = req.query.genre;
+
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const yearFilter = req.query.year;
-        const genreFilter = req.query.genre;
         const movieResults = await getAllMovies(
             page,
             limit,
@@ -62,11 +63,12 @@ router.get("/api/movies/random", authenticateToken, async (req, res, next) => {
 });
 
 router.get("/api/movies", authenticateToken, async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const yearFilter = req.query.year;
+    const genreFilter = req.query.genre;
+    
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const yearFilter = req.query.year;
-        const genreFilter = req.query.genre;
         const movieResults = await getAllMovies(
             page,
             limit,
@@ -135,11 +137,11 @@ router.get(
     "/api/movies/recommender",
     authenticateToken,
     async (req, res, next) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const yearFilter = req.query.year;
+        const genreFilter = req.query.genre;
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-            const yearFilter = req.query.year;
-            const genreFilter = req.query.genre;
             const tmdbIdSet = new Set(tmdbIds);
 
             let response = await getAllMovies(

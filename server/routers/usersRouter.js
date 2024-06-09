@@ -99,8 +99,8 @@ router.get(
     "/api/users/:username([a-zA-Z0-9_]+)",
     authenticateToken,
     async (req, res, next) => {
+        const username = req.params.username;
         try {
-            const username = req.params.username;
 
             const query = `
             SELECT 
@@ -237,9 +237,9 @@ router.patch(
     upload.single("profile_picture"),
     authenticateToken,
     async (req, res, next) => {
+        const { full_name, birth_date, location, bio } = req.body;
+        
         try {
-            const { full_name, birth_date, location, bio } = req.body;
-
             const existingUser = await pgClient.query(
                 "SELECT profile_picture FROM users WHERE id = $1",
                 [req.params.id]

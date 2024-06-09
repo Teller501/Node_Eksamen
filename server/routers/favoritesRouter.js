@@ -32,8 +32,9 @@ router.get(
     "/api/favorites/:user_id",
     authenticateToken,
     async (req, res, next) => {
+        const userId = req.params.user_id;
+        
         try {
-            const userId = req.params.user_id;
             const favoritesQuery = `
             SELECT fm.movie_id, fm.user_id, m.title, m.poster_path
             FROM favorite_movies fm
@@ -59,9 +60,9 @@ router.get(
 );
 
 router.post("/api/favorites", authenticateToken, async (req, res, next) => {
+    const { userId, movieId } = req.body;
+    
     try {
-        const { userId, movieId } = req.body;
-
         const existsQuery = `
             SELECT * FROM favorite_movies WHERE user_id = $1 AND movie_id = $2;
         `;
